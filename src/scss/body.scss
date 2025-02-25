@@ -1,0 +1,17 @@
+html, body {
+  height: 100%;
+  margin-right: 10px;
+  font-family: sans-serif;
+  font-size: 10px;
+}
+
+body {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 10px;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  max-height: 100%;
+  max-width: 100%;
+}

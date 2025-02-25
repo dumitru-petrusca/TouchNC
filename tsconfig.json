@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "strict": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "allowJs": true, // Allow JavaScript files in the project
+    "checkJs": false, // Disable type-checking for JavaScript files
+    "esModuleInterop": true, // Enable compatibility with CommonJS and ES modules
+    "module": "esnext", // Use ES module syntax
+    "moduleResolution": "node", // Resolve modules like Node.js
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["**/*.ts", "**/*.js"] // Include TS and JS files in your project
+}

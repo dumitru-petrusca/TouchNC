@@ -1,0 +1,7 @@
+.idea
+.rollup.cache
+.tsbuildinfo
+node_modules
+dist
+index.html.gz
+*~

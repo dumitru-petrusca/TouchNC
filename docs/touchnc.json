@@ -1,0 +1,64 @@
+{
+  "EEPROM": [
+    {
+      "F": "pref",
+      "P": "Feedback",
+      "H": "Feedback",
+      "V": 0,
+      "T": "B",
+      "O": [
+        {
+          "None": "0"
+        },
+        {
+          "Audio": "1"
+        },
+        {
+          "Tactile": "2"
+        }
+      ]
+    },
+    {
+      "F": "pref",
+      "P": "Connection Monitoring",
+      "H": "Connection Monitoring",
+      "V": 0,
+      "T": "B",
+      "O": [
+        {
+          "None": "0"
+        },
+        {
+          "Ping": "1"
+        },
+        {
+          "Report": "2"
+        }
+      ]
+    },
+    {
+      "F": "pref",
+      "P": "Reporting Interval",
+      "H": "Reporting Interval",
+      "V": 50,
+      "T": "I",
+      "M": 1,
+      "S": 60000
+    },
+    {
+      "F": "pref",
+      "P": "Default Tab",
+      "H": "Default Tab",
+      "V": 0,
+      "T": "B",
+      "O": [
+        {
+          "Manual": "0"
+        },
+        {
+          "CNC": "1"
+        }
+      ]
+    }
+  ]
+}

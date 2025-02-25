@@ -1,0 +1,67 @@
+G0, G1, G2, G3 Rapid, Linear, Arc Move
+G4 Dwell
+G5, G5.1, G5.2 G5.3 Cubic Spline, Quadratic Spline, NURBS Blocks
+G7, G8 Lathe Diameter/Radius Mode
+
+G10 L0 Reload Tool Table Data
+G10 L1 Set Tool Table
+G10 L2 Set Coordinate System
+G10 L10 Set Tool Table
+G10 L11 Set Tool Table
+G10 L20 Set Coordinate System
+
+G17 - G19.1 Plane Select: XY, ZX, YZ, UV, WU, VW
+G20, G21 Units inch/mm
+G28, G28.1, G30, G30.1 Go/Set Predefined Position
+
+G33 Spindle Synchronized Motion
+G33.1 Rigid Tapping
+
+G38.n Straight Probe
+
+G40 Compensation Off
+G41, G42 Cutter Compensation
+G41.1, G42.1 Dynamic Cutter Compensation
+
+G43 Tool Length Offset
+G43.1 Dynamic Tool Length Offset
+G43.2 Apply additional Tool Length Offset
+G49 Cancel Tool Length Compensation
+
+G52 Local Coordinate System Offset
+G53 Move in Machine Coordinates
+G54-G59.3 Select Coordinate System
+
+G61 Exact Path Mode
+G61.1 Exact Stop Mode
+G64 Path Blending
+
+G70 Lathe finishing cycle
+G71 G72 Lathe roughing cycles
+G73 Drilling Cycle with Chip Breaking
+G74 Left-hand Tapping Cycle with Dwell
+G76 Threading Cycle
+
+G80 Cancel Canned Cycle
+G81 Drilling Cycle
+G82 Drilling Cycle, Dwell
+G83 Peck Drilling Cycle
+G84 Right-hand Tapping Cycle, Dwell
+G85 Boring Cycle, Feed Out
+G86 Boring Cycle, Spindle Stop, Rapid Move Out
+G87 Back Boring Cycle
+G88 Boring Cycle, Spindle Stop, Manual Out
+G89 Boring Cycle, Dwell, Feed Out
+
+G90, G91 Distance Mode: absolute, incremental
+G90.1, G91.1 Arc Distance Mode
+
+G92 Coordinate System Offset
+G92.1, G92.2 Reset G92 Offsets
+G92.3 Restore G92 Offsets
+
+G93, G94, G95 Feed Rate Mode: Inverse Time, Units/Min, Units/Rev
+
+G96, G97 Spindle Control Mode
+
+G98, G99 Canned Cycle Return Level
