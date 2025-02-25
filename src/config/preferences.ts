@@ -1,4 +1,4 @@
-import {GroupType, IntegerSetting, SelectSetting, Setting, SettingGroup, SettingOption, Settings} from './settings';
+import {GroupMode, GroupType, int_, select_, Setting, SettingGroup, Settings} from './settings';
 import {sendHttpRequest, writeFile} from '../http/http';
 import {messages} from '../messages/messages';
 
@@ -97,37 +97,20 @@ class Preferences extends Settings {
 
 function createSettings(js: any) {
   js = applyDefaults(js)
-
-  let basicGroup = new SettingGroup("/basic", GroupType.VIRTUAL);
-  basicGroup.settings.push(new SelectSetting(DEFAULT_TAB, [
-    new SettingOption(TAB_MANUAL, 0),
-    new SettingOption(TAB_PROGRAM, 1),
-  ]).setValue(js[DEFAULT_TAB]))
-  basicGroup.settings.push(new SelectSetting(FEEDBACK, [
-    new SettingOption("None", 0),
-    new SettingOption("Audio", 1),
-    new SettingOption("Tactile", 2)
-  ]).setValue(js[FEEDBACK]))
-
-  let reportingGroup = new SettingGroup("/reporting", GroupType.VIRTUAL);
-  reportingGroup.settings.push(new SelectSetting(REPORT_TYPE, [
-    new SettingOption("None", 0),
-    new SettingOption("Auto", 1),
-    new SettingOption("Polling", 2)
-  ]).setValue(js[REPORT_TYPE]))
-  reportingGroup.settings.push(new IntegerSetting(REPORT_INTERVAL, 1, 60000).setValue(js[REPORT_INTERVAL]))
-
-  let connectionGroup = new SettingGroup("/connection/recovery", GroupType.VIRTUAL);
-  connectionGroup.settings.push(new SelectSetting(CONNECTION_MONITORING, [
-    new SettingOption("None", 0),
-    new SettingOption("Report", 1),
-    // new SettingOption("Ping", 2)
-  ]).setValue(js[CONNECTION_MONITORING]))
-  connectionGroup.settings.push(new IntegerSetting(RECOVER_AFTER, 1, 60000).setValue(js[RECOVER_AFTER]))
-
-  let group = new SettingGroup("/", GroupType.NORMAL);
-  group.groups.push(basicGroup, reportingGroup, connectionGroup)
-  return group;
+  return new SettingGroup("/", GroupType.NORMAL, GroupMode.ALL, [], [
+    new SettingGroup("/basic", GroupType.VIRTUAL, GroupMode.ALL, [
+      select_(DEFAULT_TAB, js[DEFAULT_TAB], [TAB_MANUAL, TAB_PROGRAM]),
+      select_(FEEDBACK, js[FEEDBACK], ["None", "Audio", "Tactile"]),
+    ]),
+    new SettingGroup("/reporting", GroupType.VIRTUAL, GroupMode.ALL, [
+      select_(REPORT_TYPE, js[REPORT_TYPE], ["None", "Auto", "Polling"]),
+      int_(REPORT_INTERVAL, js[REPORT_INTERVAL], 1, 60000),
+    ]),
+    new SettingGroup("/connection/recovery", GroupType.VIRTUAL, GroupMode.ALL, [
+      select_(CONNECTION_MONITORING, js[CONNECTION_MONITORING], ["None", "Report"]),
+      int_(RECOVER_AFTER, js[RECOVER_AFTER], 1, 60000),
+    ])
+  ]);
 }
 
 function applyDefaults(js: any) {

@@ -1,17 +1,44 @@
 import {sendHttpRequest} from '../http/http';
-import {Settings, SelectSetting, Setting, SettingGroup, GroupType} from './settings';
-import {SettingsUI} from './settingsui';
+import {GroupMode, GroupType, SelectSetting, Setting, SettingGroup, Settings} from './settings';
+import {EnableRule, SettingsUI} from './settingsui';
 
 class WiFi extends Settings {
   loadSettings(): Promise<SettingGroup> {
-    return Promise.resolve(new SettingGroup("", GroupType.NORMAL))
-    //TODO
-    // return sendHttpRequest("/command?plain=" + encodeURIComponent("[ESP400]"))
-    //     .then(value => this.parseSettings(value, "nvs"))
+    return sendHttpRequest("/command?plain=" + encodeURIComponent("[ESP400]"))
+        .then(value => this.parseSettings(value))
+  }
+
+  parseSettings(str: string): SettingGroup {
+    let settings = JSON.parse(str).EEPROM as [any]
+    return new SettingGroup("", GroupType.NORMAL, GroupMode.ALL, [], [
+      new SettingGroup("WiFi", GroupType.NORMAL, GroupMode.ALL, [
+        this.parse("WiFi/Mode", settings),
+        this.parse("MDNS/Enable", settings).setDisplayName("MDNS"),
+        this.parse("Hostname", settings),
+      ]),
+      new SettingGroup("Network", GroupType.NORMAL, GroupMode.ALL, [
+        this.parse("Sta/SSID", settings),
+        this.parse("Sta/IPMode", settings),
+        this.parse("Sta/IP", settings),
+        this.parse("Sta/Gateway", settings),
+        this.parse("Sta/Netmask", settings),
+        this.parse("Sta/Password", settings),
+      ]),
+      new SettingGroup("Access Point", GroupType.NORMAL, GroupMode.ALL, [
+        this.parse("AP/SSID", settings),
+        this.parse("AP/IP", settings),
+        this.parse("AP/Channel", settings),
+        this.parse("AP/Country", settings),
+        this.parse("AP/Password", settings),
+      ]),
+    ])
+  }
+
+  private parse(name: string = "WiFi/Mode", settings: [any]) {
+    return this.parseSetting(settings.find(s => s.P == name));
   }
 
   saveSetting(s: Setting<any, any>): Promise<any> {
-    // command?plain=[ESP401]P=/axes/x/max_rate_mm_per_min T=R V=1500.001 & PAGEID=0
     return sendHttpRequest(`/command?plain=[ESP401]P=${s.name} V=${s.getValue()}`)
   }
 
@@ -20,53 +47,18 @@ class WiFi extends Settings {
   }
 }
 
-class WiFiUI extends SettingsUI {
-  constructor(config: Settings, id: string) {
-    super(config, id);
-  }
-
-  protected createGroups(): SettingGroup[] {
-    return []
-    // return [
-    //   new SettingGroup("WiFi", [
-    //     new UISetting("Mode", "WiFi/Mode"),
-    //     new UISetting("mDNS", "MDNS/Enable"),
-    //     new UISetting("mDNS Host", "Hostname", () => wifi.getSelect("MDNS/Enable")!.getValue() == "ON"),
-    //   ]),
-    //   new SettingGroup("Network", [
-    //     new UISetting("SSID", "Sta/SSID", isSTA),
-    //     new UISetting("IP Mode", "Sta/IPMode", isSTA),
-    //     new UISetting("IP", "Sta/IP", () => {
-    //       return isSTA() && wifi.getSelect("Sta/IPMode")!.getValue() == "Static"
-    //     }),
-    //     new UISetting("Gateway", "Sta/Gateway", isSTA),
-    //     new UISetting("Netmask", "Sta/Netmask", isSTA),
-    //     new UISetting("Password", "Sta/Password", isSTA),
-    //   ]),
-    //   new SettingGroup("Access Point", [
-    //     new UISetting("SSID", "AP/SSID", isAP),
-    //     new UISetting("IP", "AP/IP", isAP),
-    //     new UISetting("Channel", "AP/Channel", isAP),
-    //     new UISetting("Country", "AP/Country", isAP),
-    //     new UISetting("Password", "AP/Password", isAP),
-    //   ]),
-    // ];
-  }
-}
-
 function getWiFiMode(): SelectSetting | undefined {
   return wifi.getSelect("WiFi/Mode");
 }
 
-let isSTA = () => {
-  let s = getWiFiMode()!;
-  return s.getValue() == "STA" || s.getValue() == "STA>AP"
-}
-
-let isAP = () => {
-  let s = getWiFiMode()!;
-  return s.getValue() == "AP" || s.getValue() == "STA>AP"
+function enable(setting: string, enable: () => boolean): EnableRule {
+  return new EnableRule(setting, enable);
 }
 
 export let wifi = new WiFi()
-export let wifiUI = new WiFiUI(wifi, "wifisettings");
+export let wifiUI = new SettingsUI(wifi, "wifisettings",
+    enable("Hostname", () => wifi.getSelect("MDNS/Enable")!.getValue() == "ON"),
+    enable("Sta/", () => ["STA", "STA>AP"].includes(getWiFiMode()!.getValue())),
+    enable("Sta/IP", () => wifi.getSelect("Sta/IPMode")!.getValue() == "Static"),
+    enable("AP/", () => ["AP", "STA>AP"].includes(getWiFiMode()!.getValue())),
+)

@@ -4,20 +4,32 @@ import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
 import {EventHandler} from '../common';
 import {AlphanumericSetting, BooleanSetting, FloatSetting, IntegerSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting, TypeSetting} from './settings';
-import {checkbox, element, getElement, ifPresent, label, panel, textInput, toggleFullscreen} from '../ui/ui';
+import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
 import {btnIcon, button} from '../ui/button';
 import {Icon} from '../ui/icons';
 import {ConfirmDialog} from '../dialog/confirmdlg';
 import {restartChannel} from '../events/eventbus';
 import {sendHttpRequest} from '../http/http';
 
+export class EnableRule {
+  settingName: string
+  enabled: () => boolean
+
+  constructor(settingName: string, enabled: () => boolean) {
+    this.settingName = settingName;
+    this.enabled = enabled;
+  }
+}
+
 export class SettingsUI {
   readonly settings: Settings;
   private readonly id: string;
+  private enableRules: EnableRule[];
 
-  constructor(settings: Settings, id: string) {
+  constructor(settings: Settings, id: string, ...enableRules: EnableRule[]) {
     this.settings = settings;
     this.id = id;
+    this.enableRules = enableRules;
   }
 
   loadAndDisplay() {
@@ -67,7 +79,7 @@ export class SettingsUI {
     let paneId = `${group.path}-pane`, listId = `${group.path}-list`;
     let children = [label("", group.fullName, settingsPaneTitleClass)]
     group.settings.forEach(s => {
-      children.push(label(s.name + "_label", s.getDisplayName(), settingsLabelClass))
+      children.push(label(s.name + "_label", s.displayName, settingsLabelClass))
       children.push(this.createWidget(s, _ => getElement(paneId).replaceWith(this.createPane(group))))
     });
     let list = panel(listId, settingsListClass, children);
@@ -146,17 +158,16 @@ export class SettingsUI {
         })
   }
 
-  updateVisibility() {
-    //TODO-dp
-    // for (const group of this.config.settingGroups?.groups!) {
-    //   for (const setting of group.children) {
-    //     let action = (e: HTMLElement) => {
-    //       setEnabled(e.id, setting.enabled());
-    //     }
-    //     ifPresent(setting.name, action)
-    //     ifPresent(setting.name + "_label", action)
-    //   }
-    // }
+  updateVisibility(group: SettingGroup = this.settings.settings!) {
+    for (const setting of group.settings) {
+      let enabled = this.enableRules.find(rule => setting.name.startsWith(rule.settingName) && !rule.enabled()) == undefined;
+      console.log(`Rules: ${setting.name} ${enabled}`)
+      setEnabled(setting.name, enabled)
+      setEnabled(setting.name + "_label", enabled)
+    }
+    for (const g of group.groups) {
+      this.updateVisibility(g)
+    }
   }
 
   select(id: string, css: CssClass, select: SelectSetting, onChange: EventHandler = null) {

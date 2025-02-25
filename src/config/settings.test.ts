@@ -1,13 +1,13 @@
 import {machineSettings, machineSettingsUI} from './machinesettings';
 
 test('save', () => {
-  machineSettings.settings = machineSettings.parseSettings(settingsText, "tree")
+  machineSettings.parseSettings(settingsText, "tree")
   let s = machineSettings.serializeSettings();
   expect(s).toBe("");
 });
 
 test('UI', () => {
-  machineSettings.settings = machineSettings.parseSettings(settingsText, "tree")
+  machineSettings.parseSettings(settingsText, "tree")
   machineSettingsUI.createPanes()
   // console.log(group.groups.map(g => g.path))
   // expect(group).toBe("");

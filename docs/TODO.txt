@@ -1,10 +1,3 @@
-
-Important:
-==========
-- In Hold mode the coordinate buttons should be enabled.
-- Need to validate the full program before starting to run it
-
-
 Nice to Have:
 =============
 - Figure out where the percentage is displayed on the LCD screen and add it to the UI

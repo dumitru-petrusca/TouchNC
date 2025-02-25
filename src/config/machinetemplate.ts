@@ -1,26 +1,4 @@
-import {BooleanSetting, FloatSetting, GroupMode, GroupType, IntegerSetting, PinSetting, SelectSetting, Setting, SettingGroup, SettingOption, StringSetting} from './settings';
-
-function pins(prefix: "gpio" | "i2so", from: number, to: number) {
-  let pins = []
-  for (let i = from; i <= to; i++) {
-    pins.push(prefix + "." + i)
-  }
-  return pins;
-}
-
-const pinsIO = ["NO_PIN", ...pins("gpio", 0, 5), ...pins("gpio", 12, 19), ...pins("gpio", 21, 23), ...pins("gpio", 25, 27), ...pins("gpio", 32, 33)]
-const pinsI = [...pinsIO, ...pins("gpio", 34, 39)]
-const pinsO = [...pinsIO, ...pins("i2so", 0, 15)]
-
-const string = (value: string, min: number, max: number) => new StringSetting("", min, max).setValue(value);
-const int = (value: number, min: number, max: number) => new IntegerSetting("", min, max).setValue(value);
-const bool = (value: boolean) => new BooleanSetting("").setValue(value);
-const float = (value: number, min: number, max: number) => new FloatSetting("", min, max).setValue(value);
-const position = (min: number, max: number) => new StringSetting("", min, max).setValue("0, 0, 0");  // TODO-dp - needs work
-const enumeration = (value: string, values: string[]) => new SelectSetting("", values.map((v, i) => new SettingOption(v, i))).setValue(value);
-const pinI = () => new PinSetting("", pinsI.map((v, i) => new SettingOption(v, i))).setValue("NO_PIN",);
-const pinO = () => new PinSetting("", pinsO.map((v, i) => new SettingOption(v, i))).setValue("NO_PIN",);
-const pinIO = () => new PinSetting("", pinsIO.map((v, i) => new SettingOption(v, i))).setValue("NO_PIN",);
+import {bool, select, float, GroupMode, GroupType, int, pinI, pinIO, pinO, position, Setting, SettingGroup, string} from './settings';
 
 let motor = {
   limit_neg_pin: pinI(),
@@ -101,13 +79,13 @@ let uart = {
   rts_pin: pinIO(),
   txd_pin: pinIO(),
   baud: int(115200, 2400, 10000000),
-  mode: enumeration("8N1", ["8N1", "8E1", "8O1", "8N2", "7N1", "7E1", "7O1"]),
+  mode: select("8N1", ["8N1", "8E1", "8O1", "8N2", "7N1", "7E1", "7O1"]),
 }
 
 let uart_channel = {
   report_interval_ms: int(0, 0, 1e6),
   uart_num: int(0, 0, 2),
-  message_level: enumeration("Verbose", ["None", "Error", "Warn", "Info", "Debug", "Verbose"]),
+  message_level: select("Verbose", ["None", "Error", "Warn", "Info", "Debug", "Verbose"]),
 }
 
 let onOffSpindle = {
@@ -131,7 +109,7 @@ export let configTemplate = {
     board: string("None", 0, 32),
     host: string("fluidnc", 0, 32),
     meta: string("", 0, 32),
-    machine: enumeration("MILL", ["MILL", "LATHE"])
+    machine: select("MILL", ["MILL", "LATHE"])
   },
 
   various: {
@@ -174,7 +152,7 @@ export let configTemplate = {
   },
 
   stepping: {
-    engine: enumeration("RMT_ENGINE", ["TIMED", "RMT_ENGINE", "I2S_STATIC", "I2S_STREAM"]),
+    engine: select("RMT_ENGINE", ["TIMED", "RMT_ENGINE", "I2S_STATIC", "I2S_STREAM"]),
     idle_ms: int(255, 0, 10000000),
     pulse_us: int(4, 0, 30),
     dir_delay_us: int(0, 0, 10),
@@ -334,7 +312,7 @@ export let configTemplate = {
     height: int(48, 0, 1e6),
     flip: bool(true),
     mirror: bool(false),
-    type: enumeration("SH1106", ["SH1106"]),
+    type: select("SH1106", ["SH1106"]),
     radio_delay_ms: int(0, 0, 1e6)
   },
 

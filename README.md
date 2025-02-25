@@ -35,7 +35,7 @@ $Localfs/Delete=index.html.gz
 Refreshing the page will give a default page that allows you to upload a new index.html.gz.
 
 ## Issues / Questions
-You can submit ticket [here](https://github.com/dumitru-petrusca/TouchNC/issues)   
+You can submit issues [here](https://github.com/dumitru-petrusca/TouchNC/issues)   
 
 ## Development
 For quick local development you can build and start a local dev server with:

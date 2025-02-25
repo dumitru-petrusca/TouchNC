@@ -5,7 +5,6 @@ import {toYAML} from './yaml';
 import {createGroupTemplate} from './machinetemplate';
 
 class MachineSettings extends Settings {
-  defaultMachineSettings = createGroupTemplate()
 
   loadSettings(): Promise<SettingGroup> {
     return sendHttpRequest("/command?plain=" + encodeURIComponent("[ESP400]"))
@@ -31,7 +30,7 @@ class MachineSettings extends Settings {
 
   serializeSettings() {
     let obj = {}
-    this.settings!.save(obj, this.defaultMachineSettings)
+    this.settings!.save(obj)
     return toYAML("", obj, "");
   }
 
