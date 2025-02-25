@@ -1,7 +1,9 @@
 # TouchNC
 
 ## Credits
-  https://github.com/luc-github/ESP3D-WEBUI
+  This code is based on 
+  https://github.com/luc-github/ESP3D-WEBUI and 
+  https://github.com/MitchBradley/ESP3D-WEBUI.git for which I am grateful.
 
 ## Features
 - Supports the FluidNC CNC controller
@@ -10,6 +12,9 @@
 - Support for CNC program execution
 - Build-in tool table editor (requires a modified FluidNC firmware)
 - Automatic re-connection if communication with FluidNC is lost
+- Full-featured machine configuration editor
+- Written in TypeScript using modern technology.
+- Very small footprint (~35kB).
 
 ## Building
 Run the following commands:
@@ -30,7 +35,7 @@ $Localfs/Delete=index.html.gz
 Refreshing the page will give a default page that allows you to upload a new index.html.gz.
 
 ## Issues / Questions
-You can submit ticket [here](https://github.com/luc-github/ESP3D-WEBUI/issues)   
+You can submit ticket [here](https://github.com/dumitru-petrusca/TouchNC/issues)   
 
 ## Development
 For quick local development you can build and start a local dev server with:

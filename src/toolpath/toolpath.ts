@@ -78,7 +78,6 @@ export class Toolpath {
     //   with a center point at (X=current_X+5, Y=current_Y+10), extruding 22.4mm of material between starting and stopping)
     // Referring
     //   http://linuxcnc.org/docs/2.5/html/gcode/gcode.html#sec:G2-G3-Arc
-    //   https://github.com/grbl/grbl/issues/236
     'G2': (params: any) => {
       this.modal.motion = 'G2';
       const v1 = this.position.copy()

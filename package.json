@@ -43,7 +43,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/luc-github/ESP3D-WEBUI.git"
+    "url": "https://github.com/dumitru-petrusca/TouchNC.git"
   },
   "author": "Luc LEBOSSE",
   "license": "(ISC OR GPL-3.0)",
@@ -66,7 +66,7 @@
     "test": "jest"
   },
   "bugs": {
-    "url": "https://github.com/luc-github/ESP3D-WEBUI/issues"
+    "url": "https://github.com/dumitru-petrusca/TouchNC/issues"
   },
-  "homepage": "https://github.com/luc-github/ESP3D-WEBUI#readme"
+  "homepage": "https://github.com/dumitru-petrusca/TouchNC#readme"
 }
