@@ -1,4 +1,4 @@
-import {AlphanumericSetting, BooleanSetting, FloatSetting, IntegerSetting, SelectSetting, Setting, SettingOption, StringSetting} from './config/settings';
+import {AlphanumericSetting, BooleanSetting, FloatSetting, IntegerSetting, SelectSetting, Setting, SelectOption, StringSetting} from './config/settings';
 
 export function serializeSettings(s: Setting<any, any>[]): any {
   return {EEPROM: s.map(serializeSetting)}
@@ -28,7 +28,7 @@ function serializeSetting(s: Setting<any, any>): any {
   return js
 }
 
-function serializeOption(o: SettingOption) {
+function serializeOption(o: SelectOption) {
   let js: any = {};
   js[o.text] = o.value
   return js;

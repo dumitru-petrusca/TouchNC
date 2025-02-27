@@ -1,4 +1,4 @@
-import {GroupMode, GroupType, int_, select_, Setting, SettingGroup, Settings} from './settings';
+import {SettingAttr, int_, select_, Setting, SettingGroup, Settings} from './settings';
 import {sendHttpRequest, writeFile} from '../http/http';
 import {messages} from '../messages/messages';
 
@@ -97,16 +97,16 @@ class Preferences extends Settings {
 
 function createSettings(js: any) {
   js = applyDefaults(js)
-  return new SettingGroup("/", GroupType.NORMAL, GroupMode.ALL, [], [
-    new SettingGroup("/basic", GroupType.VIRTUAL, GroupMode.ALL, [
+  return new SettingGroup("/", SettingAttr.DEFAULT, [], [
+    new SettingGroup("/basic", SettingAttr.VIRTUAL, [
       select_(DEFAULT_TAB, js[DEFAULT_TAB], [TAB_MANUAL, TAB_PROGRAM]),
       select_(FEEDBACK, js[FEEDBACK], ["None", "Audio", "Tactile"]),
     ]),
-    new SettingGroup("/reporting", GroupType.VIRTUAL, GroupMode.ALL, [
+    new SettingGroup("/reporting", SettingAttr.VIRTUAL, [
       select_(REPORT_TYPE, js[REPORT_TYPE], ["None", "Auto", "Polling"]),
       int_(REPORT_INTERVAL, js[REPORT_INTERVAL], 1, 60000),
     ]),
-    new SettingGroup("/connection/recovery", GroupType.VIRTUAL, GroupMode.ALL, [
+    new SettingGroup("/connection/recovery", SettingAttr.VIRTUAL, [
       select_(CONNECTION_MONITORING, js[CONNECTION_MONITORING], ["None", "Report"]),
       int_(RECOVER_AFTER, js[RECOVER_AFTER], 1, 60000),
     ])

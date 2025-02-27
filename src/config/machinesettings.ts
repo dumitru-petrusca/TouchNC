@@ -12,15 +12,15 @@ class MachineSettings extends Settings {
   }
 
   parseSettings(str: string, type: string): SettingGroup {
-    let group = createGroupTemplate();
+    let root = createGroupTemplate();
     for (const s of JSON.parse(str).EEPROM) {
       if (s.F == type) {
         let setting = this.parseSetting(s);
-        group.set(setting.name, setting.getValue())
+        root.set(setting.name, setting.getValue())
       }
     }
-    group.finalize()
-    return group
+    root.finalize()
+    return root
   }
 
   saveSetting(setting: Setting<any, any>): Promise<any> {
@@ -30,12 +30,14 @@ class MachineSettings extends Settings {
 
   serializeSettings() {
     let obj = {}
-    this.settings!.save(obj)
+    this.settings!.insert(obj)
     return toYAML("", obj, "");
   }
 
   saveSettings(): Promise<any> {
-    return writeFile("config.yaml", this.serializeSettings())
+    let yml = this.serializeSettings();
+    console.log(yml)
+    return writeFile("config.yaml", yml)
   }
 }
 

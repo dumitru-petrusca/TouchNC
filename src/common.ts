@@ -63,15 +63,32 @@ class WeightItem<T> {
   }
 }
 
-export function capitalize(name: string) {
-  let c = name.charAt(0);
-  return c == '(' ? name : c.toUpperCase() + name.substring(1);
+const isDigit = (c: string) => c >= '0' && c <= '9';
+const first = (name: string) => charAt(name, 0);
+const last = (name: string, n = 0) => charAt(name, -1);
+
+// 0  - first char, -1 last char, -2 next to last char
+const charAt = (name: string, i = 0) => {
+  if (name == "") return ""
+  while (i < 0) i += name.length
+  return name.charAt(i)
 }
 
+const drop = (name: string, n = 0) => name.substring(n);
+const dropLast = (name: string, n = 0) => name.substring(0, name.length - n);
+
+const substring = (name: string, i = 0, j = -1) => {
+  if (name == "") return ""
+  while (i < 0) i += name.length
+  while (j < 0) j += name.length
+  return name.substring(i, j)
+}
+
+export const capitalize = (name: string) => first(name) == '(' ? name : first(name).toUpperCase() + drop(name, 1);
+
 export function splitNumber(name: string) {
-  let c = name.charAt(name.length - 1);
-  if (c >= '0' && c <= '9') {
-    return name.substring(0, name.length - 1) + " " + c;
+  if (name.length >= 2 && isDigit(charAt(name, -1)) && !isDigit(charAt(name, -2))) {
+    return dropLast(name) + " " + last(name);
   } else {
     return name;
   }

@@ -1,8 +1,6 @@
-import {Setting} from './settings';
-
 export function toYAML(name: string, value: Record<string, any> | string, indent: string = "") {
   if (typeof value != "object") {
-    return indent + name + ": " + value + "\n";
+    return indent + name + (": " + value).trim() + "\n";
   }
   let root = name == "";
   let yaml = root ? "" : "\n" + indent + name + ":\n";

@@ -1,4 +1,4 @@
-import {bool, select, float, GroupMode, GroupType, int, pinI, pinIO, pinO, position, Setting, SettingGroup, string} from './settings';
+import {bool, cloneSetting, float, group, SettingAttr, int, pinI, pinIO, pinO, position, select, Setting, SettingGroup, string} from './settings';
 
 let motor = {
   limit_neg_pin: pinI(),
@@ -7,8 +7,8 @@ let motor = {
   hard_limits: bool(false),
   pulloff_mm: float(1, 0.1, 100000.0),
   driver: {
-    _type: GroupType.VIRTUAL,
-    _mode: GroupMode.ONE_OF,
+    _attributes: SettingAttr.VIRTUAL | SettingAttr.ONE_OF,
+    _type: group("this", SettingAttr.VIRTUAL),
     standard_stepper: {
       step_pin: pinO(),
       direction_pin: pinO(),
@@ -71,7 +71,7 @@ let vfd = {
   speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
   off_on_alarm: bool(false),
   M6_macro: string("", 0, 256),
-  atc: string("", 0, 32),
+  atc: group("/atc"),
 }
 
 let uart = {
@@ -99,12 +99,12 @@ let onOffSpindle = {
   speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
   off_on_alarm: bool(false),
   M6_macro: string("", 0, 256),
-  atc: string("", 0, 32),
+  atc: group("/atc"),
 };
 
 export let configTemplate = {
   general: {
-    _type: GroupType.VIRTUAL,
+    _attributes: SettingAttr.VIRTUAL,
     name: string("None", 0, 32),
     board: string("None", 0, 32),
     host: string("fluidnc", 0, 32),
@@ -113,7 +113,7 @@ export let configTemplate = {
   },
 
   various: {
-    _type: GroupType.VIRTUAL,
+    _attributes: SettingAttr.VIRTUAL,
     arc_tolerance_mm: float(0.002, 0.001, 1.0),
     junction_deviation_mm: float(0.01, 0.01, 1),
     verbose_errors: bool(true),
@@ -161,7 +161,9 @@ export let configTemplate = {
   },
 
   kinematics: {
-    _mode: GroupMode.ONE_OF,
+    _attributes: SettingAttr.ONE_OF,
+    _type: group("this", SettingAttr.VIRTUAL),
+
     Cartesian: {},
     midtbot: {},
     CoreXY: {},
@@ -317,8 +319,8 @@ export let configTemplate = {
   },
 
   spindle: {
-    _type: GroupType.VIRTUAL,
-    _mode: GroupMode.ONE_OF,
+    _attributes: SettingAttr.VIRTUAL | SettingAttr.ONE_OF,
+    _type: group("this", SettingAttr.VIRTUAL),
 
     Null: {},
     DAC: {},  // TODO add spindle
@@ -333,9 +335,9 @@ export let configTemplate = {
 
     PWM: {
       pwm_hz: int(5000, 1, 20000000),
-      direction_pin: pinI(),
+      direction_pin: pinO(),
       output_pin: pinO(),
-      enable_pin: pinI(),
+      enable_pin: pinO(),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
       spinup_ms: int(0, 0, 60000),
@@ -344,7 +346,7 @@ export let configTemplate = {
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
       M6_macro: string("", 0, 256),
-      atc: string("", 0, 32),
+      atc: group("/atc"),
     },
 
     BESC: {
@@ -360,7 +362,7 @@ export let configTemplate = {
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
       M6_macro: string("", 0, 256),
-      atc: string("", 0, 32),
+      atc: group("/atc"),
       min_pulse_us: int(900, 500, 3000),
       max_pulse_us: int(2200, 500, 3000),
     },
@@ -377,7 +379,7 @@ export let configTemplate = {
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
       M6_macro: string("", 0, 256),
-      atc: string("", 0, 32),
+      atc: group("/atc"),
     },
 
     _10v: {
@@ -395,7 +397,7 @@ export let configTemplate = {
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
       M6_macro: string("", 0, 256),
-      atc: string("", 0, 32),
+      atc: group("/atc"),
     },
 
     HBridge: {
@@ -410,7 +412,7 @@ export let configTemplate = {
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
       M6_macro: string("", 0, 256),
-      atc: string("", 0, 32),
+      atc: group("/atc"),
     },
 
     OnOff: onOffSpindle,
@@ -418,8 +420,7 @@ export let configTemplate = {
   },
 
   atc: {
-    _type: GroupType.VIRTUAL,
-    _mode: GroupMode.ONE_OF,
+    _attributes: SettingAttr.VIRTUAL | SettingAttr.ONE_OF | SettingAttr.HIDDEN,
     atc_manual: {
       safe_z_mpos_mm: float(50, -100000, 100000),
       probe_seek_rate_mm_per_min: float(200, 1, 10000),
@@ -432,24 +433,19 @@ export let configTemplate = {
   }
 }
 
-function createGroup(key: string, obj: any, path: string) {
-  let type = obj._type == undefined ? GroupType.NORMAL : obj._type;
-  let mode = obj._mode == undefined ? GroupMode.ALL : obj._mode;
-  return new SettingGroup(path + "/" + key, type, mode)
-}
-
 function _createGroupTemplates(obj: any, path: string, parent: SettingGroup): SettingGroup[] {
   let groups = []
   for (const key of Object.keys(obj)) {
     let childObj = obj[key]
     if (childObj instanceof Setting) {
-      let name = parent.type == GroupType.NORMAL ? path + "/" + key : path + "/" + key;
-      parent.settings.push(childObj.clone(name))
+      let name = path + "/" + key;
+      let setting = cloneSetting(childObj).setName(name).setParent(parent);
+      parent.settings.push(setting)
     } else if (typeof childObj == "object") {
-      let group = createGroup(key, childObj, path);
+      let group = new SettingGroup(path + "/" + key, childObj._attributes).setParent(parent);
       groups.push(group);
-      let holder = group.mode == GroupMode.ONE_OF ? group.groups : groups
-      let path2 = group.type == GroupType.VIRTUAL ? path : path + "/" + key;
+      let holder = group.isOneOf() ? group.groups : groups
+      let path2 = group.isVirtual() ? path : path + "/" + key;
       holder.push(..._createGroupTemplates(childObj, path2, group))
     }
   }
@@ -484,7 +480,7 @@ let layout = [
 ]
 
 export function createGroupTemplate(): SettingGroup {
-  let root = new SettingGroup("", GroupType.VIRTUAL, GroupMode.ALL);
+  let root = new SettingGroup("", SettingAttr.VIRTUAL);
   let groups = _createGroupTemplates(configTemplate, "", root);
   groups.sort((a, b) => layout.indexOf(a.path) - layout.indexOf(b.path))
   root.groups.push(...groups)

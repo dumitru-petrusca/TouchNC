@@ -1,18 +1,42 @@
 import {capitalize, splitNumber} from '../common';
 
-export enum GroupType {NORMAL, VIRTUAL}
-
-export enum GroupMode {ALL, ONE_OF}
+export enum SettingAttr {
+  DEFAULT = 0,
+  VIRTUAL = 1 << 0,
+  ONE_OF = 1 << 1,
+  HIDDEN = 1 << 2,
+}
 
 export abstract class Setting<T, B extends Setting<T, B>> {
-  public readonly name: string
-  public displayName: string
-  public readonly defaultValue: T
-  protected _oldValue: T | undefined = undefined
-  protected _value: T | undefined = undefined
-  public exists: boolean = false
+  parent?: SettingGroup
+  name: string = ""
+  displayName: string = ""
+  defaultValue: T
+  protected oldValue?: T
+  value?: T
 
   protected constructor(name: string, defaultValue: T) {
+    this.setName(name)
+    this.defaultValue = defaultValue
+  }
+
+  setValue(value: T): B {
+    this.oldValue = this.value
+    this.value = value;
+    return this as any
+  }
+
+  setDisplayName(name: string) {
+    this.displayName = name
+    return this;
+  }
+
+  setParent(parent: SettingGroup): B {
+    this.parent = parent
+    return this as any
+  }
+
+  setName(name: string): B {
     this.name = name;
     name = this.name
         .substring(this.name.lastIndexOf("/") + 1)
@@ -23,52 +47,39 @@ export abstract class Setting<T, B extends Setting<T, B>> {
         .map(replaceAcronyms)
         .join(" ");
     this.displayName = renames.get(name) ?? name
-    this.defaultValue = defaultValue
-  }
-
-  getValue(): T {
-    return this._value!;
-  }
-
-  setValue(value: T): B {
-    this._oldValue = this._value
-    this._value = value;
     return this as any
   }
 
-  undo() {
-    this._value = this._oldValue;
-  }
-
   insert(obj: Record<string, any>) {
-    let fields = this.name.substring(1).split("/");
-    let o = obj
-    for (let i = 0; i < fields.length - 1; i++) {
-      let f = fields[i]
-      o = o[f] == undefined ? (o[f] = {}) : o[f];
+    if (this.isReal()) {
+      insert(obj, this.name, this.value)
     }
-    o[fields[fields.length - 1]] = this.getValue()
   }
 
-  abstract clone(name: string): B
-
-  isConfigured() {
-    return this.getValue() != this.defaultValue
+  finalize() {
   }
 
-  setDisplayName(name: string) {
-    this.displayName = name
-    return this;
+  getValue = (): T => this.value!;
+  undo = () => this.value = this.oldValue;
+  isConfigured = () => this.getValue() != this.defaultValue;
+  isReal = () => true;
+}
+
+function insert(obj: Record<string, any>, path: string, value: any = undefined) {
+  let fields = path.substring(1).split("/");
+  let o = obj
+  for (let i = 0; i < fields.length - 1; i++) {
+    let f = fields[i]
+    o = o[f] == undefined ? (o[f] = {}) : o[f];
+  }
+  if (value!=undefined) {
+    o[fields[fields.length - 1]] = value
   }
 }
 
 export class BooleanSetting extends Setting<boolean, BooleanSetting> {
   constructor(name: string, defaultValue: boolean) {
     super(name, defaultValue);
-  }
-
-  clone(name: string): BooleanSetting {
-    return new BooleanSetting(name, this.defaultValue).setValue(this.getValue());
   }
 }
 
@@ -81,19 +92,11 @@ export class StringSetting extends Setting<string, StringSetting> {
     this.min = min;
     this.max = max;
   }
-
-  clone(name: string): StringSetting {
-    return new StringSetting(name, this.defaultValue, this.min, this.max).setValue(this.getValue());
-  }
 }
 
 export class AlphanumericSetting extends Setting<string, AlphanumericSetting> {
   constructor(name: string, defaultValue: string) {
     super(name, defaultValue);
-  }
-
-  clone(name: string): AlphanumericSetting {
-    return new AlphanumericSetting(name, this.defaultValue).setValue(this.getValue());
   }
 }
 
@@ -106,10 +109,6 @@ export class IntegerSetting extends Setting<number, IntegerSetting> {
     this.min = min;
     this.max = max;
   }
-
-  clone(name: string): IntegerSetting {
-    return new IntegerSetting(name, this.defaultValue, this.min, this.max).setValue(this.getValue());
-  }
 }
 
 export class FloatSetting extends Setting<number, FloatSetting> {
@@ -121,122 +120,130 @@ export class FloatSetting extends Setting<number, FloatSetting> {
     this.min = min;
     this.max = max;
   }
-
-  clone(name: string): FloatSetting {
-    return new FloatSetting(name, this.defaultValue, this.min, this.max).setValue(this.getValue());
-  }
-
-
-  setValue(value: number): FloatSetting {
-    return super.setValue(value);
-  }
 }
 
 export class SelectSetting extends Setting<string, SelectSetting> {
-  options: SettingOption[] = []
+  options: SelectOption[] = []
 
-  constructor(name: string, defaultValue: string, options: SettingOption[]) {
+  constructor(name: string, defaultValue: string, options: SelectOption[]) {
     super(name, defaultValue);
     this.setOptions(options);
   }
 
-  setOptions(options: SettingOption[]) {
+  setOptions = (options: SelectOption[]) => {
     this.options = options.sort((o1, o2) => o1.value - o2.value);
   }
 
-  index(): number {
-    return this.indexOf(this.getValue())
-  }
-
-  indexOf(text: string) {
-    for (const option of this.options) {
-      if (option.text == text) {
-        return option.value
-      }
-    }
-    return -1
-  }
-
-  findOption(value: number): SettingOption | undefined {
-    return this.options.find(o => o.value == value)
-  }
-
-  clone(name: string): SelectSetting {
-    return new SelectSetting(name, this.defaultValue, this.options).setValue(this.getValue());
-  }
+  index = (): number => this.indexOf(this.getValue());
+  indexOf = (text: string) => this.options.find(o => o.text == text)?.value ?? -1;
+  findOption = (value: number) => this.options.find(o => o.value == value);
 }
 
 export class PinSetting extends SelectSetting {
-  constructor(name: string, defaultValue: string, options: SettingOption[]) {
+  constructor(name: string, defaultValue: string, options: SelectOption[]) {
     super(name, defaultValue, options);
+    options.forEach((o, i) => o.value = i)
   }
 
-  setValue(value: string): SelectSetting {
+  setValue(value: string): PinSetting {
     value = value.toLowerCase();
-    let strings = value.split(":");
-    value = strings[0].trim()
+    //TODO-dp I am droppin the modifier
+    value = (value.split(":"))[0].trim()
     if (value == "no_pin") {
       value = "NO_PIN"
     }
     super.setValue(value)
-
-    if (this.name == "/uart1/rdx_pin") {
-      console.log(`pin: ${value}, ${this._value}, ${this.getValue()}`)
-    }
     return this
-  }
-
-  clone(name: string): PinSetting {
-    return new PinSetting(name, this.defaultValue, this.options).setValue(this.getValue());
   }
 }
 
-export class TypeSetting extends SelectSetting {
-  private group: SettingGroup;
+export class GroupSetting extends SelectSetting {
+  groupPath: string;
+  group?: SettingGroup;
+  attr: SettingAttr;
 
-  constructor(g: SettingGroup) {
-    super("Type", "", []);
-    this.group = g
-    let names = ["NONE", ...g.groups.map(g => g.shortName)]
-    this.setOptions(names.map((name, i) => new SettingOption(name, i)))
-    let selectedGroup = g.groups.find(g => g.exists());
-    this.setValue(selectedGroup?.shortName ?? "NONE")
+  constructor(name: string, groupName: string, attr: SettingAttr) {
+    super(name, "", []);
+    this.groupPath = groupName;
+    this.attr = attr;
+    this.defaultValue = "";
+    this.setValue("")
+  }
+
+  finalize() {
+    this.group = this.groupPath == "this" ?
+        this.getParent() :
+        this.getParent().getRoot().getGroupByPath(this.groupPath)
+    if (this.group == undefined) {
+      throw `Cannot find groups with name: ${this.groupPath}`
+    }
+    this.setOptions([
+      new SelectOption("NONE", "None", 0),
+      ...this.group!.groups.map((g, i) => new SelectOption(g.name, groupName(g.name), i + 1))
+    ])
+    if (this.isVirtual()) {
+      this.setValue(this.group!.groups.find(g => g.isConfigured())?.name ?? "NONE")
+    }
   }
 
   setValue(value: string): SelectSetting {
-    super.setValue(value);
-    let selectedGroup = this.group?.groups.find(g => g.shortName == value);
-    this.group.settings = [this]
-    if (selectedGroup != undefined) {
-      this.group.settings.push(...selectedGroup.settings)
+    if (value != this.value) {
+      let currentGroup = this.getSelectedGroup();
+      let newGroup = this.group?.getGroupByName(value!);
+      if (currentGroup != undefined && newGroup != undefined) {
+        newGroup.copyValuesFrom(currentGroup)
+      }
     }
-    return this
+    return super.setValue(value);
   }
 
-  clone(name: string): SelectSetting {
-    return new TypeSetting(this.group).setValue(this.getValue());
+  insert(obj: Record<string, any>) {
+    super.insert(obj);
+    this.getSelectedGroup()?.insert(obj, true);
   }
+
+  private getParent(): SettingGroup {
+    if (this.parent != undefined) {
+      return this.parent
+    }
+    throw new Error(`Setting ${this.name} does not have a parent`)
+  }
+
+  getSelectedGroup = () => this.group?.getGroupByName(this.value!);
+  getLinkedSettings = () => this.group?.groups.find(g => g.name == this.value)?.settings ?? [];
+  isReal = () => (this.attr & SettingAttr.VIRTUAL) == 0;
+  isVirtual = () => !this.isReal();
 }
 
-export class SettingOption {
+export class SelectOption {
   text: string = ""
+  displayText: string = ""
   value: number = -1
 
-  constructor(name: string, value: number) {
-    this.text = name;
+  constructor(text: string, displayText: string, value: number) {
+    this.text = text;
+    this.displayText = displayText
     this.value = value;
   }
 }
 
-function pins(prefix: "gpio" | "i2so", from: number, to: number) {
+function pins(prefix: "gpio" | "i2so", from: number, to: number): SelectOption[] {
   let pins = []
   for (let i = from; i <= to; i++) {
-    pins.push(prefix + "." + i)
+    let pin = prefix + "." + i;
+    pins.push(new SelectOption(pin, pin, i))
   }
   return pins;
 }
 
-const pinsIO = ["NO_PIN", ...pins("gpio", 0, 5), ...pins("gpio", 12, 19), ...pins("gpio", 21, 23), ...pins("gpio", 25, 27), ...pins("gpio", 32, 33)]
+const pinsIO = [
+  new SelectOption("NO_PIN", "None", 0),
+  ...pins("gpio", 0, 5),
+  ...pins("gpio", 12, 19),
+  ...pins("gpio", 21, 23),
+  ...pins("gpio", 25, 27),
+  ...pins("gpio", 32, 33)
+]
 const pinsI = [...pinsIO, ...pins("gpio", 34, 39)]
 const pinsO = [...pinsIO, ...pins("i2so", 0, 15)]
 
@@ -250,11 +257,37 @@ export const bool_ = (name: string, value: boolean) => new BooleanSetting(name, 
 export const float = (value: number, min: number, max: number) => new FloatSetting("", value, min, max).setValue(value);
 export const float_ = (name: string, value: number, min: number, max: number) => new FloatSetting(name, value, min, max).setValue(value);
 export const position = (min: number, max: number) => new StringSetting("", "0, 0, 0", min, max).setValue("0, 0, 0");  // TODO-dp - needs work
-export const select = (value: string, values: string[]) => new SelectSetting("", value, values.map((v, i) => new SettingOption(v, i))).setValue(value);
-export const select_ = (name: string, value: string, values: string[]) => new SelectSetting(name, value, values.map((v, i) => new SettingOption(v, i))).setValue(value);
-export const pinI = () => new PinSetting("", "NO_PIN", pinsI.map((v, i) => new SettingOption(v, i))).setValue("NO_PIN");
-export const pinO = () => new PinSetting("", "NO_PIN", pinsO.map((v, i) => new SettingOption(v, i))).setValue("NO_PIN");
-export const pinIO = () => new PinSetting("", "NO_PIN", pinsIO.map((v, i) => new SettingOption(v, i))).setValue("NO_PIN");
+export const select = (value: string, values: string[]) => new SelectSetting("", value, values.map((v, i) => new SelectOption(v, v, i))).setValue(value);
+export const select_ = (name: string, value: string, values: string[]) => new SelectSetting(name, value, values.map((v, i) => new SelectOption(v, v, i))).setValue(value);
+export const group = (group: string, attr: SettingAttr = 0) => new GroupSetting("", group, attr);
+export const pinI = () => new PinSetting("", "NO_PIN", pinsI).setValue("NO_PIN");
+export const pinO = () => new PinSetting("", "NO_PIN", pinsO).setValue("NO_PIN");
+export const pinIO = () => new PinSetting("", "NO_PIN", pinsIO).setValue("NO_PIN");
+
+export function cloneSetting<T extends Setting<any, T>>(s: T): T {
+  let ss: Setting<any, any>
+  if (s instanceof IntegerSetting) {
+    ss = new IntegerSetting(s.name, s.defaultValue, s.min, s.min)
+  } else if (s instanceof FloatSetting) {
+    ss = new FloatSetting(s.name, s.defaultValue, s.min, s.min)
+  } else if (s instanceof BooleanSetting) {
+    ss = new BooleanSetting(s.name, s.defaultValue)
+  } else if (s instanceof StringSetting) {
+    ss = new StringSetting(s.name, s.defaultValue, s.min, s.max)
+  } else if (s instanceof AlphanumericSetting) {
+    ss = new AlphanumericSetting(s.name, s.defaultValue)
+  } else if (s instanceof PinSetting) {
+    ss = new PinSetting(s.name, s.defaultValue, s.options)
+  } else if (s instanceof GroupSetting) {
+    ss = new GroupSetting(s.name, s.groupPath, s.attr)
+  } else if (s instanceof SelectSetting) {
+    ss = new SelectSetting(s.name, s.defaultValue, s.options)
+  } else {
+    throw `Cannot clone setting: ${s}`;
+  }
+  ss.value = s.value
+  return ss as any
+}
 
 export abstract class Settings {
   public settings?: SettingGroup
@@ -262,6 +295,8 @@ export abstract class Settings {
   protected abstract loadSettings(): Promise<SettingGroup>
 
   abstract saveSetting(s: Setting<any, any>): Promise<any>
+
+  abstract saveSettings(): Promise<void>
 
   load(): Promise<SettingGroup> {
     if (this.settings != undefined) {
@@ -285,7 +320,7 @@ export abstract class Settings {
         // TODO-dp simplify
         let options = (s.O as any[]).map(o => {
           let name = Object.keys(o)[0];
-          return new SettingOption(name, o[name])
+          return new SelectOption(name, name, o[name])
         }).sort((o1, o2) => o1.value - o2.value);
 
         if (options.length == 2 && options[0].text == "False" && options[1].text == "True") {
@@ -299,23 +334,6 @@ export abstract class Settings {
     }
   }
 
-  get(name: string): Setting<any, any> | undefined {
-    return this.settings?.get(name)
-  }
-
-  getSelect(name: string): SelectSetting | undefined {
-    return this.get(name) as SelectSetting
-  }
-
-  isConfigured(name: string) {
-    return this.get(name)?.isConfigured()
-  }
-
-  getOrDefault<T>(name: string, def: T): T {
-    let s = this.get(name);
-    return s == undefined ? def : s.getValue()
-  }
-
   getIndexOrDefault<T>(name: string, def: T): T {
     let s = this.get(name);
     return s == undefined
@@ -323,25 +341,25 @@ export abstract class Settings {
         : s instanceof SelectSetting ? s.index() : s.getValue()
   }
 
-  abstract saveSettings(): Promise<void>
+  get = (name: string) => this.settings?.getSetting(name);
+  getOrDefault = <T>(name: string, def: T): T => this.get(name)?.getValue() ?? def;
+  getSelect = (name: string) => this.get(name) as SelectSetting;
+  isConfigured = (name: string) => this.get(name)?.isConfigured();
 }
 
 export class SettingGroup {
   path: string;
-  fullName: string
-  shortName: string
-  type: GroupType
-  mode: GroupMode
+  name: string
+  attributes: SettingAttr
   settings: Setting<any, any>[]
   groups: SettingGroup[]
+  parent?: SettingGroup;
 
-  constructor(path: string, type: GroupType, mode: GroupMode = GroupMode.ALL,
+  constructor(path: string, attributes: SettingAttr,
               settings: Setting<any, any>[] = [], groups: SettingGroup[] = []) {
     this.path = path
-    this.type = type;
-    this.mode = mode;
-    this.fullName = groupName(path)
-    this.shortName = groupName(path.substring(path.lastIndexOf("/")))
+    this.name = path.substring(path.lastIndexOf("/") + 1)
+    this.attributes = attributes;
     this.settings = settings
     this.groups = groups
   }
@@ -350,20 +368,19 @@ export class SettingGroup {
     this.settings.forEach(s => {
       if (s.name == name) {
         s.setValue(value)
-        s.exists = true
       }
     })
     this.groups.forEach(g => g.set(name, value))
   }
 
-  get(name: string): Setting<any, any> | undefined {
+  getSetting(name: string): Setting<any, any> | undefined {
     for (const child of this.settings) {
       if (child.name == name) {
         return child
       }
     }
     for (const child of this.groups) {
-      let s = child.get(name);
+      let s = child.getSetting(name);
       if (s != undefined) {
         return s
       }
@@ -371,47 +388,85 @@ export class SettingGroup {
     return undefined
   }
 
-  save(obj: any) {
-    if (this.isConfigured()) {
-      this.settings.filter(s => s.name != "Type").forEach(s => s.insert(obj))
+  getGroupByPath(path: string): SettingGroup | undefined {
+    if (this.path == path) {
+      return this
     }
-    if (this.mode == GroupMode.ONE_OF) {
-      let type = this.settings.find(s => s.name == "Type")?.getValue();
-      if (type != undefined) {
-        this.groups.find(g => g.shortName == type)?.save(obj)
+    for (const child of this.groups) {
+      let g = child.getGroupByPath(path);
+      if (g != undefined) {
+        return g
       }
-    } else {
-      this.groups.forEach(g => g.save(obj))
+    }
+    return undefined
+  }
+
+  getGroupByName(name: string): SettingGroup | undefined {
+    if (this.name == name) {
+      return this
+    }
+    for (const child of this.groups) {
+      let g = child.getGroupByName(name);
+      if (g != undefined) {
+        return g
+      }
+    }
+    return undefined
+  }
+
+  insert(obj: any, force = false) {
+    if (this.path == "/kinematics/Cartesian") {//TODO-dp
+      let i = 0;
+    }
+    if (force) {
+      insert(obj, this.path+"/")
+    }
+    if (force || this.isConfigured()) {
+      this.settings.forEach(s => s.insert(obj))
+    }
+    if (!this.isOneOf()) {
+      this.groups.forEach(g => g.insert(obj))
     }
   }
 
-  exists() {
-    return this.settings.find(s => s.exists) != undefined;
-  }
-
-  isConfigured() {
-    return this.settings.find(s => s.isConfigured()) != undefined;
+  setParent(parent: SettingGroup): SettingGroup {
+    this.parent = parent;
+    return this
   }
 
   finalize() {
-    if (this.mode == GroupMode.ONE_OF) {
-      new TypeSetting(this)
-    } else {
-      this.groups.forEach(g => g.finalize())
-    }
+    this.groups.forEach(g => g.finalize())
+    this.settings.forEach(s => s.finalize())
   }
-}
 
-function groupName(path: string) {
-  return path
-      .replace("/axes/", "")
-      .replaceAll('/', ' ')
-      .replaceAll('_', ' ')
-      .split(" ")
-      .map(capitalize)
-      .map(splitNumber)
-      .map(replaceAcronyms)
-      .join(" ");
+  expandSettings(): Setting<any, any>[] {
+    let expansion: Setting<any, any>[] = []
+    let q = [...this.settings]
+    while (q.length != 0) {
+      let s = q.shift()
+      if (s instanceof GroupSetting) {
+        q.push(...s.getLinkedSettings())
+      }
+      expansion.push(s as any)
+    }
+    return expansion
+  }
+
+  copyValuesFrom(g: SettingGroup) {
+    this.settings.forEach(s1 => {
+      let name1 = s1.name.substring(s1.name.lastIndexOf("/"));
+      let s2 = g.settings.find(s => s.name.endsWith(name1))
+      if (s2 != undefined) {
+        s1.setValue(s2.getValue())
+      }
+    })
+  }
+
+  getRoot = (r: SettingGroup = this): SettingGroup => r.parent == undefined ? r : this.getRoot(r.parent);
+  isConfigured = () => this.settings.find(s => s.isConfigured()) != undefined;
+  isOneOf = () => (this.attributes & SettingAttr.ONE_OF) != 0
+  isVirtual = () => (this.attributes & SettingAttr.VIRTUAL) != 0
+  isHidden = () => (this.attributes & SettingAttr.HIDDEN) != 0
 }
 
 function replaceDimension(name: string) {
@@ -450,4 +505,16 @@ let renames = new Map([
 
 export function replaceAcronyms(name: string) {
   return acronyms.get(name) ?? name
+}
+
+export function groupName(path: string) {
+  return path
+      .replace("/axes/", "")
+      .replaceAll('/', ' ')
+      .replaceAll('_', ' ')
+      .split(" ")
+      .map(capitalize)
+      .map(splitNumber)
+      .map(replaceAcronyms)
+      .join(" ");
 }

@@ -1,5 +1,5 @@
 import {sendHttpRequest} from '../http/http';
-import {GroupMode, GroupType, SelectSetting, Setting, SettingGroup, Settings} from './settings';
+import {SelectSetting, Setting, SettingGroup, Settings} from './settings';
 import {EnableRule, SettingsUI} from './settingsui';
 
 class WiFi extends Settings {
@@ -10,13 +10,13 @@ class WiFi extends Settings {
 
   parseSettings(str: string): SettingGroup {
     let settings = JSON.parse(str).EEPROM as [any]
-    return new SettingGroup("", GroupType.NORMAL, GroupMode.ALL, [], [
-      new SettingGroup("WiFi", GroupType.NORMAL, GroupMode.ALL, [
+    return new SettingGroup("", 0, [], [
+      new SettingGroup("WiFi", 0, [
         this.parse("WiFi/Mode", settings),
         this.parse("MDNS/Enable", settings).setDisplayName("MDNS"),
         this.parse("Hostname", settings),
       ]),
-      new SettingGroup("Network", GroupType.NORMAL, GroupMode.ALL, [
+      new SettingGroup("Network", 0, [
         this.parse("Sta/SSID", settings),
         this.parse("Sta/IPMode", settings),
         this.parse("Sta/IP", settings),
@@ -24,7 +24,7 @@ class WiFi extends Settings {
         this.parse("Sta/Netmask", settings),
         this.parse("Sta/Password", settings),
       ]),
-      new SettingGroup("Access Point", GroupType.NORMAL, GroupMode.ALL, [
+      new SettingGroup("Access Point", 0, [
         this.parse("AP/SSID", settings),
         this.parse("AP/IP", settings),
         this.parse("AP/Channel", settings),

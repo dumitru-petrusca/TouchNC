@@ -2,8 +2,8 @@ import {numpadButton, NumpadType} from '../dialog/numpad';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
-import {EventHandler} from '../common';
-import {AlphanumericSetting, BooleanSetting, FloatSetting, IntegerSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting, TypeSetting} from './settings';
+import {capitalize, EventHandler, splitNumber} from '../common';
+import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, replaceAcronyms, SelectSetting, Setting, SettingGroup, Settings, string, StringSetting} from './settings';
 import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
 import {btnIcon, button} from '../ui/button';
 import {Icon} from '../ui/icons';
@@ -71,14 +71,15 @@ export class SettingsUI {
   }
 
   createPanes() {
-    let settingsGroups = this.settings.settings?.groups!;
-    return settingsGroups.map(g => this.createPane(g));
+    return this.settings.settings?.groups
+        ?.filter(g => !g.isHidden())
+        ?.map(g => this.createPane(g)) ?? [];
   }
 
   createPane(group: SettingGroup): HTMLDivElement {
     let paneId = `${group.path}-pane`, listId = `${group.path}-list`;
-    let children = [label("", group.fullName, settingsPaneTitleClass)]
-    group.settings.forEach(s => {
+    let children = [label("", groupName(group.path), settingsPaneTitleClass)]
+    group.expandSettings().forEach(s => {
       children.push(label(s.name + "_label", s.displayName, settingsLabelClass))
       children.push(this.createWidget(s, _ => getElement(paneId).replaceWith(this.createPane(group))))
     });
@@ -112,11 +113,12 @@ export class SettingsUI {
         s.setValue(v)
         this.saveSetting(s);
       })
-    } else if (s instanceof TypeSetting) {
+    } else if (s instanceof GroupSetting) {
       return this.select(s.name, btnClass, s, (e) => {
         let value = Number((e.target as HTMLSelectElement).value);
         s.setValue(s.findOption(value)!.text)
         redrawCallback?.(e)
+        //TODO-dp do I need to save anything?
       })
     } else if (s instanceof SelectSetting) {
       return this.select(s.name, btnClass, s, (e) => {
@@ -161,7 +163,6 @@ export class SettingsUI {
   updateVisibility(group: SettingGroup = this.settings.settings!) {
     for (const setting of group.settings) {
       let enabled = this.enableRules.find(rule => setting.name.startsWith(rule.settingName) && !rule.enabled()) == undefined;
-      console.log(`Rules: ${setting.name} ${enabled}`)
       setEnabled(setting.name, enabled)
       setEnabled(setting.name + "_label", enabled)
     }
@@ -175,8 +176,8 @@ export class SettingsUI {
     select.options.forEach(o => {
       const option = document.createElement("option") as HTMLOptionElement
       option.value = "" + o.value;
-      option.text = o.text;
-      option.textContent = o.text;
+      option.text = o.displayText;
+      option.textContent = o.displayText;
       e.appendChild(option);
     });
     e.value = "" + select.index()
@@ -196,9 +197,6 @@ const topPanelClass = cssClass("topPanel", css`
   font-family: sans-serif;
   font-size: 3.2rem;
   user-select: none;
-
-  //padding-top: 10px;
-  //padding-bottom: 10px;
 
   width: 100%;
   max-width: 100%;

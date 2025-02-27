@@ -14,7 +14,7 @@
 - Automatic re-connection if communication with FluidNC is lost
 - Full-featured machine configuration editor
 - Written in TypeScript using modern technology.
-- Very small footprint (~35kB).
+- Very small footprint (~40kB).
 
 ## Building
 Run the following commands:

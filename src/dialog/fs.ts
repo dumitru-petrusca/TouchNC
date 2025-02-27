@@ -123,14 +123,19 @@ export class FS {
   }
 }
 
-function parseResponse(responseText: string): FSResponse {
+class JsFile {
+  name: string = ""
+  size: number = -1
+}
+
+export function parseResponse(responseText: string): FSResponse {
   let response = JSON.parse(responseText);
   if (response.status != "Ok") {
     throw new Error(response.status)
   }
   let files: FSFile[] = []
   for (let i = 0; i < response.files.length; i++) {
-    let file = response.files[i];
+    let file = response.files[i] as JsFile;
     if (!fileHidden(file.name)) {
       let path = String(response.path) + "/" + file.name;
       if (!path.startsWith("/")) {
