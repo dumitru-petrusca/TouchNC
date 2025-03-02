@@ -1,26 +1,29 @@
 import {sendHttpRequest, writeFile} from '../http/http';
 import {Setting, SettingGroup, Settings} from './settings';
 import {SettingsUI} from './settingsui';
-import {toYAML} from './yaml';
+import {toYAML, YAML} from './yaml';
 import {createGroupTemplate} from './machinetemplate';
+
+let configFileName = "config.yaml"
 
 class MachineSettings extends Settings {
 
   loadSettings(): Promise<SettingGroup> {
-    return sendHttpRequest("/command?plain=" + encodeURIComponent("[ESP400]"))
-        .then(value => this.parseSettings(value, "tree"))
+    return sendHttpRequest(configFileName)
+        .then(yml => this.parseSettings(yml))
+        // .catch(reason => {
+        //   console.log("Cannot load preferences; using defaults instead: " + reason)
+        //   messages.warning("Cannot load preferences; using defaults instead.")
+        //   return {};
+        // })
   }
 
-  parseSettings(str: string, type: string): SettingGroup {
-    let root = createGroupTemplate();
-    for (const s of JSON.parse(str).EEPROM) {
-      if (s.F == type) {
-        let setting = this.parseSetting(s);
-        root.set(setting.name, setting.getValue())
-      }
-    }
-    root.finalize()
-    return root
+  parseSettings(yamlStr: string): SettingGroup {
+    let yml = new YAML(yamlStr);
+    let group = createGroupTemplate();
+    group.set(yml)
+    group.finalize()
+    return group
   }
 
   saveSetting(setting: Setting<any, any>): Promise<any> {

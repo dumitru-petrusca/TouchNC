@@ -1,4 +1,5 @@
-import {bool, cloneSetting, float, group, SettingAttr, int, pinI, pinIO, pinO, position, select, Setting, SettingGroup, string} from './settings';
+import {bool, cloneSetting, float, group, int, pinI, pinIO, pinO, position, select, Setting, SettingAttr, SettingGroup, string} from './settings';
+import {YAML} from './yaml';
 
 let motor = {
   limit_neg_pin: pinI(),
@@ -70,7 +71,7 @@ let vfd = {
   tool_num: int(-1, 0, 99999999),
   speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
   off_on_alarm: bool(false),
-  M6_macro: string("", 0, 256),
+  m6_macro: string("", 0, 256),
   atc: group("/atc"),
 }
 
@@ -98,7 +99,7 @@ let onOffSpindle = {
   tool_num: int(-1, 0, 99999999),
   speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
   off_on_alarm: bool(false),
-  M6_macro: string("", 0, 256),
+  m6_macro: string("", 0, 256),
   atc: group("/atc"),
 };
 
@@ -345,7 +346,7 @@ export let configTemplate = {
       tool_num: int(-1, 0, 99999999),
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
-      M6_macro: string("", 0, 256),
+      m6_macro: string("", 0, 256),
       atc: group("/atc"),
     },
 
@@ -361,7 +362,7 @@ export let configTemplate = {
       tool_num: int(-1, 0, 99999999),
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
-      M6_macro: string("", 0, 256),
+      m6_macro: string("", 0, 256),
       atc: group("/atc"),
       min_pulse_us: int(900, 500, 3000),
       max_pulse_us: int(2200, 500, 3000),
@@ -378,7 +379,7 @@ export let configTemplate = {
       tool_num: int(-1, 0, 99999999),
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
-      M6_macro: string("", 0, 256),
+      m6_macro: string("", 0, 256),
       atc: group("/atc"),
     },
 
@@ -396,7 +397,7 @@ export let configTemplate = {
       tool_num: int(-1, 0, 99999999),
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
-      M6_macro: string("", 0, 256),
+      m6_macro: string("", 0, 256),
       atc: group("/atc"),
     },
 
@@ -411,7 +412,7 @@ export let configTemplate = {
       tool_num: int(-1, 0, 99999999),
       speed_map: string("0=0% 750=25% 1500=50% 3000=100%", 0, 256),
       off_on_alarm: bool(false),
-      M6_macro: string("", 0, 256),
+      m6_macro: string("", 0, 256),
       atc: group("/atc"),
     },
 
@@ -452,38 +453,9 @@ function _createGroupTemplates(obj: any, path: string, parent: SettingGroup): Se
   return groups
 }
 
-let layout = [
-  '/general', '/axes', '/kinematics',
-  '/start', '/coolant', '/probe',
-  '/stepping', '/various', '/parking',
-  '/axes/x', '/axes/y', '/axes/z',
-  '/axes/x/motor0', '/axes/y/motor0', '/axes/z/motor0',
-  '/axes/x/motor0/driver', '/axes/y/motor0/driver', '/axes/z/motor0/driver',
-  '/axes/x/motor1', '/axes/y/motor1', '/axes/z/motor1',
-  '/axes/x/motor1/driver', '/axes/y/motor1/driver', '/axes/z/motor1/driver',
-  '/axes/x/homing', '/axes/y/homing', '/axes/z/homing',
-  '/axes/x/mpg', '/axes/y/mpg', '/axes/z/mpg',
-  '/axes/a', '/axes/b', '/axes/c',
-  '/axes/a/motor0', '/axes/b/motor0', '/axes/c/motor0',
-  '/axes/a/motor0/driver', '/axes/b/motor0/driver', '/axes/c/motor0/driver',
-  '/axes/a/motor1', '/axes/b/motor1', '/axes/c/motor1',
-  '/axes/a/motor1/driver', '/axes/b/motor1/driver', '/axes/c/motor1/driver',
-  '/axes/a/homing', '/axes/b/homing', '/axes/c/homing',
-  '/axes/a/mpg', '/axes/b/mpg', '/axes/c/mpg',
-  '/status_outputs', '/macros', '/synchro',
-  '/control', '/user_outputs', '/user_inputs',
-  '/i2so', '/i2c0', '/i2c1',
-  '/uart1', '/uart2', '/uart3',
-  '/uart_channel1', '/uart_channel2', '/spi',
-  '/sdcard', '/oled', '/spindle',
-  '/atc'
-]
-
 export function createGroupTemplate(): SettingGroup {
   let root = new SettingGroup("", SettingAttr.VIRTUAL);
   let groups = _createGroupTemplates(configTemplate, "", root);
-  groups.sort((a, b) => layout.indexOf(a.path) - layout.indexOf(b.path))
   root.groups.push(...groups)
   return root
 }
-

@@ -1,4 +1,6 @@
 import {capitalize, splitNumber} from '../common';
+import {YAML} from './yaml';
+import {yaml} from '@codemirror/lang-yaml';
 
 export enum SettingAttr {
   DEFAULT = 0,
@@ -72,7 +74,7 @@ function insert(obj: Record<string, any>, path: string, value: any = undefined) 
     let f = fields[i]
     o = o[f] == undefined ? (o[f] = {}) : o[f];
   }
-  if (value!=undefined) {
+  if (value != undefined) {
     o[fields[fields.length - 1]] = value
   }
 }
@@ -147,8 +149,8 @@ export class PinSetting extends SelectSetting {
 
   setValue(value: string): PinSetting {
     value = value.toLowerCase();
-    //TODO-dp I am droppin the modifier
-    value = (value.split(":"))[0].trim()
+    //TODO-dp I am dropping the modifier
+    // value = (value.split(":"))[0].trim()
     if (value == "no_pin") {
       value = "NO_PIN"
     }
@@ -171,6 +173,9 @@ export class GroupSetting extends SelectSetting {
   }
 
   finalize() {
+    if (this.name == "/kinematics/_type") {
+      console.log("aaa")
+    }
     this.group = this.groupPath == "this" ?
         this.getParent() :
         this.getParent().getRoot().getGroupByPath(this.groupPath)
@@ -187,6 +192,9 @@ export class GroupSetting extends SelectSetting {
   }
 
   setValue(value: string): SelectSetting {
+    if (this.name == "/_type") {
+      console.log("aaa")
+    }
     if (value != this.value) {
       let currentGroup = this.getSelectedGroup();
       let newGroup = this.group?.getGroupByName(value!);
@@ -345,7 +353,39 @@ export abstract class Settings {
   getOrDefault = <T>(name: string, def: T): T => this.get(name)?.getValue() ?? def;
   getSelect = (name: string) => this.get(name) as SelectSetting;
   isConfigured = (name: string) => this.get(name)?.isConfigured();
+
+  getDisplayGroups() {
+    let groups = this.settings?.groups ?? [];
+    return [...groups].sort((a, b) => layout.indexOf(a.path) - layout.indexOf(b.path))
+  }
 }
+
+let layout = [
+  '/general', '/axes', '/kinematics',
+  '/start', '/coolant', '/probe',
+  '/stepping', '/various', '/parking',
+  '/axes/x', '/axes/y', '/axes/z',
+  '/axes/x/motor0', '/axes/y/motor0', '/axes/z/motor0',
+  '/axes/x/motor0/driver', '/axes/y/motor0/driver', '/axes/z/motor0/driver',
+  '/axes/x/motor1', '/axes/y/motor1', '/axes/z/motor1',
+  '/axes/x/motor1/driver', '/axes/y/motor1/driver', '/axes/z/motor1/driver',
+  '/axes/x/homing', '/axes/y/homing', '/axes/z/homing',
+  '/axes/x/mpg', '/axes/y/mpg', '/axes/z/mpg',
+  '/axes/a', '/axes/b', '/axes/c',
+  '/axes/a/motor0', '/axes/b/motor0', '/axes/c/motor0',
+  '/axes/a/motor0/driver', '/axes/b/motor0/driver', '/axes/c/motor0/driver',
+  '/axes/a/motor1', '/axes/b/motor1', '/axes/c/motor1',
+  '/axes/a/motor1/driver', '/axes/b/motor1/driver', '/axes/c/motor1/driver',
+  '/axes/a/homing', '/axes/b/homing', '/axes/c/homing',
+  '/axes/a/mpg', '/axes/b/mpg', '/axes/c/mpg',
+  '/status_outputs', '/macros', '/synchro',
+  '/control', '/user_outputs', '/user_inputs',
+  '/i2so', '/i2c0', '/i2c1',
+  '/uart1', '/uart2', '/uart3',
+  '/uart_channel1', '/uart_channel2', '/spi',
+  '/sdcard', '/oled', '/spindle',
+  '/atc'
+]
 
 export class SettingGroup {
   path: string;
@@ -354,6 +394,7 @@ export class SettingGroup {
   settings: Setting<any, any>[]
   groups: SettingGroup[]
   parent?: SettingGroup;
+  configured: boolean = false;
 
   constructor(path: string, attributes: SettingAttr,
               settings: Setting<any, any>[] = [], groups: SettingGroup[] = []) {
@@ -364,13 +405,15 @@ export class SettingGroup {
     this.groups = groups
   }
 
-  set(name: string, value: any) {
+  set(yml: YAML) {
     this.settings.forEach(s => {
-      if (s.name == name) {
+      let value = yml.get(s.name);
+      if (value != undefined) {
         s.setValue(value)
       }
     })
-    this.groups.forEach(g => g.set(name, value))
+    this.configured = yml.get(this.path) != undefined
+    this.groups.forEach(g => g.set(yml))
   }
 
   getSetting(name: string): Setting<any, any> | undefined {
@@ -419,7 +462,7 @@ export class SettingGroup {
       let i = 0;
     }
     if (force) {
-      insert(obj, this.path+"/")
+      insert(obj, this.path + "/")
     }
     if (force || this.isConfigured()) {
       this.settings.forEach(s => s.insert(obj))
@@ -463,7 +506,7 @@ export class SettingGroup {
   }
 
   getRoot = (r: SettingGroup = this): SettingGroup => r.parent == undefined ? r : this.getRoot(r.parent);
-  isConfigured = () => this.settings.find(s => s.isConfigured()) != undefined;
+  isConfigured = () => this.configured || this.settings.find(s => s.isConfigured()) != undefined;
   isOneOf = () => (this.attributes & SettingAttr.ONE_OF) != 0
   isVirtual = () => (this.attributes & SettingAttr.VIRTUAL) != 0
   isHidden = () => (this.attributes & SettingAttr.HIDDEN) != 0

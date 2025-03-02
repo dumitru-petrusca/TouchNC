@@ -1,4 +1,4 @@
-import {AlphanumericSetting, BooleanSetting, FloatSetting, IntegerSetting, SelectSetting, Setting, SelectOption, StringSetting} from './config/settings';
+import {AlphanumericSetting, BooleanSetting, FloatSetting, IntegerSetting, SelectOption, SelectSetting, Setting, StringSetting} from './config/settings';
 
 export function serializeSettings(s: Setting<any, any>[]): any {
   return {EEPROM: s.map(serializeSetting)}
@@ -34,31 +34,20 @@ function serializeOption(o: SelectOption) {
   return js;
 }
 
-export function parseYaml(yamlString: string): Record<string, any> {
-  const lines = yamlString.split("\n");
-  const stack: { [key: string]: any }[] = [{}];
-  const indentStack: number[] = [-1];
+// function loadSettings(): Promise<SettingGroup> {
+//   return sendHttpRequest("/command?plain=" + encodeURIComponent("[ESP400]"))
+//       .then(value => this.parseSettings(value, "tree"))
+// }
+//
+// function parseSettings(str: string, type: string): SettingGroup {
+//   let root = createGroupTemplate();
+//   for (const s of JSON.parse(str).EEPROM) {
+//     if (s.F == type) {
+//       let setting = this.parseSetting(s);
+//       root.set(setting.name, setting.getValue())
+//     }
+//   }
+//   root.finalize()
+//   return root
+// }
 
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) {
-      continue; // Skip empty lines and comments
-    }
-    const [key, value] = trimmed.split(":").map(s => s.trim());
-    const indent = line.search(/\S/); // Count leading spaces
-    while (indentStack[indentStack.length - 1] >= indent) {
-      stack.pop();
-      indentStack.pop();
-    }
-    const obj = stack[stack.length - 1];
-    if (value) {
-      obj[key] = value.startsWith("\"") ? value.substring(1, value.length - 1) : value;
-    } else {
-      obj[key] = {};
-      stack.push(obj[key]);
-      indentStack.push(indent);
-    }
-  }
-
-  return stack[0];
-}

@@ -2,8 +2,8 @@ import {numpadButton, NumpadType} from '../dialog/numpad';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
-import {capitalize, EventHandler, splitNumber} from '../common';
-import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, replaceAcronyms, SelectSetting, Setting, SettingGroup, Settings, string, StringSetting} from './settings';
+import {EventHandler} from '../common';
+import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting} from './settings';
 import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
 import {btnIcon, button} from '../ui/button';
 import {Icon} from '../ui/icons';
@@ -71,7 +71,7 @@ export class SettingsUI {
   }
 
   createPanes() {
-    return this.settings.settings?.groups
+    return this.settings.getDisplayGroups()
         ?.filter(g => !g.isHidden())
         ?.map(g => this.createPane(g)) ?? [];
   }
