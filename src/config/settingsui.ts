@@ -3,7 +3,7 @@ import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
 import {EventHandler} from '../common';
-import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting} from './settings';
+import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting} from './settings';
 import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
 import {btnIcon, button} from '../ui/button';
 import {Icon} from '../ui/icons';
@@ -108,6 +108,16 @@ export class SettingsUI {
         s.setValue((e.target as HTMLInputElement).value)
         this.saveSetting(s);
       })
+    } else if (s instanceof PinSetting) {
+      let inputElement = textInput(s.name, "", s.getValue(), (e) => {
+        s.setValue((e.target as HTMLInputElement).value)
+        this.saveSetting(s);
+      });
+      inputElement.addEventListener("input", e => {
+        let ok = s.validate((e.target as any).value as string)
+        inputElement.style.background = ok ? "lightcyan" : "lightcoral"
+      });
+      return inputElement
     } else if (s instanceof AlphanumericSetting) {
       return numpadButton(s.name, "", "" + s.getValue(), NumpadType.IP, v => {
         s.setValue(v)

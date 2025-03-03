@@ -1,5 +1,4 @@
 import {bool, cloneSetting, float, group, int, pinI, pinIO, pinO, position, select, Setting, SettingAttr, SettingGroup, string} from './settings';
-import {YAML} from './yaml';
 
 let motor = {
   limit_neg_pin: pinI(),
@@ -103,7 +102,7 @@ let onOffSpindle = {
   atc: group("/atc"),
 };
 
-export let configTemplate = {
+let configTemplate = {
   general: {
     _attributes: SettingAttr.VIRTUAL,
     name: string("None", 0, 32),
@@ -434,7 +433,7 @@ export let configTemplate = {
   }
 }
 
-function _createGroupTemplates(obj: any, path: string, parent: SettingGroup): SettingGroup[] {
+function instantiateTemplate_(obj: any, path: string, parent: SettingGroup): SettingGroup[] {
   let groups = []
   for (const key of Object.keys(obj)) {
     let childObj = obj[key]
@@ -447,15 +446,15 @@ function _createGroupTemplates(obj: any, path: string, parent: SettingGroup): Se
       groups.push(group);
       let holder = group.isOneOf() ? group.groups : groups
       let path2 = group.isVirtual() ? path : path + "/" + key;
-      holder.push(..._createGroupTemplates(childObj, path2, group))
+      holder.push(...instantiateTemplate_(childObj, path2, group))
     }
   }
   return groups
 }
 
-export function createGroupTemplate(): SettingGroup {
+export function instantiateTemplate(): SettingGroup {
   let root = new SettingGroup("", SettingAttr.VIRTUAL);
-  let groups = _createGroupTemplates(configTemplate, "", root);
+  let groups = instantiateTemplate_(configTemplate, "", root);
   root.groups.push(...groups)
   return root
 }

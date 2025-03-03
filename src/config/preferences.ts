@@ -1,4 +1,4 @@
-import {SettingAttr, int_, select_, Setting, SettingGroup, Settings} from './settings';
+import {int_, select_, Setting, SettingAttr, SettingGroup, Settings} from './settings';
 import {sendHttpRequest, writeFile} from '../http/http';
 import {messages} from '../messages/messages';
 

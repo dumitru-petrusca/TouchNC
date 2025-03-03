@@ -1,6 +1,5 @@
 import {capitalize, splitNumber} from '../common';
 import {YAML} from './yaml';
-import {yaml} from '@codemirror/lang-yaml';
 
 export enum SettingAttr {
   DEFAULT = 0,
@@ -157,6 +156,17 @@ export class PinSetting extends SelectSetting {
     super.setValue(value)
     return this
   }
+
+  validate(value: string) {
+    let s = value.split(":").map(s => s.trim());
+    return (s.length == 1 && this.pinOk(s[0])) ||
+        (s.length == 2 && this.pinOk(s[0]) && (this.isUpDown(s[1]) || this.isLowHigh(s[1]))) ||
+        (s.length == 3 && this.pinOk(s[0]) && this.isUpDown(s[1]) && this.isLowHigh(s[2]))
+  }
+
+  pinOk = (pin: string) => this.options.find(o => o.text == pin) != undefined;
+  isUpDown = (s: string) => s == "pu" || s == "pd";
+  isLowHigh = (s: string) => s == "low" || s == "high";
 }
 
 export class GroupSetting extends SelectSetting {
@@ -349,43 +359,15 @@ export abstract class Settings {
         : s instanceof SelectSetting ? s.index() : s.getValue()
   }
 
+  getDisplayGroups(): SettingGroup[] {
+    return this.settings?.groups ?? [];
+  }
+
   get = (name: string) => this.settings?.getSetting(name);
   getOrDefault = <T>(name: string, def: T): T => this.get(name)?.getValue() ?? def;
   getSelect = (name: string) => this.get(name) as SelectSetting;
   isConfigured = (name: string) => this.get(name)?.isConfigured();
-
-  getDisplayGroups() {
-    let groups = this.settings?.groups ?? [];
-    return [...groups].sort((a, b) => layout.indexOf(a.path) - layout.indexOf(b.path))
-  }
 }
-
-let layout = [
-  '/general', '/axes', '/kinematics',
-  '/start', '/coolant', '/probe',
-  '/stepping', '/various', '/parking',
-  '/axes/x', '/axes/y', '/axes/z',
-  '/axes/x/motor0', '/axes/y/motor0', '/axes/z/motor0',
-  '/axes/x/motor0/driver', '/axes/y/motor0/driver', '/axes/z/motor0/driver',
-  '/axes/x/motor1', '/axes/y/motor1', '/axes/z/motor1',
-  '/axes/x/motor1/driver', '/axes/y/motor1/driver', '/axes/z/motor1/driver',
-  '/axes/x/homing', '/axes/y/homing', '/axes/z/homing',
-  '/axes/x/mpg', '/axes/y/mpg', '/axes/z/mpg',
-  '/axes/a', '/axes/b', '/axes/c',
-  '/axes/a/motor0', '/axes/b/motor0', '/axes/c/motor0',
-  '/axes/a/motor0/driver', '/axes/b/motor0/driver', '/axes/c/motor0/driver',
-  '/axes/a/motor1', '/axes/b/motor1', '/axes/c/motor1',
-  '/axes/a/motor1/driver', '/axes/b/motor1/driver', '/axes/c/motor1/driver',
-  '/axes/a/homing', '/axes/b/homing', '/axes/c/homing',
-  '/axes/a/mpg', '/axes/b/mpg', '/axes/c/mpg',
-  '/status_outputs', '/macros', '/synchro',
-  '/control', '/user_outputs', '/user_inputs',
-  '/i2so', '/i2c0', '/i2c1',
-  '/uart1', '/uart2', '/uart3',
-  '/uart_channel1', '/uart_channel2', '/spi',
-  '/sdcard', '/oled', '/spindle',
-  '/atc'
-]
 
 export class SettingGroup {
   path: string;
