@@ -18,7 +18,7 @@ export const createMenu = (id: string, title: string, position: string, items: M
   let buttonId = id + '-menu-button';
   let menuId = id + 'menu-content';
   let menuItems = items.map(item => mi(menuId, item))
-  return panel(id, null, [
+  return panel(id, undefined, [
     menuButton(buttonId, svgIcon(Icon.menu), () => getElement(menuId).style.display = "block"),
     panel(menuId, menuClass, menuItems)
   ])
@@ -41,11 +41,13 @@ const menuButton = (id: string, content: Content, onclick: EventHandler) => {
   return button(id, content, "", onclick)
 }
 
-export function menuItem(id: string, content: Content, title: string, click: EventHandler = null, value: string = ""): HTMLButtonElement {
+export function menuItem(id: string, content: Content, title: string, click?: EventHandler, value: string = ""): HTMLButtonElement {
   const btn = element('button', id, btnMenuClass, content) as HTMLButtonElement
   btn.title = title
   btn.value = value
-  btn.onclick = click
+  if (click != undefined) {
+    btn.onclick = click
+  }
   return btn
 }
 

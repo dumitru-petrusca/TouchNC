@@ -357,7 +357,7 @@ export abstract class Settings {
     return this.settings?.groups ?? [];
   }
 
-  get = (name: string) => this.settings?.getSetting(name);
+  get = (path: string) => this.settings?.getSetting(path.toLowerCase());
   getOrDefault = <T>(name: string, def: T): T => this.get(name)?.getValue() ?? def;
   getSelect = (name: string) => this.get(name) as SelectSetting;
   isConfigured = (name: string) => this.get(name)?.isConfigured();

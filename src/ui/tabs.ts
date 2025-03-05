@@ -1,4 +1,4 @@
-import {Function2} from '../common';
+import {Consumer} from '../common';
 import {getButton, getParentButton} from './button';
 import {panel} from './ui';
 import {Icon, svgIcon} from './icons';
@@ -14,12 +14,12 @@ let selectedTab = TAB_MANUAL
 export class Tab {
   id: string
   content: HTMLElement
-  onSelect: Function2<void>
-  c: HTMLElement | null = null
+  onSelect?: Consumer<void>
+  c?: HTMLElement
   icon: SVGSVGElement;
   title: string;
 
-  constructor(name: string, icon: Icon, title: string, content: HTMLElement, onSelect: Function2<void> = null) {
+  constructor(name: string, icon: Icon, title: string, content: HTMLElement, onSelect?: Consumer<any>) {
     this.id = name;
     this.icon = menuIcon(icon);
     this.title = title;

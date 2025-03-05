@@ -1,14 +1,14 @@
 import {closeModal, pushModal} from './modaldlg';
 import {getTextInput, label, panel, textInput} from '../ui/ui';
 import {contentClass, modalClass, textRowClass, titleClass, titleRowClass, twoButtonRowStyle} from './dialogStyles';
-import {Function2} from '../common';
+import {Consumer} from '../common';
 import {button} from '../ui/button';
 
 export class InputDialog {
-  action: Function2<string>;
+  action?: Consumer<string>;
   dialog: HTMLElement
 
-  constructor(title: string, text: string, value: string, action: Function2<string> = null) {
+  constructor(title: string, text: string, value: string, action?: Consumer<string>) {
     this.action = action;
     this.dialog = this.createDialog(title, text, value);
     document.body.appendChild(this.dialog)

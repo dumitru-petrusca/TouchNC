@@ -21,7 +21,7 @@ export function setDisplay(name: string, val: string) {
 
 // Element
 
-export function element(type: string, id: string, css: CssClass | null, content: Content | null, onChange: EventHandler = null): HTMLElement {
+export function element(type: string, id: string, css?: CssClass, content?: Content, onChange?: EventHandler): HTMLElement {
   const e = document.createElement(type);
   if (id != "") {
     e.id = id;
@@ -29,7 +29,9 @@ export function element(type: string, id: string, css: CssClass | null, content:
   if (css != null) {
     e.className = css.name;
   }
-  e.onchange = onChange
+  if (onChange != undefined) {
+    e.onchange = onChange
+  }
   e.onfocus = () => {
     isInputFocused = true;
   }
@@ -40,7 +42,7 @@ export function element(type: string, id: string, css: CssClass | null, content:
   return e
 }
 
-export function appendContent(e: HTMLElement, content: Content | null) {
+export function appendContent(e: HTMLElement, content?: Content | null) {
   if (content != null) {
     switch (typeof (content)) {
       case 'string':
@@ -96,7 +98,7 @@ export function setLabel(id: string, text: string) {
 
 // TextInput
 
-export function textInput(id: string, placeholder: string, value: string = "", onChange: EventHandler = null, css?: CssClass): HTMLInputElement {
+export function textInput(id: string, placeholder: string, value: string = "", onChange?: EventHandler, css?: CssClass): HTMLInputElement {
   const e = element('input', id, textInputClass.plus(css), value, onChange) as HTMLInputElement
   e.type = "text"
   e.value = value
@@ -118,8 +120,8 @@ export function setTextArea(name: string, val: string) {
 
 // Checkbox
 
-export function checkbox(id: string, css: CssClass | null, value: boolean, onChange: EventHandler = null) {
-  const e = element("input", id, css, null, onChange) as HTMLInputElement;
+export function checkbox(id: string, value: boolean, css?: CssClass, onChange?: EventHandler) {
+  const e = element("input", id, css, undefined, onChange) as HTMLInputElement;
   e.type = "checkbox"
   e.checked = value;
   return e
@@ -127,7 +129,7 @@ export function checkbox(id: string, css: CssClass | null, value: boolean, onCha
 
 // Panels
 
-export function panel(id: string, css: CssClass | null, content: Content | null = null): HTMLDivElement {
+export function panel(id: string, css?: CssClass, content?: Content): HTMLDivElement {
   let e = element('div', id, css, content) as HTMLDivElement;
   if (css != null) {
     e.className = css.name;

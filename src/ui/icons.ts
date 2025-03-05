@@ -70,7 +70,7 @@ export const iconList = new Map<Icon, string>([
 
 export function svgIcon(
     name: Icon, w: string = "48px", h: string = "48px",
-    color: string = "currentColor", css: CssClass | null = null): SVGSVGElement {
+    color: string = "currentColor", css?: CssClass): SVGSVGElement {
 
   const path = document.createElementNS(svgNamespace, "path");
   path.setAttribute("d", iconList.get(name) as string);
@@ -86,7 +86,7 @@ export function svgIcon(
   svg.setAttribute("width", w);
   svg.setAttribute("height", h);
   svg.setAttribute("viewBox", "0 -960 960 960");
-  if (css != null) {
+  if (css != undefined) {
     svg.setAttribute("class", css.name);
   }
   svg.appendChild(g);

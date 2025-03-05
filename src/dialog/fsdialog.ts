@@ -8,18 +8,16 @@ import {ConfirmDialog} from './confirmdlg';
 import {InputDialog} from './inputdlg';
 import {modalClass, titleClass, titleRowClass} from './dialogStyles';
 import {css, cssClass, transparentClass} from '../ui/commonStyles';
-import {EventHandler} from '../common';
+import {Consumer, EventHandler} from '../common';
 import {btnIcon, button} from '../ui/button';
 import {Icon, svgIcon} from '../ui/icons';
 
-type FileAction = ((file: FSFile) => void) | null;
-
 export class FSDialog {
   fs: FS
-  action: FileAction
+  action?: Consumer<FSFile>
   dialog: HTMLElement
 
-  constructor(type: FSType, action: FileAction = null) {
+  constructor(type: FSType, action?: Consumer<FSFile>) {
     this.action = action;
     this.fs = new FS(type);
     this.dialog = this.createFSDialog();

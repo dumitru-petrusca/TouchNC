@@ -1,6 +1,6 @@
-import {panel, label} from '../ui/ui';
+import {label, panel} from '../ui/ui';
 import {closeModal, pushModal} from './modaldlg';
-import {Function2} from '../common';
+import {Consumer} from '../common';
 import {modalClass} from './dialogStyles';
 import {css, cssClass} from '../ui/commonStyles';
 import {AlertDialog} from './alertdlg';
@@ -23,9 +23,9 @@ export let firmware = {
 }
 
 export class ConnectDialog {
-  onSuccess: Function2<Firmware>
+  onSuccess?: Consumer<Firmware>
 
-  constructor(onConnect: Function2<Firmware> = null) {
+  constructor(onConnect?: Consumer<Firmware>) {
     this.onSuccess = onConnect
     let dialog = panel("", modalClass, label("", "Connecting...", connectingClass));
     document.body.appendChild(dialog)

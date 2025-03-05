@@ -3,7 +3,7 @@ import {button} from '../ui/button';
 import {currentModal} from './modal';
 
 export const createJogPanel = (id: string, name: string, axis: string, feedrate: number) => {
-  let btn = button(id, name, `Move ${axis}`, null, axis);
+  let btn = button(id, name, `Move ${axis}`, undefined, axis);
   btn.addEventListener('pointerdown', handleDown(axis, feedrate));
   btn.addEventListener('pointerup', handleUp);
   btn.addEventListener('pointerout', handleUp);

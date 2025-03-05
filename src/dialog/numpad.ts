@@ -1,12 +1,9 @@
 import {element, panel, textInput} from '../ui/ui';
-import {countCharInstances, EventHandler} from '../common';
+import {Consumer, countCharInstances, EventHandler, Producer} from '../common';
 import {btnClass, css, CssClass, cssClass} from '../ui/commonStyles';
 import {closeModal, pushModal} from './modaldlg';
 import {modalClass} from './dialogStyles';
 import {button} from '../ui/button';
-
-type Producer<T> = () => T
-type Consumer<T> = (v: T) => void
 
 export enum NumpadType {
   INTEGER,
@@ -19,18 +16,18 @@ export class Numpad {
   type: NumpadType;
   get: Producer<string>;
   set: Consumer<string>;
-  goto: Consumer<string> | null;
+  goto?: Consumer<string>;
   dialog: HTMLElement
   value: HTMLInputElement
 
-  constructor(type: NumpadType, get: Producer<string>, set: Consumer<string>, goto: Consumer<string> | null = null, max: number = 255,) {
+  constructor(type: NumpadType, get: Producer<string>, set: Consumer<string>, goto?: Consumer<string>, max: number = 255,) {
     this.type = type;
     this.set = set;
     this.get = get;
     this.goto = goto;
     this.maxDigits = max;
 
-    this.value = textInput("numDisplay", "", "0", null, valueClass);
+    this.value = textInput("numDisplay", "", "0", undefined, valueClass);
     this.value.disabled = true;
 
     this.dialog = panel("", modalClass,
@@ -179,7 +176,7 @@ export class Numpad {
   }
 }
 
-const btn = (txt: string, css: CssClass, fn: EventHandler = null) => {
+const btn = (txt: string, css: CssClass, fn?: EventHandler) => {
   return button("", txt, "", fn, "", css)
 };
 

@@ -422,7 +422,7 @@ const displayHandlers = {
 // Arrow notation does not work here because arrow functions are not linked to an
 // object prototype, hence the prototype assignments below will fail
 class ToolPathDisplay {
-  private gcodeFile: GCodeFile | null = null
+  private gcodeFile?: GCodeFile
 
   setGcodeFile(gCodeFile: GCodeFile) {
     this.gcodeFile = gCodeFile;

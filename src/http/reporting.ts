@@ -4,7 +4,7 @@ import {preferences, ReportType} from '../config/preferences';
 export class Reporting {
   type = ReportType.NONE;
   intervalMs: number = 0;
-  pollingInterval: NodeJS.Timeout | null = null;
+  pollingInterval?: NodeJS.Timeout;
 
   start() {
     this.type = preferences.reportType();
@@ -28,9 +28,9 @@ export class Reporting {
   disableReporting() {
     switch (this.type) {
       case ReportType.POLLING:
-        if (this.pollingInterval != null) {
+        if (this.pollingInterval != undefined) {
           clearInterval(this.pollingInterval);
-          this.pollingInterval = null;
+          this.pollingInterval = undefined;
         }
         break;
       case ReportType.AUTO:

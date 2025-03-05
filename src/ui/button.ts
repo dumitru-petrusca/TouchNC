@@ -4,7 +4,7 @@ import {beep, Content, element, getElement, ifPresent} from './ui';
 import {Icon, svgIcon} from './icons';
 
 export function button(id: string, content: Content, title: string,
-                       click: EventHandler = null, value: string = "", css?: CssClass): HTMLButtonElement {
+                       click?: EventHandler, value: string = "", css?: CssClass): HTMLButtonElement {
   const btn = element('button', id, btnClass.plus(css), content) as HTMLButtonElement
   btn.title = title
   btn.value = value
@@ -21,11 +21,13 @@ export function setButtonText(id: string, text: string) {
   })
 }
 
-export function setButton(id: string, isEnabled: boolean, iconName: Icon, onClick: EventHandler = null) {
+export function setButton(id: string, isEnabled: boolean, iconName: Icon, onClick?: EventHandler) {
   ifPresent(id, button => {
     (button as HTMLButtonElement).disabled = !isEnabled;
     button.replaceChildren(btnIcon(iconName, isEnabled ? "black" : "darkgray"))
-    button.onclick = onClick
+    if (onClick!=undefined) {
+      button.onclick = onClick
+    }
   })
 }
 

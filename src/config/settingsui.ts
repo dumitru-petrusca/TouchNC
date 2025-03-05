@@ -99,7 +99,7 @@ export class SettingsUI {
         this.saveSetting(s);
       })
     } else if (s instanceof BooleanSetting) {
-      return checkbox(s.path, checkboxClass, s.getValue(), (e) => {
+      return checkbox(s.path, s.getValue(), checkboxClass, (e) => {
         s.setValue((e.target as HTMLInputElement).checked)
         this.saveSetting(s);
       })
@@ -181,8 +181,8 @@ export class SettingsUI {
     }
   }
 
-  select(id: string, css: CssClass, select: SelectSetting, onChange: EventHandler = null) {
-    const e = element("select", id, css, null, onChange) as HTMLSelectElement;
+  select(id: string, css: CssClass, select: SelectSetting, onChange?: EventHandler) {
+    const e = element("select", id, css, undefined, onChange) as HTMLSelectElement;
     select.options.forEach(o => {
       const option = document.createElement("option") as HTMLOptionElement
       option.value = "" + o.value;

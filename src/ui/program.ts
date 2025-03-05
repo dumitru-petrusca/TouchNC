@@ -9,7 +9,7 @@ import {Icon, svgIcon} from './icons';
 import {FSDialog} from '../dialog/fsdialog';
 import {css, cssClass, floatingButtonClass} from './commonStyles';
 
-let gCodeFile: GCodeFile | null = null;
+let gCodeFile: GCodeFile | undefined = undefined;
 
 export const loadGCodeFile = (file: FSFile) => {
   gCodeFile = new GCodeFile(file);
@@ -60,18 +60,18 @@ export const setRunControls = () => {
   if (gCodeFile != null && gCodeFile.content != '') {
     // A GCode file is ready to go
     setButton('btn-start', true, Icon.play, runGCode);
-    setButton('btn-pause', false, Icon.pause, null);
+    setButton('btn-pause', false, Icon.pause);
   } else {
     // Can't start because no GCode to run
-    setButton('btn-start', false, Icon.play, null);
-    setButton('btn-pause', false, Icon.pause, null);
+    setButton('btn-start', false, Icon.play);
+    setButton('btn-pause', false, Icon.pause);
   }
 };
 
 export function updateRunButtons() {
   switch (currentState.name) {
     case 'Sleep':
-      setButton('btn-start', false, Icon.lockClosed, null);
+      setButton('btn-start', false, Icon.lockClosed);
       setButton('btn-pause', true, Icon.stop, stopAndRecover);
       break;
     case 'Alarm':
@@ -93,11 +93,11 @@ export function updateRunButtons() {
     case 'Jog':
     case 'Home':
     case 'Run':
-      setButton('btn-start', false, Icon.play, null);
+      setButton('btn-start', false, Icon.play);
       setButton('btn-pause', true, Icon.pause, pauseGCode);
       break;
     case 'Check':
-      setButton('btn-start', true, Icon.play, null);
+      setButton('btn-start', true, Icon.play);
       setButton('btn-pause', true, Icon.stop, stopAndRecover);
       break;
   }

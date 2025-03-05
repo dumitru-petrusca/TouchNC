@@ -1,14 +1,14 @@
 import {closeModal, pushModal} from './modaldlg';
-import {panel, label} from '../ui/ui';
-import {contentClass, modalClass, titleRowClass, titleClass, twoButtonRowStyle} from './dialogStyles';
-import {Function2} from '../common';
+import {label, panel} from '../ui/ui';
+import {contentClass, modalClass, titleClass, titleRowClass, twoButtonRowStyle} from './dialogStyles';
+import {Consumer} from '../common';
 import {button} from '../ui/button';
 
 export class ConfirmDialog {
-  action: Function2<void>;
+  action?: Consumer<void>;
   dialog: HTMLElement
 
-  constructor(text: string, action: Function2<void> = null) {
+  constructor(text: string, action?: Consumer<void>) {
     this.action = action;
     this.dialog = this.createDialog(text);
     document.body.appendChild(this.dialog)

@@ -1,14 +1,14 @@
 import {getElement} from '../ui/ui';
-import {Function2} from '../common';
+import {Consumer} from '../common';
 
 let modalStack: Modal[] = [];
 
 interface Modal {
   element: HTMLElement;
-  closeFn: Function2<any>
+  closeFn?: Consumer<any>
 }
 
-export function setActiveModal(htmlTemplate: string, closeFn: Function2<any> = null) {
+export function setActiveModal(htmlTemplate: string, closeFn?: Consumer<any>) {
   if (htmlTemplate == null) {
     return null;
   }
@@ -19,7 +19,7 @@ export function setActiveModal(htmlTemplate: string, closeFn: Function2<any> = n
   return getActiveModal();
 }
 
-export function pushModal(element: HTMLElement, closeFn: Function2<any> = null): void {
+export function pushModal(element: HTMLElement, closeFn: Consumer<any>): void {
   modalStack.push({
     element: element,
     closeFn: closeFn

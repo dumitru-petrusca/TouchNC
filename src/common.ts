@@ -1,5 +1,6 @@
-export type Function2<T> = ((value: T) => void) | null
-export type EventHandler = Function2<Event>
+export type Consumer<T> = (value: T) => void
+export type Producer<T> = () => T
+export type EventHandler = Consumer<Event>
 
 export function valueOrError<T>(v: T, error: () => string): NonNullable<T> {
   if (v == null) {
