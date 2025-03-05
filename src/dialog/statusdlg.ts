@@ -54,8 +54,8 @@ export class StatusDialog {
     }
 
     let rows: HTMLElement[] = []
-    rows.push(newRow("Machine", `${settings.value.find(s => s.name == "/name")?.getValue()} (${settings.value.find(s => s.name == "/machine")?.getValue()})`))
-    rows.push(newRow("Board", `${settings.value.find(s => s.name == "/board")?.getValue()}`))
+    rows.push(newRow("Machine", `${settings.value.find(s => s.path == "/name")?.getValue()} (${settings.value.find(s => s.path == "/machine")?.getValue()})`))
+    rows.push(newRow("Board", `${settings.value.find(s => s.path == "/board")?.getValue()}`))
     rows.push(newRow("Firmware", `${v.get("FW version")}`))
     rows.push(newRow("SDK", `${v.get("SDK")}`))
     rows.push(newRow("CPU", `${v.get("CPU Frequency")}, ${v.get("CPU Cores")} core, ${v.get("CPU Temperature")}, ID ${v.get("Chip ID")}`))

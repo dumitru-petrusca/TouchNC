@@ -10,8 +10,8 @@ export enum SettingAttr {
 
 export abstract class Setting<T, B extends Setting<T, B>> {
   parent?: SettingGroup
+  path: string = ""
   name: string = ""
-  displayName: string = ""
   defaultValue: T
   protected oldValue?: T
   value?: T
@@ -28,7 +28,7 @@ export abstract class Setting<T, B extends Setting<T, B>> {
   }
 
   setDisplayName(name: string) {
-    this.displayName = name
+    this.name = name
     return this;
   }
 
@@ -38,22 +38,22 @@ export abstract class Setting<T, B extends Setting<T, B>> {
   }
 
   setName(name: string): B {
-    this.name = name;
-    name = this.name
-        .substring(this.name.lastIndexOf("/") + 1)
+    this.path = name;
+    name = this.path
+        .substring(this.path.lastIndexOf("/") + 1)
         .replaceAll('_', ' ')
     name = replaceDimension(name)
         .split(" ")
         .map(capitalize)
         .map(replaceAcronyms)
         .join(" ");
-    this.displayName = renames.get(name) ?? name
+    this.name = renames.get(name) ?? name
     return this as any
   }
 
   insert(obj: Record<string, any>) {
     if (this.isReal()) {
-      insert(obj, this.name, this.value)
+      insert(obj, this.path, this.value)
     }
   }
 
@@ -183,12 +183,9 @@ export class GroupSetting extends SelectSetting {
   }
 
   finalize() {
-    if (this.name == "/kinematics/_type") {
-      console.log("aaa")
-    }
     this.group = this.groupPath == "this" ?
         this.getParent() :
-        this.getParent().getRoot().getGroupByPath(this.groupPath)
+        this.getParent().getRoot().getGroup(this.groupPath)
     if (this.group == undefined) {
       throw `Cannot find groups with name: ${this.groupPath}`
     }
@@ -202,9 +199,6 @@ export class GroupSetting extends SelectSetting {
   }
 
   setValue(value: string): SelectSetting {
-    if (this.name == "/_type") {
-      console.log("aaa")
-    }
     if (value != this.value) {
       let currentGroup = this.getSelectedGroup();
       let newGroup = this.group?.getGroupByName(value!);
@@ -224,7 +218,7 @@ export class GroupSetting extends SelectSetting {
     if (this.parent != undefined) {
       return this.parent
     }
-    throw new Error(`Setting ${this.name} does not have a parent`)
+    throw new Error(`Setting ${this.path} does not have a parent`)
   }
 
   getSelectedGroup = () => this.group?.getGroupByName(this.value!);
@@ -285,21 +279,21 @@ export const pinIO = () => new PinSetting("", "NO_PIN", pinsIO).setValue("NO_PIN
 export function cloneSetting<T extends Setting<any, T>>(s: T): T {
   let ss: Setting<any, any>
   if (s instanceof IntegerSetting) {
-    ss = new IntegerSetting(s.name, s.defaultValue, s.min, s.min)
+    ss = new IntegerSetting(s.path, s.defaultValue, s.min, s.min)
   } else if (s instanceof FloatSetting) {
-    ss = new FloatSetting(s.name, s.defaultValue, s.min, s.min)
+    ss = new FloatSetting(s.path, s.defaultValue, s.min, s.min)
   } else if (s instanceof BooleanSetting) {
-    ss = new BooleanSetting(s.name, s.defaultValue)
+    ss = new BooleanSetting(s.path, s.defaultValue)
   } else if (s instanceof StringSetting) {
-    ss = new StringSetting(s.name, s.defaultValue, s.min, s.max)
+    ss = new StringSetting(s.path, s.defaultValue, s.min, s.max)
   } else if (s instanceof AlphanumericSetting) {
-    ss = new AlphanumericSetting(s.name, s.defaultValue)
+    ss = new AlphanumericSetting(s.path, s.defaultValue)
   } else if (s instanceof PinSetting) {
-    ss = new PinSetting(s.name, s.defaultValue, s.options)
+    ss = new PinSetting(s.path, s.defaultValue, s.options)
   } else if (s instanceof GroupSetting) {
-    ss = new GroupSetting(s.name, s.groupPath, s.attr)
+    ss = new GroupSetting(s.path, s.groupPath, s.attr)
   } else if (s instanceof SelectSetting) {
-    ss = new SelectSetting(s.name, s.defaultValue, s.options)
+    ss = new SelectSetting(s.path, s.defaultValue, s.options)
   } else {
     throw `Cannot clone setting: ${s}`;
   }
@@ -352,7 +346,7 @@ export abstract class Settings {
     }
   }
 
-  getIndexOrDefault<T>(name: string, def: T): T {
+  getIndexOrDefault(name: string, def: number): number {
     let s = this.get(name);
     return s == undefined
         ? def
@@ -387,25 +381,14 @@ export class SettingGroup {
     this.groups = groups
   }
 
-  set(yml: YAML) {
-    this.settings.forEach(s => {
-      let value = yml.get(s.name);
-      if (value != undefined) {
-        s.setValue(value)
-      }
-    })
-    this.configured = yml.get(this.path) != undefined
-    this.groups.forEach(g => g.set(yml))
-  }
-
-  getSetting(name: string): Setting<any, any> | undefined {
-    for (const child of this.settings) {
-      if (child.name == name) {
-        return child
+  getSetting(path: string): Setting<any, any> | undefined {
+    for (const s of this.settings) {
+      if (s.path.toLowerCase() == path) {
+        return s
       }
     }
-    for (const child of this.groups) {
-      let s = child.getSetting(name);
+    for (const g of this.groups) {
+      let s = g.getSetting(path);
       if (s != undefined) {
         return s
       }
@@ -413,12 +396,12 @@ export class SettingGroup {
     return undefined
   }
 
-  getGroupByPath(path: string): SettingGroup | undefined {
-    if (this.path == path) {
+  getGroup(path: string): SettingGroup | undefined {
+    if (this.path.toLowerCase() == path) {
       return this
     }
     for (const child of this.groups) {
-      let g = child.getGroupByPath(path);
+      let g = child.getGroup(path);
       if (g != undefined) {
         return g
       }
@@ -459,8 +442,9 @@ export class SettingGroup {
     return this
   }
 
-  finalize() {
-    this.groups.forEach(g => g.finalize())
+  finalize(yml: YAML) {
+    this.configured = yml.get(this.path) != undefined
+    this.groups.forEach(g => g.finalize(yml))
     this.settings.forEach(s => s.finalize())
   }
 
@@ -479,8 +463,8 @@ export class SettingGroup {
 
   copyValuesFrom(g: SettingGroup) {
     this.settings.forEach(s1 => {
-      let name1 = s1.name.substring(s1.name.lastIndexOf("/"));
-      let s2 = g.settings.find(s => s.name.endsWith(name1))
+      let name1 = s1.path.substring(s1.path.lastIndexOf("/"));
+      let s2 = g.settings.find(s => s.path.endsWith(name1))
       if (s2 != undefined) {
         s1.setValue(s2.getValue())
       }

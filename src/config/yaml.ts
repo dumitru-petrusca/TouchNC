@@ -1,6 +1,8 @@
 const empty = {}
 
-export function toYAML(name: string, value: Record<string, any> | string, indent: string = "") {
+type YamlObject = Record<string, any> | string
+
+export function toYAML(name: string, value: YamlObject, indent: string = "") {
   if (typeof value != "object") {
     return indent + name + (": " + value).trim() + "\n"
   }
@@ -74,5 +76,19 @@ export class YAML {
       }
     }
     return obj
+  }
+
+  forEach(consumer: (path: string, value: string) => void) {
+    return this.iterate_(this.yml, "", consumer)
+  }
+
+  iterate_(obj: YamlObject, path: string, consumer: (path: string, value: string) => void) {
+    if (typeof obj == "string") {
+      consumer(path, obj)
+      return
+    }
+    for (const key of Object.keys(obj)) {
+      this.iterate_(obj[key], path + "/" + key, consumer)
+    }
   }
 }

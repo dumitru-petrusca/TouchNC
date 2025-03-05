@@ -5,7 +5,7 @@ export function serializeSettings(s: Setting<any, any>[]): any {
 }
 
 function serializeSetting(s: Setting<any, any>): any {
-  let js: any = {F: "pref", P: s.name, H: s.name, V: s.getValue()}
+  let js: any = {F: "pref", P: s.path, H: s.path, V: s.getValue()}
   if (s instanceof StringSetting) {
     js.T = "S"
     js.M = s.min

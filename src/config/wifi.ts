@@ -39,7 +39,7 @@ class WiFi extends Settings {
   }
 
   saveSetting(s: Setting<any, any>): Promise<any> {
-    return sendHttpRequest(`/command?plain=[ESP401]P=${s.name} V=${s.getValue()}`)
+    return sendHttpRequest(`/command?plain=[ESP401]P=${s.path} V=${s.getValue()}`)
   }
 
   saveSettings(): Promise<void> {

@@ -39,7 +39,7 @@ export enum ConnectionMonitoring {
 }
 
 function serialize(group: SettingGroup, js: any) {
-  group.settings.forEach(s => js[s.name] = s.getValue())
+  group.settings.forEach(s => js[s.path] = s.getValue())
   group.groups.forEach(g => serialize(g, js))
 }
 

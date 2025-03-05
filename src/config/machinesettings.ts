@@ -1,13 +1,13 @@
 import {sendHttpRequest, writeFile} from '../http/http';
-import {Setting, SettingAttr, SettingGroup, Settings} from './settings';
+import {cloneSetting, Setting, SettingAttr, SettingGroup, Settings} from './settings';
 import {SettingsUI} from './settingsui';
 import {toYAML, YAML} from './yaml';
-import {instantiateTemplate} from './machinetemplate';
 import {messages} from '../messages/messages';
+import {machineTemplate} from './machinetemplate';
 
 let configFileName = "config.yaml"
 
-class MachineSettings extends Settings {
+export class MachineSettings extends Settings {
 
   loadSettings(): Promise<SettingGroup> {
     return sendHttpRequest(configFileName)
@@ -20,12 +20,22 @@ class MachineSettings extends Settings {
   }
 
   parseSettings(yamlStr: string): SettingGroup {
+    let group = new SettingGroup("", SettingAttr.VIRTUAL);
+    group.groups.push(...(instantiate(machineTemplate, "", group)))
     let yml = new YAML(yamlStr);
-    let group = instantiateTemplate();
-    group.set(yml)
-    group.finalize()
+    yml.forEach((path, value) => {
+      path = path.toLowerCase();
+      let s = group.getSetting(path);
+      if (s != undefined) {
+        s.setValue(value)
+      } else if (group.getGroup(path) == undefined) {
+        throw Error("Cannot find setting or group " + path)
+      }
+    })
+    group.finalize(yml)
     return group
   }
+
 
   saveSetting(setting: Setting<any, any>): Promise<any> {
     // command?plain=[ESP401]P=/axes/x/max_rate_mm_per_min T=R V=1500.001 & PAGEID=0
@@ -49,6 +59,25 @@ class MachineSettings extends Settings {
     let groups = this.settings?.groups ?? [];
     return [...groups].sort((a, b) => layout.indexOf(a.path) - layout.indexOf(b.path))
   }
+}
+
+function instantiate(obj: any, path: string, parent: SettingGroup): SettingGroup[] {
+  let groups = []
+  for (const key of Object.keys(obj)) {
+    let childObj = obj[key]
+    if (childObj instanceof Setting) {
+      let name = path + "/" + key;
+      let setting = cloneSetting(childObj).setName(name).setParent(parent);
+      parent.settings.push(setting)
+    } else if (typeof childObj == "object") {
+      let group = new SettingGroup(path + "/" + key, childObj._attributes).setParent(parent);
+      groups.push(group);
+      let holder = group.isOneOf() ? group.groups : groups
+      let path2 = group.isVirtual() ? path : path + "/" + key;
+      holder.push(...instantiate(childObj, path2, group))
+    }
+  }
+  return groups
 }
 
 let layout = [

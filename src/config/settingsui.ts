@@ -80,7 +80,7 @@ export class SettingsUI {
     let paneId = `${group.path}-pane`, listId = `${group.path}-list`;
     let children = [label("", groupName(group.path), settingsPaneTitleClass)]
     group.expandSettings().forEach(s => {
-      children.push(label(s.name + "_label", s.displayName, settingsLabelClass))
+      children.push(label(s.path + "_label", s.name, settingsLabelClass))
       children.push(this.createWidget(s, _ => getElement(paneId).replaceWith(this.createPane(group))))
     });
     let list = panel(listId, settingsListClass, children);
@@ -89,27 +89,27 @@ export class SettingsUI {
 
   createWidget(s: Setting<any, any>, redrawCallback: EventHandler): HTMLElement {
     if (s instanceof IntegerSetting) {
-      return numpadButton(s.name, "", "" + s.getValue(), NumpadType.INTEGER, v => {
+      return numpadButton(s.path, "", "" + s.getValue(), NumpadType.INTEGER, v => {
         s.setValue(Number(v))
         this.saveSetting(s);
       })
     } else if (s instanceof FloatSetting) {
-      return numpadButton(s.name, "", "" + s.getValue(), NumpadType.FLOAT, v => {
+      return numpadButton(s.path, "", "" + s.getValue(), NumpadType.FLOAT, v => {
         s.setValue(Number(v))
         this.saveSetting(s);
       })
     } else if (s instanceof BooleanSetting) {
-      return checkbox(s.name, checkboxClass, s.getValue(), (e) => {
+      return checkbox(s.path, checkboxClass, s.getValue(), (e) => {
         s.setValue((e.target as HTMLInputElement).checked)
         this.saveSetting(s);
       })
     } else if (s instanceof StringSetting) {
-      return textInput(s.name, "", s.getValue(), (e) => {
+      return textInput(s.path, "", s.getValue(), (e) => {
         s.setValue((e.target as HTMLInputElement).value)
         this.saveSetting(s);
       })
     } else if (s instanceof PinSetting) {
-      let inputElement = textInput(s.name, "", s.getValue(), (e) => {
+      let inputElement = textInput(s.path, "", s.getValue(), (e) => {
         s.setValue((e.target as HTMLInputElement).value)
         this.saveSetting(s);
       });
@@ -119,30 +119,30 @@ export class SettingsUI {
       });
       return inputElement
     } else if (s instanceof AlphanumericSetting) {
-      return numpadButton(s.name, "", "" + s.getValue(), NumpadType.IP, v => {
+      return numpadButton(s.path, "", "" + s.getValue(), NumpadType.IP, v => {
         s.setValue(v)
         this.saveSetting(s);
       })
     } else if (s instanceof GroupSetting) {
-      return this.select(s.name, btnClass, s, (e) => {
+      return this.select(s.path, btnClass, s, (e) => {
         let value = Number((e.target as HTMLSelectElement).value);
         s.setValue(s.findOption(value)!.text)
         redrawCallback?.(e)
         //TODO-dp do I need to save anything?
       })
     } else if (s instanceof SelectSetting) {
-      return this.select(s.name, btnClass, s, (e) => {
+      return this.select(s.path, btnClass, s, (e) => {
         let value = Number((e.target as HTMLSelectElement).value);
         s.setValue(s.findOption(value)!.text)
         this.saveSetting(s);
       })
     } else {
-      return label(s.name, "N/A", settingsValueClass);
+      return label(s.path, "N/A", settingsValueClass);
     }
   }
 
   update(group: SettingGroup = this.settings.settings!) {
-    group.settings.forEach(s => ifPresent(s.name, e => this.updateWidget(e, s)))
+    group.settings.forEach(s => ifPresent(s.path, e => this.updateWidget(e, s)))
     group.groups.forEach(g => this.update(g))
   }
 
@@ -172,9 +172,9 @@ export class SettingsUI {
 
   updateVisibility(group: SettingGroup = this.settings.settings!) {
     for (const setting of group.settings) {
-      let enabled = this.enableRules.find(rule => setting.name.startsWith(rule.settingName) && !rule.enabled()) == undefined;
-      setEnabled(setting.name, enabled)
-      setEnabled(setting.name + "_label", enabled)
+      let enabled = this.enableRules.find(rule => setting.path.startsWith(rule.settingName) && !rule.enabled()) == undefined;
+      setEnabled(setting.path, enabled)
+      setEnabled(setting.path + "_label", enabled)
     }
     for (const g of group.groups) {
       this.updateVisibility(g)

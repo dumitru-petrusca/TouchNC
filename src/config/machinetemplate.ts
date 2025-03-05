@@ -1,4 +1,4 @@
-import {bool, cloneSetting, float, group, int, pinI, pinIO, pinO, position, select, Setting, SettingAttr, SettingGroup, string} from './settings';
+import {bool, float, group, int, pinI, pinIO, pinO, position, select, SettingAttr, string} from './settings';
 
 let motor = {
   limit_neg_pin: pinI(),
@@ -102,7 +102,7 @@ let onOffSpindle = {
   atc: group("/atc"),
 };
 
-let configTemplate = {
+export let machineTemplate = {
   general: {
     _attributes: SettingAttr.VIRTUAL,
     name: string("None", 0, 32),
@@ -431,30 +431,4 @@ let configTemplate = {
     },
     atc_tool_table: {},
   }
-}
-
-function instantiateTemplate_(obj: any, path: string, parent: SettingGroup): SettingGroup[] {
-  let groups = []
-  for (const key of Object.keys(obj)) {
-    let childObj = obj[key]
-    if (childObj instanceof Setting) {
-      let name = path + "/" + key;
-      let setting = cloneSetting(childObj).setName(name).setParent(parent);
-      parent.settings.push(setting)
-    } else if (typeof childObj == "object") {
-      let group = new SettingGroup(path + "/" + key, childObj._attributes).setParent(parent);
-      groups.push(group);
-      let holder = group.isOneOf() ? group.groups : groups
-      let path2 = group.isVirtual() ? path : path + "/" + key;
-      holder.push(...instantiateTemplate_(childObj, path2, group))
-    }
-  }
-  return groups
-}
-
-export function instantiateTemplate(): SettingGroup {
-  let root = new SettingGroup("", SettingAttr.VIRTUAL);
-  let groups = instantiateTemplate_(configTemplate, "", root);
-  root.groups.push(...groups)
-  return root
 }
