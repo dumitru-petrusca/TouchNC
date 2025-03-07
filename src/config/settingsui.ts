@@ -10,13 +10,14 @@ import {Icon} from '../ui/icons';
 import {ConfirmDialog} from '../dialog/confirmdlg';
 import {restartChannel} from '../events/eventbus';
 import {sendHttpRequest} from '../http/http';
+import {pinButton} from './pindialog';
 
 export class EnableRule {
-  settingName: string
+  settingPattern: string
   enabled: () => boolean
 
   constructor(settingName: string, enabled: () => boolean) {
-    this.settingName = settingName;
+    this.settingPattern = settingName;
     this.enabled = enabled;
   }
 }
@@ -109,15 +110,10 @@ export class SettingsUI {
         this.saveSetting(s);
       })
     } else if (s instanceof PinSetting) {
-      let inputElement = textInput(s.path, "", s.getValue(), (e) => {
-        s.setValue((e.target as HTMLInputElement).value)
+      return pinButton("", s.name, s, value => {
+        s.setValue(value)
         this.saveSetting(s);
-      });
-      inputElement.addEventListener("input", e => {
-        let ok = s.validate((e.target as any).value as string)
-        inputElement.style.background = ok ? "lightcyan" : "lightcoral"
-      });
-      return inputElement
+      })
     } else if (s instanceof AlphanumericSetting) {
       return numpadButton(s.path, "", "" + s.getValue(), NumpadType.IP, v => {
         s.setValue(v)
@@ -172,7 +168,7 @@ export class SettingsUI {
 
   updateVisibility(group: SettingGroup = this.settings.settings!) {
     for (const setting of group.settings) {
-      let enabled = this.enableRules.find(rule => setting.path.startsWith(rule.settingName) && !rule.enabled()) == undefined;
+      let enabled = this.enableRules.find(rule => setting.path.match(rule.settingPattern) && !rule.enabled()) == undefined;
       setEnabled(setting.path, enabled)
       setEnabled(setting.path + "_label", enabled)
     }

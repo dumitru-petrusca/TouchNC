@@ -140,16 +140,16 @@ export class SelectSetting extends Setting<string, SelectSetting> {
   findOption = (value: number) => this.options.find(o => o.value == value);
 }
 
-export class PinSetting extends SelectSetting {
-  constructor(name: string, defaultValue: string, options: SelectOption[]) {
-    super(name, defaultValue, options);
-    options.forEach((o, i) => o.value = i)
+export class PinSetting extends Setting<string, PinSetting> {
+  options: string[];
+
+  constructor(name: string, defaultValue: string, options: string[]) {
+    super(name, defaultValue);
+    this.options = options;
   }
 
   setValue(value: string): PinSetting {
     value = value.toLowerCase();
-    //TODO-dp I am dropping the modifier
-    // value = (value.split(":"))[0].trim()
     if (value == "no_pin") {
       value = "NO_PIN"
     }
@@ -164,7 +164,7 @@ export class PinSetting extends SelectSetting {
         (s.length == 3 && this.pinOk(s[0]) && this.isUpDown(s[1]) && this.isLowHigh(s[2]))
   }
 
-  pinOk = (pin: string) => this.options.find(o => o.text == pin) != undefined;
+  pinOk = (pin: string) => this.options.includes(pin);
   isUpDown = (s: string) => s == "pu" || s == "pd";
   isLowHigh = (s: string) => s == "low" || s == "high";
 }
@@ -239,17 +239,16 @@ export class SelectOption {
   }
 }
 
-function pins(prefix: "gpio" | "i2so", from: number, to: number): SelectOption[] {
+function pins(prefix: "gpio" | "i2so", from: number, to: number): string[] {
   let pins = []
   for (let i = from; i <= to; i++) {
-    let pin = prefix + "." + i;
-    pins.push(new SelectOption(pin, pin, i))
+    pins.push(prefix + "." + i)
   }
   return pins;
 }
 
 const pinsIO = [
-  new SelectOption("NO_PIN", "None", 0),
+  "None",
   ...pins("gpio", 0, 5),
   ...pins("gpio", 12, 19),
   ...pins("gpio", 21, 23),

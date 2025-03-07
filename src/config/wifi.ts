@@ -51,14 +51,14 @@ function getWiFiMode(): SelectSetting | undefined {
   return wifi.getSelect("WiFi/Mode");
 }
 
-function enable(setting: string, enable: () => boolean): EnableRule {
-  return new EnableRule(setting, enable);
+function enable(settinPattern: string, enable: () => boolean): EnableRule {
+  return new EnableRule(settinPattern, enable);
 }
 
 export let wifi = new WiFi()
 export let wifiUI = new SettingsUI(wifi, "wifisettings",
-    enable("Hostname", () => wifi.getSelect("MDNS/Enable")!.getValue() == "ON"),
-    enable("Sta/", () => ["STA", "STA>AP"].includes(getWiFiMode()!.getValue())),
-    enable("Sta/IP", () => wifi.getSelect("Sta/IPMode")!.getValue() == "Static"),
-    enable("AP/", () => ["AP", "STA>AP"].includes(getWiFiMode()!.getValue())),
+    enable("^Hostname$", () => wifi.getSelect("MDNS/Enable")!.getValue() == "ON"),
+    enable("^Sta/.*", () => ["STA", "STA>AP"].includes(getWiFiMode()!.getValue())),
+    enable("^Sta/IP$", () => wifi.getSelect("Sta/IPMode")!.getValue() == "Static"),
+    enable("^AP/.*", () => ["AP", "STA>AP"].includes(getWiFiMode()!.getValue())),
 )

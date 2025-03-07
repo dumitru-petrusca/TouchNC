@@ -56,7 +56,7 @@ export const contentClass = cssClass("content", css`
   animation-duration: 0.4s;
   font-family: sans-serif;
   font-size: 3.2rem;
-  width: 60%;
+  width: 50%;
 `)
 
 export const oneButtonRowClass = cssClass("oneButtonRow", css`
