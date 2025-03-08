@@ -6,7 +6,7 @@ import {sendHttpRequest} from '../http/http';
 import {FS, FSResponse, FSType, toSizeString} from './fs';
 import {translate} from '../translate';
 import {button} from '../ui/button';
-import {Setting} from '../config/settings';
+import {Setting, SettingGroup} from '../config/settings';
 import {machineSettings} from '../config/machinesettings';
 import {AlertDialog} from './alertdlg';
 
@@ -21,14 +21,14 @@ export class StatusDialog {
       new FS(FSType.Local).loadFiles(),
       machineSettings.load()]
     ).then(v => {
-      return this.createUI(v[0] as PromiseSettledResult<string>, v[1] as PromiseSettledResult<Awaited<FSResponse>>, v[2] as PromiseSettledResult<Awaited<FSResponse>>, v[3] as PromiseSettledResult<Awaited<Setting<any, any>[]>>);
+      return this.createUI(v[0] as PromiseSettledResult<string>, v[1] as PromiseSettledResult<Awaited<FSResponse>>, v[2] as PromiseSettledResult<Awaited<FSResponse>>, v[3] as PromiseSettledResult<Awaited<SettingGroup>>);
     })
   }
 
   createUI(response: PromiseSettledResult<string>,
            sdFS: PromiseSettledResult<FSResponse>,
            localFS: PromiseSettledResult<FSResponse>,
-           settings: PromiseSettledResult<Setting<any, any>[]>) {
+           settings: PromiseSettledResult<SettingGroup>) {
 
     if (response.status == "rejected") {
       return new AlertDialog("Error reading firmware", response.reason)
@@ -54,8 +54,8 @@ export class StatusDialog {
     }
 
     let rows: HTMLElement[] = []
-    rows.push(newRow("Machine", `${settings.value.find(s => s.path == "/name")?.getValue()} (${settings.value.find(s => s.path == "/machine")?.getValue()})`))
-    rows.push(newRow("Board", `${settings.value.find(s => s.path == "/board")?.getValue()}`))
+    rows.push(newRow("Machine", `${settings.value.getSetting("/name")?.getValue()} (${settings.value.getSetting("/machine")?.getValue()})`))
+    rows.push(newRow("Board", `${settings.value.getSetting("/board")?.getValue()}`))
     rows.push(newRow("Firmware", `${v.get("FW version")}`))
     rows.push(newRow("SDK", `${v.get("SDK")}`))
     rows.push(newRow("CPU", `${v.get("CPU Frequency")}, ${v.get("CPU Cores")} core, ${v.get("CPU Temperature")}, ID ${v.get("Chip ID")}`))

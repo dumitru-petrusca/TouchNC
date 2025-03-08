@@ -26,7 +26,8 @@ export class FSDialog {
     this.fs.loadFiles()
         .then(this.updateFiles.bind(this))
         .catch(reason => {
-          new AlertDialog(translate("Error"), "Error: " + reason);
+          this.close()
+          new AlertDialog(translate("Error"), reason);
           throw reason;
         });
   }
