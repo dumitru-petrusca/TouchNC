@@ -15,6 +15,7 @@ import {toolPathPanel} from './program';
 import {createToolTable} from '../machine/tools';
 import {Icon} from './icons';
 import {sendCommandAndGetStatus, UNLOCK_CMD} from '../http/http';
+import {jogPanel} from '../machine/jog';
 
 export interface MachineUI {
   manualTab(): HTMLElement | null;

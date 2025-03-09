@@ -4,7 +4,7 @@ import {homeAll, restart} from '../machine/machine';
 import {EventHandler} from '../common';
 import {css, cssClass, navRowClass} from './commonStyles';
 import {sendCommandAndGetStatus} from '../http/http';
-import {createJogPanel} from '../machine/jog';
+import {axisJogPanel} from '../machine/jog';
 import {toggleCoolantState, toggleCoordinateSystem, toggleDistanceMode, toggleSpindleState, toggleUnits} from '../machine/modal';
 import {createMenu, MenuItem} from './menu';
 import {FSDialog} from '../dialog/fsdialog';
@@ -25,7 +25,7 @@ export class LatheUI implements MachineUI {
     return panel('tablettab', latheTabClass, [
       latheNavPanel(),
       axesDRO(),
-      latheJogPanel(),
+      axisJogPanel('X'),
       latheControls(),
       mdi(),
       messagesPanel(),
@@ -86,17 +86,6 @@ export function latheNavPanel() {
   ])
 }
 
-export function latheJogPanel() {
-  return panel('', jogRowClass, [
-    createJogPanel('jog1', '<', 'X-', 2),
-    createJogPanel('jog2', '<<', 'X-', 100),
-    createJogPanel('jog3', '<<<', 'X-', 1000),
-    createJogPanel('jog4', '>>>', 'X+', 1000),
-    createJogPanel('jog5', '>>', 'X+', 100),
-    createJogPanel('jog6', '>', 'X+', 2),
-  ]);
-}
-
 function positionButton(id: string, name: string, value: number): HTMLButtonElement {
   return numpadButton(id, name, name + " " + String(value), NumpadType.FLOAT, v => {
     setButtonText(id, name + " " + v)
@@ -127,14 +116,6 @@ function doRapidMove(valueId: string): EventHandler {
 const latheRowClass = cssClass("latheRow", css`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 2fr 2fr 2fr 2fr;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-`)
-
-const jogRowClass = cssClass("jogRow", css`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
   gap: 10px;
   width: 100%;
   max-width: 100%;

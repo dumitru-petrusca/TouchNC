@@ -62,7 +62,7 @@ function getParentButtonOrError(e: Event): HTMLButtonElement {
   return valueOrError(getParentButton(e), () => `Cannot find parent button of ${(e.target as HTMLElement).id}`);
 }
 
-export function btnIcon(icon: Icon, color: string = "balck") {
+export function btnIcon(icon: Icon, color: string = "black") {
   return svgIcon(icon, "1.3em", "1.3em", "black", btnIconClass)
 }
 
