@@ -55,6 +55,7 @@ ws_port = 8081
 fluidnc_websocket = '8081:localhost'
 fluidnc_ip = ''
 proxy = False
+machine = 'MILL'
 
 test_files = 'test_files'
 connection_list = []
@@ -85,10 +86,9 @@ esp400resp = '''
 
 
 def esp800resp():
-    # response = do_proxy(request).data
     return 'FW version: FluidNC v3.6.7 (Devt-5692a7c1-dirty) # FW target:fluidnc-embedded  # FW HW:Direct SD  ' \
            '# primary sd:/sd # secondary sd:none  # authentication:no ' \
-           '# webcommunication: Sync: ' + fluidnc_websocket + ' # hostname:fluidnc # machine:MILL # axis:3'
+           '# webcommunication: Sync: ' + fluidnc_websocket + ' # hostname:fluidnc # machine:' + machine + ' # axis:3'
 
 
 def resolve_mdns(hostname):
@@ -110,7 +110,8 @@ def resolve_mdns(hostname):
     ServiceBrowser(zeroconf, '_http._tcp.local.', MyListener())
 
     try:
-        zeroconf.get_service_info('_http._tcp.local.', hostname + '._http._tcp.local.')
+        zeroconf.get_service_info('_http._tcp.local.',
+                                  hostname + '._http._tcp.local.')
     finally:
         zeroconf.close()
 
@@ -305,14 +306,12 @@ def index():
 
 
 async def send_message(message):
-    # print("Sending to ", len(CONNECTIONS))
     await asyncio.wait([
         connection.send(message) for connection in CONNECTIONS
     ])
 
 
 async def handle_message(message, websocket):
-    # print("MESSAGE: ", message)
     global connection_list
     for connection in CONNECTIONS:
         if connection != websocket:
@@ -343,7 +342,8 @@ async def message_control(websocket):
             try:
                 await websocket.send("<>")
             except websockets.exceptions.ConnectionClosedError:
-                print(f"Connection to {websocket.remote_address} closed during send")
+                print(
+                    f"Connection to {websocket.remote_address} closed during send")
                 break
     except websockets.exceptions.ConnectionClosedError:
         print(f"Connection to {websocket.remote_address} closed unexpectedly")
@@ -357,12 +357,15 @@ def resolve_ip(ip):
         print('Resolving "' + ip + '"...')
         addresses = resolve_mdns(ip)
         if len(addresses) == 0:
-            print('Error: cannot resolve "' + ip + '". Specify the FluidNC IP address on the command line.')
+            print(
+                'Error: cannot resolve "' + ip + '". Specify the FluidNC IP address on the command line.')
             sys.exit(1)
         elif len(addresses) == 1:
             ip = addresses[0]
         else:
-            print(ip, ' resolves to multiple addresses, specify the IP address on the command line ', addresses)
+            print(ip,
+                  ' resolves to multiple addresses, specify the IP address on the command line ',
+                  addresses)
             sys.exit(1)
     return ip
 
@@ -373,17 +376,20 @@ def start_flask():
 
 async def main():
     threading.Thread(target=start_flask).start()
-    async with websockets.serve(message_control, domain, ws_port, subprotocols=['arduino']):
+    async with websockets.serve(message_control, domain, ws_port,
+                                subprotocols=['arduino']):
         print(f"WebSocket server started at ws://{domain}:{ws_port}")
         await asyncio.Future()  # Run forever
         print("The server is closed")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
+    if len(sys.argv) > 1:
         proxy = True
         fluidnc_ip = resolve_ip(sys.argv[1])
         fluidnc_websocket = '81:' + fluidnc_ip
+    if len(sys.argv) > 2:
+        machine = sys.argv[2].upper()
 
     if proxy:
         print("\nStarting Flask server proxying to FluidNC @ ", fluidnc_ip)
