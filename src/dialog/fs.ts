@@ -130,9 +130,6 @@ class JsFile {
 
 export function parseResponse(responseText: string): FSResponse {
   let response = JSON.parse(responseText);
-  if (response.status != "Ok") {
-    throw new Error(response.status)
-  }
   let files: FSFile[] = []
   for (let i = 0; i < response.files.length; i++) {
     let file = response.files[i] as JsFile;
