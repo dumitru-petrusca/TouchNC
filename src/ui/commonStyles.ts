@@ -1,3 +1,5 @@
+import {Consumer} from '../common';
+
 let classes: CssClass[] = []
 
 export class Css {
@@ -33,6 +35,32 @@ export function cssClass(name: string, css: Css): CssClass {
   let cssClass = new CssClass(name, css.style);
   classes.push(cssClass)
   return cssClass
+}
+
+function getStyleRule(name: string) {
+  let sheet = document.styleSheets[0];
+  for (let rule of sheet.cssRules) {
+    let cssRule = rule as CSSStyleRule
+    if (cssRule?.selectorText == name) {
+      return cssRule
+    }
+  }
+  return undefined
+}
+
+function registerRule(name: string, configure: (value: CSSStyleDeclaration) => void) {
+  let sheet = document.styleSheets[0];
+  let i = sheet.insertRule(`.${name} { }`, sheet.cssRules.length)
+  let rule = sheet.cssRules[i] as CSSStyleRule
+  configure(rule!.style)
+  return rule
+}
+
+export function registerClass(name: string, configure: Consumer<CSSStyleDeclaration>): CssClass {
+  if (getStyleRule(name) == undefined) {
+    registerRule(name, configure);
+  }
+  return new CssClass(name, "")
 }
 
 export function registerClasses(): void {
