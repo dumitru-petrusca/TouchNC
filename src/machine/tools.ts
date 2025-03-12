@@ -119,7 +119,7 @@ const toolTableClass = cssClass("toolTable", css`
   font-family: sans-serif;
   font-size: 3.2rem;
   user-select: none;
-  width: 50%;
+  width: 100%;
   height: 100%;
   max-height: 100%;
 `)

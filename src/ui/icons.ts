@@ -34,7 +34,8 @@ export enum Icon {
   left,
   right,
   coolantOn,
-  coolantOff
+  coolantOff,
+  probe,
 }
 
 export const iconList = new Map<Icon, string>([
@@ -70,6 +71,7 @@ export const iconList = new Map<Icon, string>([
   [Icon.down, "M479-226.43 224.43-481 280-537.57l160.39 157.39v-386.43h79.22v388.43L678-536.57 733.57-481 479-226.43Z"],
   [Icon.left, "M400-240 160-480l241-241 43 42-169 169h526v60H275l168 168-43 42Z"],
   [Icon.right, "m560-242-43-42 168-168H160v-60h525L516-681l43-42 241 241-240 240Z"],
+  [Icon.probe, "M135-95v-94h691v94H135Zm345-151L262-464l67-67 104 104v-439h94v439l100-100 67 67-214 214Z"],
 ]);
 
 export function svgIcon(

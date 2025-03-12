@@ -3,7 +3,8 @@ import {Consumer, countCharInstances, EventHandler, Producer} from '../common';
 import {btnClass, css, CssClass, cssClass} from '../ui/commonStyles';
 import {closeModal, pushModal} from './modaldlg';
 import {modalClass} from './dialogStyles';
-import {button} from '../ui/button';
+import {button, setButtonText} from '../ui/button';
+import {FloatSetting} from '../config/settings';
 
 export enum NumpadType {
   INTEGER,
@@ -190,6 +191,14 @@ export function numpadButton(id: string, title: string, value: string, type: Num
     })
   }
   return btn
+}
+
+export function floatButton(id: string, s: FloatSetting): HTMLButtonElement {
+  let id_ = id + s.name;
+  return numpadButton(id_, s.name, s.name + " " + String(s.value), NumpadType.FLOAT, v => {
+    setButtonText(id_, s.name + " " + v)
+    s.setValue(parseFloat(v))
+  })
 }
 
 const numpadClass = cssClass("numpad", css`

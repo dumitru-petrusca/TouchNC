@@ -18,6 +18,7 @@ export abstract class Setting<T, B extends Setting<T, B>> {
 
   protected constructor(name: string, defaultValue: T) {
     this.setName(name)
+    this.value = defaultValue
     this.defaultValue = defaultValue
   }
 

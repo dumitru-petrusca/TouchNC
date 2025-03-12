@@ -74,4 +74,3 @@ const jogPanelClass = cssClass("jogPanel", css`
   height: 100%;
   font-size: 30px;
 `)
-

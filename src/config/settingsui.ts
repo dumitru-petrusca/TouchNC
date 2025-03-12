@@ -218,25 +218,25 @@ const settingsPanelClass = cssClass("settingsPanel", css`
   overflow: auto;
 `)
 
-const settingsPaneClass = cssClass("settingsPane", css`
+export const settingsPaneClass = cssClass("settingsPane", css`
   text-align: center;
   padding-left: 5px;
   padding-right: 5px;
 `)
 
-const settingsPaneTitleClass = cssClass("settingsPaneTitle", css`
+export const settingsPaneTitleClass = cssClass("settingsPaneTitle", css`
   text-align: Left;
   background: turquoise;
   grid-column: 1 / 3;
 `)
 
-const settingsListClass = cssClass("settingsList", css`
+export const settingsListClass = cssClass("settingsList", css`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
 `)
 
-const settingsLabelClass = cssClass("settingsLabel", css`
+export const settingsLabelClass = cssClass("settingsLabel", css`
   text-align: left;
   height: 40px;
 `)

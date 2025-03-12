@@ -1,5 +1,5 @@
-import {getTextInput, label, panel, spacer, toggleFullscreen} from './ui';
-import {btnIcon, button, getButton, setButtonText} from './button';
+import {label, panel, spacer, toggleFullscreen} from './ui';
+import {btnIcon, button} from './button';
 import {homeAll, restart} from '../machine/machine';
 import {EventHandler} from '../common';
 import {css, cssClass, navRowClass} from './commonStyles';
@@ -15,10 +15,12 @@ import {axesDRO} from './dro';
 import {messagesPanel} from '../messages/messagesui';
 import {Icon} from './icons';
 import {mdi} from './mdi';
-import {numpadButton, NumpadType} from '../dialog/numpad';
+import {floatButton} from '../dialog/numpad';
+import {FloatSetting} from '../config/settings';
 
-const minId = 'lathe-min';
-const maxId = 'lathe-max';
+let min = new FloatSetting("Min", 0, -1e6, 1e6)
+let max = new FloatSetting("Max", 0, -1e6, 1e6)
+let pitch = new FloatSetting("Pitch", 0, 0, 1e6)
 
 export class LatheUI implements MachineUI {
   manualTab(): HTMLElement | null {
@@ -43,19 +45,19 @@ export class LatheUI implements MachineUI {
 
 export function latheControls() {
   return panel('lathe_rpm', latheRowClass, [
-    button('', "\u25C0", 'Cut Left', doCutMove(minId)),
+    button('', "\u25C0", 'Cut Left', doCutMove(min.value)),
     spacer(1),
-    button('', "\u25B6", "Cut Right", doCutMove(maxId)),
-    spacer(1),
-
-    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(minId)),
-    spacer(1),
-    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(maxId)),
+    button('', "\u25B6", "Cut Right", doCutMove(max.value)),
     spacer(1),
 
-    positionButton(minId, "Min", 0),
-    positionButton(maxId, "Max", 0),
-    positionButton('lathe_pitch', "Pitch", 0.1),
+    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(min.value)),
+    spacer(1),
+    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(max.value)),
+    spacer(1),
+
+    floatButton("lathe", min),
+    floatButton("lathe", max),
+    floatButton('lathe', pitch),
     label('lathe-rpm', '70 rpm'),
   ]);
 }
@@ -86,31 +88,12 @@ export function latheNavPanel() {
   ])
 }
 
-function positionButton(id: string, name: string, value: number): HTMLButtonElement {
-  return numpadButton(id, name, name + " " + String(value), NumpadType.FLOAT, v => {
-    setButtonText(id, name + " " + v)
-  })
+function doCutMove(x: number | undefined): EventHandler {
+  return _ => sendCommandAndGetStatus(`F${pitch.value} G32 X${x}`)
 }
 
-function getValue(valueId: string): number {
-  let string = getButton(valueId).innerText;
-  string = string.substring(string.indexOf(" ") + 1)
-  return parseFloat(string);
-}
-
-function doCutMove(valueId: string): EventHandler {
-  return function (_: Event) {
-    let f = getTextInput('lathe_pitch')
-    let x = getValue(valueId)
-    sendCommandAndGetStatus(`F${f} G32 X${x}`)
-  }
-}
-
-function doRapidMove(valueId: string): EventHandler {
-  return function (_: Event) {
-    let x = getValue(valueId)
-    sendCommandAndGetStatus(`G0 X${x}`)
-  }
+function doRapidMove(x: number | undefined): EventHandler {
+  return _ => sendCommandAndGetStatus(`G0 X${x}`)
 }
 
 const latheRowClass = cssClass("latheRow", css`

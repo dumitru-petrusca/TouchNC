@@ -1,98 +1,96 @@
-import {beep, getElement, ifPresent, setDisplay} from '../ui/ui';
+import {beep, panel} from '../ui/ui';
 import {sendCommand} from '../http/http';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate.js';
+import {btnIcon, button} from '../ui/button';
+import {css, cssClass} from '../ui/commonStyles';
+import {floatButton} from '../dialog/numpad';
+import {Icon} from '../ui/icons';
+import {FloatSetting} from '../config/settings';
 
 export let isProbing = false;
+let maxTravel = new FloatSetting("Travel", 1000, 0, 10000)
+let feedRate = new FloatSetting("Feed", 100, 0, 10000)
+let touchPlateThickness = new FloatSetting("Offset", 10.0, 0, 10000)
+let retract = new FloatSetting("Retract", 10, 0, 10000)
 let spindleSpeedSetTimeout: NodeJS.Timeout;
+
+export function probeLine(): HTMLDivElement {
+  return panel("", probeLineClass, [
+    floatButton("probe", feedRate),
+    floatButton("probe", maxTravel),
+    floatButton("probe", touchPlateThickness),
+    floatButton("probe", retract),
+    button("", btnIcon(Icon.probe), "", startProbeProcess)
+  ])
+}
+
+// export function probePanel(): HTMLDivElement {
+//   let children = [label("", "Probing", settingsPaneTitleClass)]
+//
+//   children.push(label("", "Feed Rate", settingsLabelClass))
+//   children.push(numpadButton("", "", "" + feedRate, NumpadType.INTEGER, v => {
+//     feedRate = Number(v)
+//   }))
+//
+//   children.push(label("", "Probe Height", settingsLabelClass))
+//   children.push(numpadButton("", "", "" + touchPlateThickness, NumpadType.FLOAT, v => {
+//     touchPlateThickness = Number(v)
+//   }))
+//
+//   children.push(label("", "Max Travel", settingsLabelClass))
+//   children.push(numpadButton("", "", "" + maxTravel, NumpadType.FLOAT, v => {
+//     maxTravel = Number(v)
+//   }))
+//
+//   children.push(button("", "Start Probe", "", startProbeProcess, "", startProbeClass))
+//
+//   let list = panel("", settingsListClass, children);
+//   return panel("", settingsPaneClass, list)
+// }
+
+const probeLineClass = cssClass("probeLine", css`
+  display: grid;
+  grid-template-columns: 3fr 3fr 3fr 3fr 1fr;
+  gap: 10px;
+  height: 100%;
+  font-size: 25px;
+  overflow: auto;
+`)
+
+const startProbeProcess = (_: Event) => {
+  for (let styleSheet of document.styleSheets) {
+    let cssRule = styleSheet.cssRules[0] as CSSStyleRule;
+    console.log(cssRule.selectorText)
+  }
+
+  // G38.6 is FluidNC-specific.  It is like G38.2 except that the units
+  // are always G21 units, i.e. mm in the usual case, and distance is
+  // always incremental.  This avoids problems with probing when in G20
+  // inches mode and undoing a preexisting G91 incremental mode
+  isProbing = true;
+  sendCommand(`G38.6 Z-${maxTravel.value} F${feedRate.value} P${touchPlateThickness.value}`)
+      .catch(reason => finalizeProbing(0, reason));
+}
 
 export const processProbeResult = (response: string) => {
   const split = response.split(":");
   if (split.length > 2) {
     const status = parseInt(split[2].replace("]", "").trim());
     if (isProbing) {
-      finalize_probing(status);
+      finalizeProbing(status, "");
     }
   }
 }
 
-const finalize_probing = (status: number) => {
+const finalizeProbing = (status: number, reason: any) => {
   if (status != 0) {
-    const cmd = "$J=G90 G21 F1000 Z" + (parseFloat(getValue('probetouchplatethickness')) + parseFloat(getValue('proberetract')));
-    sendCommand(cmd);
+    sendCommand(`$J=G90 G21 F1000 Z${touchPlateThickness.value}${retract.value}`);
   } else {
-    new AlertDialog(translate("Error"), translate("Error"));
-    beep();
-  }
-
-  isProbing = false;
-  setClickability('probingbtn', true);
-  setClickability('probingtext', false);
-  setClickability('sd_pause_btn', false);
-  setClickability('sd_resume_btn', false);
-  setClickability('sd_reset_btn', false);
-}
-
-const setClickability = (element: string, visible: boolean) => {
-  setDisplay(element, visible ? 'table-row' : 'none');
-}
-
-const onprobemaxtravelChange = () => {
-  const travel = parseFloat(getValue('probemaxtravel'));
-  if (travel > 9999 || travel <= 0 || isNaN(travel) || (travel === null)) {
-    new AlertDialog(translate("Out of range"), translate("Value of maximum probe travel must be between 1 mm and 9999 mm !"));
-    return false;
-  }
-  return true;
-}
-
-const onprobefeedrateChange = () => {
-  const feedratevalue = parseInt(getValue('probefeedrate'));
-  if (feedratevalue <= 0 || feedratevalue > 9999 || isNaN(feedratevalue) || (feedratevalue === null)) {
-    new AlertDialog(translate("Out of range"), translate("Value of probe feedrate must be between 1 mm/min and 9999 mm/min !"));
-    return false
-  }
-  return true;
-}
-
-const onproberetractChange = () => {
-  const thickness = parseFloat(getValue('proberetract'));
-  if (thickness < 0 || thickness > 999 || isNaN(thickness) || (thickness === null)) {
-    new AlertDialog(translate("Out of range"), translate("Value of probe retract must be between 0 mm and 9999 mm !"));
-    return false;
-  }
-  return true;
-}
-
-const onprobetouchplatethicknessChange = () => {
-  const thickness = parseFloat(getValue('probetouchplatethickness'));
-  if (thickness < 0 || thickness > 999 || isNaN(thickness) || (thickness === null)) {
-    new AlertDialog(translate("Out of range"), translate("Value of probe touch plate thickness must be between 0 mm and 9999 mm !"));
-    return false;
-  }
-  return true;
-}
-
-const StartProbeProcess = () => {
-  // G38.6 is FluidNC-specific.  It is like G38.2 except that the units
-  // are always G21 units, i.e. mm in the usual case, and distance is
-  // always incremental.  This avoids problems with probing when in G20
-  // inches mode and undoing a preexisting G91 incremental mode
-  if (!onprobemaxtravelChange() ||
-      !onprobefeedrateChange() ||
-      !onproberetractChange() ||
-      !onprobetouchplatethicknessChange()) {
-    return;
-  }
-  isProbing = true;
-  let cmd = "G38.6 Z-" + parseFloat(getValue('probemaxtravel')) + ' F' + parseInt(getValue('probefeedrate')) + ' P' + getValue('probetouchplatethickness');
-  sendCommand(cmd).catch(reason => {
-    finalize_probing(0);
     new AlertDialog(translate("Error"), reason);
     beep();
-  });
-  setClickability('probingbtn', false);
-  setClickability('probingtext', true);
+  }
+  isProbing = false;
 }
 
 const setSpindleSpeed = (speed: number) => {
@@ -105,16 +103,11 @@ const setSpindleSpeed = (speed: number) => {
   }
 }
 
-const setProbeDetected = (state: boolean) => {
-  const color = state ? "green" : "grey";
-  const glyph = state ? "ok-circle" : "record";
-  // setHTML("touch_status_icon", svgIcon(glyph, "1.3em", "1.3em", color));
-}
-
-function getValue(name: string) {
-  return (getElement(name) as any).value;
-}
-
-function setHTML(name: string, val: string) {
-  ifPresent(name, e => e.innerHTML = val);
-}
+const probePanelClass = cssClass("probePanel", css`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 10px;
+  height: 100%;
+  font-size: 30px;
+`)

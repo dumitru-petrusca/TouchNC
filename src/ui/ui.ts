@@ -1,5 +1,5 @@
 import {EventHandler} from '../common';
-import {css, cssClass, CssClass, textInputClass} from './commonStyles';
+import {css, cssClass, CssClass, registerClass, textInputClass} from './commonStyles';
 import {FeedbackMode, preferences} from '../config/preferences';
 
 export type ContentElement = HTMLElement | SVGSVGElement | string
@@ -135,6 +135,34 @@ export function panel(id: string, css?: CssClass, content?: Content): HTMLDivEle
     e.className = css.name;
   }
   return e
+}
+
+const gridUnit = (i: number) => i == 0 ? "auto" : i + "px";
+
+export function rowPanel(id: string, cols: number[], content: Content): HTMLDivElement {
+  let css = registerClass(`row${cols.join("")}`, css => {
+    css.display = "grid"
+    css.gridTemplateColumns = cols.map(gridUnit).join(" ")
+    css.gap = "10px"
+    css.width = "100%";
+    css.maxWidth = "100%";
+    css.maxHeight = "100%";
+    css.overflow = "auto";
+  });
+  return element('div', id, css, content) as HTMLDivElement
+}
+
+export function colPanel(id: string, rows: number[], content: Content): HTMLDivElement {
+  let css = registerClass(`col${rows.join("")}`, css => {
+    css.display = "grid"
+    css.gridTemplateRows = rows.map(gridUnit).join(" ")
+    css.gap = "10px"
+    css.width = "100%";
+    css.maxWidth = "100%";
+    css.maxHeight = "100%";
+    css.overflow = "auto";
+  });
+  return element('div', id, css, content) as HTMLDivElement
 }
 
 export function spacer(size: number): HTMLElement {
