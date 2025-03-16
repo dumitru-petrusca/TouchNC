@@ -1,4 +1,5 @@
 import {AlphanumericSetting, BooleanSetting, FloatSetting, IntegerSetting, SelectOption, SelectSetting, Setting, StringSetting} from './config/settings';
+import {sendCommand} from './http/http';
 
 export function serializeSettings(s: Setting<any, any>[]): any {
   return {EEPROM: s.map(serializeSetting)}
@@ -51,3 +52,13 @@ function serializeOption(o: SelectOption) {
 //   return root
 // }
 
+let spindleSpeedSetTimeout: NodeJS.Timeout;
+const setSpindleSpeed = (speed: number) => {
+  if (spindleSpeedSetTimeout != null) {
+    clearTimeout(spindleSpeedSetTimeout)
+  }
+  if (speed >= 1) {
+    let spindleTabSpindleSpeed = speed
+    spindleSpeedSetTimeout = setTimeout(() => sendCommand('S' + spindleTabSpindleSpeed), 500)
+  }
+}

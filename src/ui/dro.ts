@@ -1,28 +1,34 @@
-import {label, panel, panel2} from './ui';
+import {column, label, row} from './ui';
 import {btnIcon, button, getButtonValueAsString} from './button';
 import {axisNames, getAxisValue, gotoAxisValue, lockAxis, setAxisValue} from '../machine/machine';
 import {Numpad, NumpadType} from '../dialog/numpad';
 import {mmToCurrent} from '../machine/modal';
-import {css, cssClass, grid, mposClass} from './commonStyles';
+import {mposClass} from './commonStyles';
 import {Icon} from './icons';
 import {jogPanel} from '../machine/jog';
 
-export const axesDRO = () => panel2('axes-controls', grid().columns("1fr auto").maxWidth("100%"), [
-  panel('axis-position', droClass, axisNames.map(makeDRO)),
-  jogPanel()
-])
+export function axesDRO() {
+  let droRows = column('axis-position').maxWidth("100%");
+  axisNames.forEach(axis => droRows.child("auto", makeDRO(axis)))
+  return row()
+      .maxWidth(`100%`)
+      .child("1fr", droRows)
+      .child("auto", jogPanel())
+      .build()
+}
 
 function makeDRO(axis: string): HTMLElement {
   let axisU = axis.toUpperCase()
-  return panel2(`${axis}-dro`, grid().columns("1fr 5fr 2fr 3fr 3fr 3fr 3fr").maxWidth("100%"), [
-    label('', axisU),
-    button(`wpos-${axis}`, '0.00', `Modify ${axis} position`, showAxisNumpad, axis),
-    label(`mpos-${axis}`, '0.00', mposClass),
-    button(`zero-${axis}`, btnIcon(Icon.delete), `Set ${axisU} to 0`, btnZeroAxis, axisU),
-    button(`half-${axis}`, `1/2`, `Divide ${axisU} by 2`, btnHalfAxis, axisU),
-    button(`goto0-${axis}`, btnIcon(Icon.gotoZero), `Goto 0 in ${axisU}`, btnGoto0, axisU),
-    button(`lock-${axis}`, btnIcon(Icon.lockClosed), `Toggle ${axisU} MPG`, lockAxis, axisU)
-  ])
+  return row(`${axis}-dro`)
+      .maxWidth("100%")
+      .child("1fr", label('', axisU))
+      .child("5fr", button(`wpos-${axis}`, '0.00', `Modify ${axis} position`, showAxisNumpad, axis))
+      .child("2fr", label(`mpos-${axis}`, '0.00', mposClass))
+      .child("3fr", button(`zero-${axis}`, btnIcon(Icon.delete), `Set ${axisU} to 0`, btnZeroAxis, axisU))
+      .child("3fr", button(`half-${axis}`, `1/2`, `Divide ${axisU} by 2`, btnHalfAxis, axisU))
+      .child("3fr", button(`goto0-${axis}`, btnIcon(Icon.gotoZero), `Goto 0 in ${axisU}`, btnGoto0, axisU))
+      .child("3fr", button(`lock-${axis}`, btnIcon(Icon.lockClosed), `Toggle ${axisU} MPG`, lockAxis, axisU))
+      .build()
 }
 
 function showAxisNumpad(e: Event) {
@@ -38,11 +44,3 @@ const btnHalfAxis = (e: Event) => {
 const btnZeroAxis = (e: Event) => setAxisValue(getButtonValueAsString(e), 0);
 
 const btnGoto0 = (e: Event) => gotoAxisValue(getButtonValueAsString(e), 0)
-
-const droClass = cssClass("dro", css`
-  display: grid;
-  grid-auto-rows: minmax(auto, auto);
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-`)

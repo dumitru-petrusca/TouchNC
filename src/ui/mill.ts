@@ -2,8 +2,8 @@ import {axesDRO} from './dro';
 import {mdi} from './mdi';
 import {messagesPanel} from '../messages/messagesui';
 import {createOverridesPanel} from '../machine/override';
-import {column, label, panel, panel3, row, toggleFullscreen} from './ui';
-import {css, cssClass, navRowClass, tabletTabClass} from './commonStyles';
+import {column, label, panel, row, toggleFullscreen} from './ui';
+import {navRowClass, tabletTabClass} from './commonStyles';
 import {createMenu, MenuItem} from './menu';
 import {StatusDialog} from '../dialog/statusdlg';
 import {FSDialog} from '../dialog/fsdialog';
@@ -63,16 +63,6 @@ export class MillUI implements MachineUI {
   }
 }
 
-const toolProbeClass = cssClass("toolProbe", css`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: auto;
-`)
-
 function millNavPanel() {
   return panel('', navRowClass, [
     createMenu('dropdown', "Menu", "left", [
@@ -99,18 +89,9 @@ function millNavPanel() {
 }
 
 function statusPanel(): HTMLElement {
-  return panel('status', statusRowClass, [
-    messagesPanel(),
-    toolPathPanel(),
-  ]);
+  return row('status')
+      .overflow("auto").maxWidth("100%").maxHeight("100%")
+      .child("1fr", messagesPanel())
+      .child("2fr", toolPathPanel())
+      .build()
 }
-
-const statusRowClass = cssClass("statusRow", css`
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: auto;
-`)

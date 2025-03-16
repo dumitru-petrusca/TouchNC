@@ -1,6 +1,3 @@
-import {Consumer} from '../common';
-import {CSSStyleDeclarationBuilder} from '../machine/style';
-
 let classes: CssClass[] = []
 
 export class Css {
@@ -36,19 +33,6 @@ export function cssClass(name: string, css: Css): CssClass {
   let cssClass = new CssClass(name, css.style);
   classes.push(cssClass)
   return cssClass
-}
-
-export function registerClass(name: string, configure: Consumer<CSSStyleDeclaration>): CssClass {
-  let sheet = document.styleSheets[0];
-  for (let rule of sheet.cssRules) {
-    if ((rule as CSSStyleRule)?.selectorText == name) {
-      return new CssClass(name, "")
-    }
-  }
-  let i = sheet.insertRule(`.${name} { }`, sheet.cssRules.length)
-  let rule = sheet.cssRules[i] as CSSStyleRule
-  configure(rule!.style)
-  return new CssClass(name, "")
 }
 
 export function registerClasses(): void {
@@ -162,10 +146,3 @@ export const mposClass = cssClass("mpos", css`
   color: #606060;
   justify-self: right;
 `)
-
-export function grid(): CSSStyleDeclarationBuilder {
-  return new CSSStyleDeclarationBuilder()
-      .display("grid")
-      .gridGap("10px")
-      .height("100%")
-}

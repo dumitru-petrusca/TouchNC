@@ -12,14 +12,8 @@ import {setCurrentToolOffset} from './tools';
 import {setAxisValue} from './machine';
 
 export let isProbing = false;
-let spindleSpeedSetTimeout: NodeJS.Timeout;
 
 const startProbeProcess = (_: Event) => {
-  for (let styleSheet of document.styleSheets) {
-    let cssRule = styleSheet.cssRules[0] as CSSStyleRule;
-    console.log(cssRule.selectorText)
-  }
-
   // G38.6 is FluidNC-specific.  It is like G38.2 except that the units
   // are always G21 units, i.e. mm in the usual case, and distance is
   // always incremental.  This avoids problems with probing when in G20
@@ -38,7 +32,7 @@ export const processProbeResult = (response: string) => {
       error("")
     } else {
       setAxisValue("Z", 0)
-      sendCommand(`$J=G90 G21 F1000 Z${retractBtn.getValue()}`); // retract the tool
+      sendCommand(`$J=G90 G21 F1000 Z${retractBtn.getValue()}`);  // retract the tool
       let coords = coordsStr.split(",").map(s => parseFloat(s.trim()));
       setCurrentToolOffset(coords[2])
     }
@@ -62,7 +56,7 @@ let probeStart = button("probeStart", btnIcon(Icon.probe), "", startProbeProcess
 export function probeRow() {
   probeStart.disabled = !enabled()
   return row()
-      .child("3fr", select("probeType", btnClass, probeType, (probeType: string) => {
+      .child("3fr", select("probeType", btnClass, probeType, (_: string) => {
         feedRateBtn.update()
         maxTravelBtn.update()
         retractBtn.update()
@@ -74,14 +68,4 @@ export function probeRow() {
       .child("3fr", retractBtn.build())
       .child("1fr", probeStart)
       .build()
-}
-
-const setSpindleSpeed = (speed: number) => {
-  if (spindleSpeedSetTimeout != null) {
-    clearTimeout(spindleSpeedSetTimeout)
-  }
-  if (speed >= 1) {
-    let spindleTabSpindleSpeed = speed
-    spindleSpeedSetTimeout = setTimeout(() => sendCommand('S' + spindleTabSpindleSpeed), 500)
-  }
 }

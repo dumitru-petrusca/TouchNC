@@ -1,7 +1,6 @@
 import {EventHandler} from '../common';
-import {css, cssClass, CssClass, grid, registerClass, textInputClass} from './commonStyles';
+import {css, cssClass, CssClass, textInputClass} from './commonStyles';
 import {FeedbackMode, preferences} from '../config/preferences';
-import {CSSStyleDeclarationBuilder} from '../machine/style';
 
 export type ContentElement = HTMLElement | SVGSVGElement | string
 export type Content = ContentElement | ContentElement[]
@@ -14,10 +13,6 @@ let audioOk = true;
 
 export function setEnabled(id: string, enabled: boolean) {
   ifPresent(id, e => (e as any).disabled = !enabled);
-}
-
-export function setDisplay(name: string, val: string) {
-  ifPresent(name, e => e.style.display = val);
 }
 
 // Element
@@ -115,10 +110,6 @@ export function getTextInput(id: string): string {
   return (getElement(id) as HTMLInputElement).value
 }
 
-export function setTextArea(name: string, val: string) {
-  ifPresent(name, e => (e as HTMLTextAreaElement).value = val);
-}
-
 // Checkbox
 
 export function checkbox(id: string, value: boolean, css?: CssClass, onChange?: EventHandler) {
@@ -139,13 +130,18 @@ export function panel(id: string, css?: CssClass, content?: Content): HTMLDivEle
 }
 
 export class PanelBuilder {
-  style = grid()
+  style: Partial<CSSStyleDeclaration> = {};
   children: HTMLElement[] = []
   weights = ""
-  private type: "row" | "col";
+  type: "row" | "col";
+  id?: string;
 
-  constructor(type: "row" | "col") {
+  constructor(type: "row" | "col", id?: string) {
+    this.id = id;
     this.type = type;
+    this.style.display = "grid"
+    this.style.gridGap = "10px"
+    this.style.height = "100%"
   }
 
   child(weight: string | number, e: HTMLElement | PanelBuilder): PanelBuilder {
@@ -155,62 +151,44 @@ export class PanelBuilder {
     return this
   }
 
-  maxWidth(s: string): PanelBuilder {
-    this.style.maxWidth(s)
+  maxWidth(width: string): PanelBuilder {
+    this.style.maxWidth = width
     return this
   }
 
-  height(s: string) {
-    this.style.height(s)
+  maxHeight(height: string) {
+    this.style.maxHeight = height
+    return this
+  }
+
+  height(height: string) {
+    this.style.height = height
     return this
   }
 
   overflow(overflow: string) {
-    this.style.overflow(overflow)
+    this.style.overflow = overflow
     return this
   }
 
   build(): HTMLDivElement {
     if (this.type == "row") {
-      this.style.columns(this.weights)
+      this.style.gridTemplateColumns = this.weights
     } else {
-      this.style.gridTemplateRows(this.weights)
+      this.style.gridTemplateRows = this.weights
     }
-    return panel2("", this.style, this.children);
+    let e = element('div', this.id ?? "", undefined, this.children) as HTMLDivElement;
+    Object.assign(e.style, this.style);
+    return e
   }
 }
 
-export function column(): PanelBuilder {
-  return new PanelBuilder("col")
+export function column(id?: string): PanelBuilder {
+  return new PanelBuilder("col", id)
 }
 
-export function row(): PanelBuilder {
-  return new PanelBuilder("row")
-}
-
-export function panel3(type: "row" | "col"): PanelBuilder {
-  return new PanelBuilder(type)
-}
-
-export function panel2(id: string, style: CSSStyleDeclarationBuilder, content: Content): HTMLDivElement {
-  let e = element('div', id, undefined, content) as HTMLDivElement;
-  style.applyTo(e)
-  return e
-}
-
-const gridUnit = (i: number) => i == 0 ? "auto" : i + "fr";
-
-export function colPanel(id: string, rows: number[], content: Content): HTMLDivElement {
-  let css = registerClass(`col_${rows.map(gridUnit).join("_")}`, css => {
-    css.display = "grid"
-    css.gridTemplateRows = rows.map(gridUnit).join(" ")
-    css.gap = "10px"
-    css.width = "100%";
-    css.maxWidth = "100%";
-    css.maxHeight = "100%";
-    css.overflow = "auto";
-  });
-  return element('div', id, css, content) as HTMLDivElement
+export function row(id?: string): PanelBuilder {
+  return new PanelBuilder("row", id)
 }
 
 export function spacer(size: number): HTMLElement {
