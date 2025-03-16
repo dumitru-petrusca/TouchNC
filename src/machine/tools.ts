@@ -1,11 +1,10 @@
 import {ifPresent, label, panel, row, setTextInput, textInput} from '../ui/ui';
 import {GET_TOOL_TABLE_CMD, sendCommandAndGetStatus} from '../http/http';
-import {css, cssClass} from '../ui/commonStyles';
+import {css, cssClass, mposClass} from '../ui/commonStyles';
 import {btnIcon, button, getButtonValuesAsNumber, setButtonText} from '../ui/button';
 import {currentModal, mmToDisplay} from './modal';
 import {toolChannel, unitChannel} from '../events/eventbus';
 import {Icon} from '../ui/icons';
-import {mposClass} from '../ui/dro';
 
 class Tool {
   number: number

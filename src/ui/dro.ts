@@ -2,8 +2,8 @@ import {label, panel, panel2} from './ui';
 import {btnIcon, button, getButtonValueAsString} from './button';
 import {axisNames, getAxisValue, gotoAxisValue, lockAxis, setAxisValue} from '../machine/machine';
 import {Numpad, NumpadType} from '../dialog/numpad';
-import {mmToCurrent, currentToMm} from '../machine/modal';
-import {css, cssClass, grid} from './commonStyles';
+import {mmToCurrent} from '../machine/modal';
+import {css, cssClass, grid, mposClass} from './commonStyles';
 import {Icon} from './icons';
 import {jogPanel} from '../machine/jog';
 
@@ -46,11 +46,3 @@ const droClass = cssClass("dro", css`
   width: 100%;
   max-width: 100%;
 `)
-
-export const mposClass = cssClass("mpos", css`
-  padding-top: 0.1em;
-  font-size: 0.9em;
-  color: #606060;
-  justify-self: right;
-`)
-

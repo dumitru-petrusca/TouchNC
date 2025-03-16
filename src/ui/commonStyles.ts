@@ -156,6 +156,13 @@ export const tabletTabClass = cssClass("tablettab", css`
   overflow: auto;
 `)
 
+export const mposClass = cssClass("mpos", css`
+  padding-top: 0.1em;
+  font-size: 0.9em;
+  color: #606060;
+  justify-self: right;
+`)
+
 export function grid(): CSSStyleDeclarationBuilder {
   return new CSSStyleDeclarationBuilder()
       .display("grid")

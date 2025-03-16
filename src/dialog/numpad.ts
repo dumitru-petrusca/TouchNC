@@ -1,12 +1,11 @@
 import {element, panel, textInput} from '../ui/ui';
-import {Consumer, countCharInstances, EventHandler, Producer} from '../common';
+import {Consumer, countCharInstances, EventHandler, Producer, randomString} from '../common';
 import {btnClass, css, CssClass, cssClass} from '../ui/commonStyles';
 import {closeModal, pushModal} from './modaldlg';
 import {modalClass} from './dialogStyles';
 import {button} from '../ui/button';
 import {unitChannel} from '../events/eventbus';
 import {currentToMm, mmToCurrent, mmToDisplay} from '../machine/modal';
-import {randomUUID} from 'crypto';
 
 export enum NumpadType {
   INTEGER,
@@ -223,7 +222,7 @@ class CoordinateButton {
 
   constructor(name: string, value: number, min: number, max: number) {
     this.name = name;
-    this.id = name + "-" + randomUUID()
+    this.id = name + "-" + randomString(5)
     this.value = mmToCurrent(value);
     this.min = mmToCurrent(min);
     this.max = mmToCurrent(max);
@@ -243,7 +242,7 @@ class CoordinateButton {
   build(): HTMLButtonElement {
     this.e = numpadButton(this.id, this.name, "", NumpadType.FLOAT, v => this.setValue(parseFloat(v)));
     this.update()
-    unitChannel.register(e => this.update())
+    unitChannel.register(_ => this.update())
     return this.e
   }
 

@@ -1,7 +1,6 @@
 import {Firmware} from '../dialog/connectdlg';
 import {ifPresent, setEnabled, setLabel} from '../ui/ui';
 import {FEED_HOLD_CMD, FEED_RESUME_CMD, GET_PARSER_STATE_CMD, HOME_CMD, RESET_CMD, sendCommand, sendCommandAndGetStatus, sendHttpRequest, UNLOCK_CMD} from '../http/http';
-import {isProbing} from './probe';
 import {Icon, svgIcon} from '../ui/icons';
 import {Coordinate, positionChannel, progressChannel, restartChannel, State, stateChannel, tabSelectChannel, unitChannel} from '../events/eventbus';
 import {getButtonValueAsString} from '../ui/button';
@@ -68,9 +67,9 @@ export const requestModes = () => sendCommandAndGetStatus(GET_PARSER_STATE_CMD);
 
 export const stopAndRecover = () => {
   sendCommand(RESET_CMD);
-  if (isProbing) {
+  // if (isProbing) {
     // probe_failed_notification('Probe Canceled'); //TODO(dp) function is missing
-  }
+  // }
   // To stop FluidNC you send a reset character, which causes some modes
   // be reset to their default values.  In particular, it sets G21 mode,
   // which affects the coordinate display and the jog distances.
