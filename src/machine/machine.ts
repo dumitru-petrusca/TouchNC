@@ -1,11 +1,11 @@
 import {Firmware} from '../dialog/connectdlg';
-import {getElement, ifPresent, setEnabled, setLabel} from '../ui/ui';
+import {ifPresent, setEnabled, setLabel} from '../ui/ui';
 import {FEED_HOLD_CMD, FEED_RESUME_CMD, GET_PARSER_STATE_CMD, HOME_CMD, RESET_CMD, sendCommand, sendCommandAndGetStatus, sendHttpRequest, UNLOCK_CMD} from '../http/http';
 import {isProbing} from './probe';
 import {Icon, svgIcon} from '../ui/icons';
 import {Coordinate, positionChannel, progressChannel, restartChannel, State, stateChannel, tabSelectChannel, unitChannel} from '../events/eventbus';
 import {getButtonValueAsString} from '../ui/button';
-import {currentModal, decimals, factor} from './modal';
+import {currentModal, mmToDisplay} from './modal';
 import {arraysEqual} from '../common';
 import {ConfirmDialog} from '../dialog/confirmdlg';
 import {translate} from '../translate';
@@ -350,16 +350,14 @@ function updateEnabled(state: State, force: boolean = false) {
 }
 
 export function updatePositions(state: State, force: boolean = false) {
-  const digits = decimals();
-  let f = factor()
   state.wpos.forEach((pos, index) => {
     if (index < axisCount && (pos != currentState.wpos[index] || force)) {
-      setLabel(`wpos-${axisNames[index]}`, Number(pos * f).toFixed(index > 2 ? 2 : digits));
+      setLabel(`wpos-${axisNames[index]}`, mmToDisplay(pos));
     }
   });
   state.mpos?.forEach((pos, index) => {
     if (index < axisCount && (pos != currentState.mpos[index] || force)) {
-      setLabel('mpos-' + axisNames[index], Number(pos * f).toFixed(index > 2 ? 2 : digits));
+      setLabel('mpos-' + axisNames[index], mmToDisplay(pos));
     }
   });
 }

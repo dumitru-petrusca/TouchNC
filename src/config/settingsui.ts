@@ -2,7 +2,7 @@ import {numpadButton, NumpadType} from '../dialog/numpad';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
-import {EventHandler} from '../common';
+import {Consumer, EventHandler} from '../common';
 import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting} from './settings';
 import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
 import {btnIcon, button} from '../ui/button';
@@ -88,7 +88,7 @@ export class SettingsUI {
     return panel(paneId, settingsPaneClass, list)
   }
 
-  createWidget(s: Setting<any, any>, redrawCallback: EventHandler): HTMLElement {
+  createWidget(s: Setting<any, any>, redrawCallback: Consumer<string>): HTMLElement {
     if (s instanceof IntegerSetting) {
       return numpadButton(s.path, "", "" + s.getValue(), NumpadType.INTEGER, v => {
         s.setValue(Number(v))
@@ -120,18 +120,12 @@ export class SettingsUI {
         this.saveSetting(s);
       })
     } else if (s instanceof GroupSetting) {
-      return this.select(s.path, btnClass, s, (e) => {
-        let value = Number((e.target as HTMLSelectElement).value);
-        s.setValue(s.findOption(value)!.text)
-        redrawCallback?.(e)
+      return select(s.path, btnClass, s, (value) => {
+        redrawCallback?.(value)
         //TODO-dp do I need to save anything?
       })
     } else if (s instanceof SelectSetting) {
-      return this.select(s.path, btnClass, s, (e) => {
-        let value = Number((e.target as HTMLSelectElement).value);
-        s.setValue(s.findOption(value)!.text)
-        this.saveSetting(s);
-      })
+      return select(s.path, btnClass, s, _ => this.saveSetting(s))
     } else {
       return label(s.path, "N/A", settingsValueClass);
     }
@@ -176,20 +170,27 @@ export class SettingsUI {
       this.updateVisibility(g)
     }
   }
-
-  select(id: string, css: CssClass, select: SelectSetting, onChange?: EventHandler) {
-    const e = element("select", id, css, undefined, onChange) as HTMLSelectElement;
-    select.options.forEach(o => {
-      const option = document.createElement("option") as HTMLOptionElement
-      option.value = "" + o.value;
-      option.text = o.displayText;
-      option.textContent = o.displayText;
-      e.appendChild(option);
-    });
-    e.value = "" + select.index()
-    return e
-  }
 }
+
+export function select(id: string, css: CssClass, select: SelectSetting, onChange?: Consumer<string>) {
+  let listener = (e: Event) => {
+    let index = Number((e.target as HTMLSelectElement).value);
+    let value = select.findOption(index)!.text;
+    select.setValue(value)
+    onChange?.(value)
+  }
+  const e = element("select", id, css, undefined, listener) as HTMLSelectElement;
+  select.options.forEach(o => {
+    const option = document.createElement("option") as HTMLOptionElement
+    option.value = "" + o.value;
+    option.text = o.displayText;
+    option.textContent = o.displayText;
+    e.appendChild(option);
+  });
+  e.value = "" + select.index()
+  return e
+}
+
 
 const topPanelClass = cssClass("topPanel", css`
   display: grid;

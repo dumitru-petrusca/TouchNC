@@ -3,8 +3,10 @@ import {Consumer, countCharInstances, EventHandler, Producer} from '../common';
 import {btnClass, css, CssClass, cssClass} from '../ui/commonStyles';
 import {closeModal, pushModal} from './modaldlg';
 import {modalClass} from './dialogStyles';
-import {button, setButtonText} from '../ui/button';
-import {FloatSetting} from '../config/settings';
+import {button} from '../ui/button';
+import {unitChannel} from '../events/eventbus';
+import {currentToMm, mmToCurrent, mmToDisplay} from '../machine/modal';
+import {randomUUID} from 'crypto';
 
 export enum NumpadType {
   INTEGER,
@@ -193,12 +195,72 @@ export function numpadButton(id: string, title: string, value: string, type: Num
   return btn
 }
 
-export function floatButton(id: string, s: FloatSetting): HTMLButtonElement {
-  let id_ = id + s.name;
-  return numpadButton(id_, s.name, s.name + " " + String(s.value), NumpadType.FLOAT, v => {
-    setButtonText(id_, s.name + " " + v)
-    s.setValue(parseFloat(v))
-  })
+const observer = new MutationObserver((mutations, observer) => {
+  for (const mutation of mutations) {
+    if (mutation.type === 'childList') {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          console.log('Element added:', node);
+        }
+      });
+      mutation.removedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          console.log('Element removed:', node);
+        }
+      });
+    }
+  }
+});
+
+class CoordinateButton {
+  private readonly name: string;
+  private readonly id: string
+  private value: number;
+  private min: number;
+  private max: number;
+  private enabled: Producer<boolean>;
+  private e?: HTMLButtonElement
+
+  constructor(name: string, value: number, min: number, max: number) {
+    this.name = name;
+    this.id = name + "-" + randomUUID()
+    this.value = mmToCurrent(value);
+    this.min = mmToCurrent(min);
+    this.max = mmToCurrent(max);
+    this.enabled = () => true
+  }
+
+  setEnabled(enabled: Producer<boolean>) {
+    this.enabled = enabled;
+    return this
+  }
+
+  setValue(value: number) {
+    this.value = currentToMm(value)
+    this.update()
+  }
+
+  build(): HTMLButtonElement {
+    this.e = numpadButton(this.id, this.name, "", NumpadType.FLOAT, v => this.setValue(parseFloat(v)));
+    this.update()
+    unitChannel.register(e => this.update())
+    return this.e
+  }
+
+  update() {
+    this.e?.replaceChildren(this.name + " " + mmToDisplay(this.value))
+    if (this.e != undefined) {
+      this.e.disabled = !this.enabled()
+    }
+  }
+
+  getValue() {
+    return this.value
+  }
+}
+
+export function coordButton(name: string, value: number, min: number, max: number): CoordinateButton {
+  return new CoordinateButton(name, value, min, max)
 }
 
 const numpadClass = cssClass("numpad", css`

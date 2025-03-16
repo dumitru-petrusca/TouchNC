@@ -2,7 +2,7 @@ import {axesDRO} from './dro';
 import {mdi} from './mdi';
 import {messagesPanel} from '../messages/messagesui';
 import {createOverridesPanel} from '../machine/override';
-import {colPanel, label, panel, rowPanel, toggleFullscreen} from './ui';
+import {column, label, panel, panel3, row, toggleFullscreen} from './ui';
 import {css, cssClass, navRowClass, tabletTabClass} from './commonStyles';
 import {createMenu, MenuItem} from './menu';
 import {StatusDialog} from '../dialog/statusdlg';
@@ -15,7 +15,7 @@ import {toolPathPanel} from './program';
 import {createToolTable} from '../machine/tools';
 import {Icon} from './icons';
 import {sendCommandAndGetStatus, UNLOCK_CMD} from '../http/http';
-import {probeLine} from '../machine/probe';
+import {probeRow} from '../machine/probe';
 
 export interface MachineUI {
   manualTab(): HTMLElement | null;
@@ -50,10 +50,15 @@ export class MillUI implements MachineUI {
       millNavPanel(),
       axesDRO(),
       mdi(),
-      rowPanel('', [1, 1], [
-        createToolTable(),
-        colPanel('', [0, 1], [probeLine(), messagesPanel()])
-      ]),
+      row()
+          .overflow("auto")
+          .maxWidth("100%")
+          .child("2fr", createToolTable())
+          .child("3fr", column()
+              .child("auto", probeRow())
+              .child("1fr", messagesPanel())
+          )
+          .build()
     ])
   }
 }

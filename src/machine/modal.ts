@@ -1,8 +1,11 @@
 import {setLabel} from '../ui/ui';
 import {setButtonIcon, setButtonText} from '../ui/button';
 import {GET_PARSER_STATE_CMD, sendCommand, sendCommandAndGetStatus} from '../http/http';
-import {tabSelectChannel, unitChannel, UnitEvent} from '../events/eventbus';
+import {tabSelectChannel, toolChannel, unitChannel, UnitEvent} from '../events/eventbus';
 import {Icon} from '../ui/icons';
+
+const MM = 'G21';
+const INCH = 'G20';
 
 export class ModalType {
   tool = 0
@@ -12,7 +15,7 @@ export class ModalType {
   motion: '' | 'G80' | 'G0' | 'G1' | 'G2' | 'G3' | 'G38.1' | 'G38.2' | 'G38.3' | 'G38.4' = ''
   wcs: 'G54' | 'G55' | 'G56' | 'G57' | 'G58' | 'G59' = 'G54'
   plane: 'G17' | 'G18' | 'G19' = 'G17'
-  units: 'G20' | 'G21' = 'G21'
+  units: 'G20' | 'G21' = MM
   distance: 'G90' | 'G91' = 'G90'
   feed: '' | 'G93' | 'G94' = ''
   program: '' | 'M0' | 'M1' | 'M2' | 'M30' = ''
@@ -29,7 +32,7 @@ const modalModes = [
   },
   {name: 'wcs', values: ['G54', 'G55', 'G56', 'G57', 'G58', 'G59']},
   {name: 'plane', values: ['G17', 'G18', 'G19']},
-  {name: 'units', values: ['G20', 'G21']},
+  {name: 'units', values: [INCH, MM]},
   {name: 'distance', values: ['G90', 'G91']},
   {name: 'feed', values: ['G93', 'G94']},
   {name: 'program', values: ['M0', 'M1', 'M2', 'M30']},
@@ -52,13 +55,7 @@ let planeNames = new Map<string, string>([
 ])
 
 export let currentModal = new ModalType()
-
-let reportingUnits = 0;  // Should be set from $10
-// If a browser reload occurs during FluidNC motion, the web page refresh can
-// cause crashes because of ESP32 FLASH vs ISR conflicts.  We cannot block that
-// entirely, but we can make the user confirm via a dialog box.  Unfortunately,
-// due to security considerations, it is not possible to control the text in
-// that dialog box.
+export let oldModal = new ModalType()
 
 export const processModal = (msg: string) => {
   let modal = structuredClone(currentModal)
@@ -83,19 +80,22 @@ export const processModal = (msg: string) => {
     }
   });
 
-  let unitsEvent = modal.units != currentModal.units;
+  oldModal = currentModal
   currentModal = modal;
   updateModes();
 
-  if (unitsEvent) {
+  if (oldModal.units != currentModal.units) {
     unitChannel.sendEvent(new UnitEvent(currentModal.units))
+  }
+  if (oldModal.tool != currentModal.tool) {
+    toolChannel.sendEvent()
   }
 }
 
 const updateModes = () => {
   setLabel('tool', 'T' + currentModal.tool)
   setLabel('plane', planeNames.get(currentModal.plane) || '')
-  setButtonText('units', currentModal.units == 'G21' ? 'mm' : 'in')
+  setButtonText('units', currentModal.units == MM ? 'mm' : 'in')
   setButtonText('wpos-label', currentModal.wcs);
   setButtonText('distance', currentModal.distance == 'G90' ? 'ABS' : 'INC');
   setButtonIcon('spindle', spindleModeNames.get(currentModal.spindle)!);
@@ -112,37 +112,13 @@ function getCoolantIcon() {
   return icon
 }
 
-export function isInchMode() {
-  return currentModal.units == 'G20'
-}
-
-export function isMmMode() {
-  return currentModal.units == 'G21'
-}
-
-// Unit conversion factor - depends on both $13 setting and parser units
-export function factor(): number {
-  switch (currentModal.units) {
-    case 'G20':  // inch
-      return reportingUnits === 0 ? 1 / 25.4 : 1.0;
-    case 'G21':  // mm
-      return reportingUnits === 0 ? 1.0 : 25.4;
-  }
-  return 1
-}
-
-// Unit conversion factor - depends on both $13 setting and parser units
-export function decimals() {
-  switch (currentModal.units) {
-    case 'G20': // inch
-      return 3;
-    case 'G21': // mm
-      return 2;
-  }
-}
+const isInchMode = () => currentModal.units == INCH;
+export const currentToMm = (x: number): number => isInchMode() ? x * 25.4 : x;
+export const mmToCurrent = (x: number): number => isInchMode() ? x / 25.4 : x;
+export const mmToDisplay = (x: number): string => mmToCurrent(x).toFixed(isInchMode() ? 3 : 2);
 
 export const toggleUnits = () => {
-  sendCommandAndGetStatus(currentModal.units == 'G21' ? 'G20' : 'G21');
+  sendCommandAndGetStatus(currentModal.units == MM ? INCH : MM);
   // The button label will be fixed by the response to $G
   sendCommand(GET_PARSER_STATE_CMD);
 }

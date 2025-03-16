@@ -1,11 +1,11 @@
-import {currentState} from './machine';
-import {label, panel, setTextInput, textInput} from '../ui/ui';
+import {ifPresent, label, panel, row, setTextInput, textInput} from '../ui/ui';
 import {GET_TOOL_TABLE_CMD, sendCommandAndGetStatus} from '../http/http';
 import {css, cssClass} from '../ui/commonStyles';
 import {btnIcon, button, getButtonValuesAsNumber, setButtonText} from '../ui/button';
-import {decimals, factor} from './modal';
-import {unitChannel} from '../events/eventbus';
+import {currentModal, mmToDisplay} from './modal';
+import {toolChannel, unitChannel} from '../events/eventbus';
 import {Icon} from '../ui/icons';
+import {mposClass} from '../ui/dro';
 
 class Tool {
   number: number
@@ -39,12 +39,12 @@ let tools = [
 ]
 
 const makeTool = (n: number) => {
-  return panel(`tool-${n}`, toolRowClass, [
-    label("", "" + n),
-    textInput(`tool-${n}-name`, "Tool Name", tools[n].name, btnSetToolName(n)),
-    button(`tool-${n}-offset`, "" + tools[n].offset, `Set tool ${n} offset`, btnSetToolOffset, "" + n),
-    button(`tool-${n}-delete`, btnIcon(Icon.x), `Remove tool ${n}`, btnRemoveTool, "" + n)
-  ])
+  return row()
+      .child("2fr", button(`tool-${n}-number`, "" + n, `Select tool ${n}`, btnSelectTool, "" + n))
+      .child("20fr", textInput(`tool-${n}-name`, "Tool Name", tools[n].name, btnSetToolName(n)))
+      .child("5fr", label(`tool-${n}-offset`, "" + tools[n].offset, mposClass))
+      .child("2fr", button(`tool-${n}-delete`, btnIcon(Icon.x), `Remove tool ${n}`, btnRemoveTool, "" + n))
+      .build()
 }
 
 export function createToolTable() {
@@ -70,11 +70,20 @@ const btnRemoveTool = (event: Event) => {
   sendCommandAndGetStatus(`$T${n}=--,0`);
 }
 
-const btnSetToolOffset = (event: Event) => {
+const btnSelectTool = (event: Event) => {
   let n = getButtonValuesAsNumber(event)
-  let name = tools[n].name;
-  let offset = currentState.wpos[2] * factor()
-  sendCommandAndGetStatus(`$T${n}=${name},${offset}`);
+  sendCommandAndGetStatus(`T${n}`);
+}
+
+export const setCurrentToolOffset = (zMPos: number) => {
+  let n = currentModal.tool;
+  let offset = 0
+  if (n == 1) {
+    tools[0].offset = zMPos // tool 0 is stores the absolute Z position of tool 1, TODO-dp persist the value
+  } else {
+    offset = zMPos - tools[0].offset;
+  }
+  sendCommandAndGetStatus(`$T${n}=${(tools[n].name)},${offset}`);
 }
 
 export const processTools = (msg: string) => {
@@ -97,8 +106,10 @@ function setTool(toolStr: string) {
 function updateUI() {
   tools.forEach(tool => {
     setTextInput(`tool-${tool.number}-name`, tool.name);
-    setButtonText(`tool-${tool.number}-offset`, (tool.offset * factor()).toFixed(decimals()));
+    setButtonText(`tool-${tool.number}-offset`, mmToDisplay(tool.offset));
+    ifPresent(`tool-${tool.number}-number`, e => e.style.backgroundColor = "lightblue")
   })
+  ifPresent(`tool-${currentModal.tool}-number`, e => e.style.backgroundColor = "cadetblue")
 }
 
 export function requestTools() {
@@ -124,13 +135,5 @@ const toolTableClass = cssClass("toolTable", css`
   max-height: 100%;
 `)
 
-
-const toolRowClass = cssClass("toolRow", css`
-  display: grid;
-  grid-template-columns: 1fr 20fr 5fr 2fr;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-`)
-
 unitChannel.register(updateUI)
+toolChannel.register(updateUI)

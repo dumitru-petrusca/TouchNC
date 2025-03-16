@@ -1,4 +1,5 @@
 import {Consumer} from '../common';
+import {CSSStyleDeclarationBuilder} from '../machine/style';
 
 let classes: CssClass[] = []
 
@@ -37,29 +38,16 @@ export function cssClass(name: string, css: Css): CssClass {
   return cssClass
 }
 
-function getStyleRule(name: string) {
+export function registerClass(name: string, configure: Consumer<CSSStyleDeclaration>): CssClass {
   let sheet = document.styleSheets[0];
   for (let rule of sheet.cssRules) {
-    let cssRule = rule as CSSStyleRule
-    if (cssRule?.selectorText == name) {
-      return cssRule
+    if ((rule as CSSStyleRule)?.selectorText == name) {
+      return new CssClass(name, "")
     }
   }
-  return undefined
-}
-
-function registerRule(name: string, configure: (value: CSSStyleDeclaration) => void) {
-  let sheet = document.styleSheets[0];
   let i = sheet.insertRule(`.${name} { }`, sheet.cssRules.length)
   let rule = sheet.cssRules[i] as CSSStyleRule
   configure(rule!.style)
-  return rule
-}
-
-export function registerClass(name: string, configure: Consumer<CSSStyleDeclaration>): CssClass {
-  if (getStyleRule(name) == undefined) {
-    registerRule(name, configure);
-  }
   return new CssClass(name, "")
 }
 
@@ -167,3 +155,10 @@ export const tabletTabClass = cssClass("tablettab", css`
   max-height: 100%;
   overflow: auto;
 `)
+
+export function grid(): CSSStyleDeclarationBuilder {
+  return new CSSStyleDeclarationBuilder()
+      .display("grid")
+      .gridGap("10px")
+      .height("100%")
+}

@@ -13,12 +13,13 @@ export abstract class Setting<T, B extends Setting<T, B>> {
   path: string = ""
   name: string = ""
   defaultValue: T
-  protected oldValue?: T
-  value?: T
+  protected oldValue: T
+  value: T
 
   protected constructor(name: string, defaultValue: T) {
     this.setName(name)
     this.value = defaultValue
+    this.oldValue = defaultValue
     this.defaultValue = defaultValue
   }
 

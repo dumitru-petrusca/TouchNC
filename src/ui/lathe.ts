@@ -15,12 +15,7 @@ import {axesDRO} from './dro';
 import {messagesPanel} from '../messages/messagesui';
 import {Icon} from './icons';
 import {mdi} from './mdi';
-import {floatButton} from '../dialog/numpad';
-import {FloatSetting} from '../config/settings';
-
-let min = new FloatSetting("Min", 0, -1e6, 1e6)
-let max = new FloatSetting("Max", 0, -1e6, 1e6)
-let pitch = new FloatSetting("Pitch", 0, 0, 1e6)
+import {coordButton} from '../dialog/numpad';
 
 export class LatheUI implements MachineUI {
   manualTab(): HTMLElement | null {
@@ -44,20 +39,24 @@ export class LatheUI implements MachineUI {
 }
 
 export function latheControls() {
+  let minBtn = coordButton("Min", 0, -1e6, 1e6);
+  let maxBtn = coordButton("Max", 0, -1e6, 1e6);
+  let pitchBtn = coordButton("Pitch", 0, 0, 1e6);
+
   return panel('lathe_rpm', latheRowClass, [
-    button('', "\u25C0", 'Cut Left', doCutMove(min.value)),
+    button('', "\u25C0", 'Cut Left', doCutMove(minBtn.getValue(), pitchBtn.getValue())),
     spacer(1),
-    button('', "\u25B6", "Cut Right", doCutMove(max.value)),
-    spacer(1),
-
-    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(min.value)),
-    spacer(1),
-    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(max.value)),
+    button('', "\u25B6", "Cut Right", doCutMove(maxBtn.getValue(), pitchBtn.getValue())),
     spacer(1),
 
-    floatButton("lathe", min),
-    floatButton("lathe", max),
-    floatButton('lathe', pitch),
+    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(minBtn.getValue())),
+    spacer(1),
+    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(maxBtn.getValue())),
+    spacer(1),
+
+    minBtn.build(),
+    maxBtn.build(),
+    pitchBtn.build(),
     label('lathe-rpm', '70 rpm'),
   ]);
 }
@@ -88,8 +87,8 @@ export function latheNavPanel() {
   ])
 }
 
-function doCutMove(x: number | undefined): EventHandler {
-  return _ => sendCommandAndGetStatus(`F${pitch.value} G32 X${x}`)
+function doCutMove(x: number, feed: number): EventHandler {
+  return _ => sendCommandAndGetStatus(`F${feed} G32 X${x}`)
 }
 
 function doRapidMove(x: number | undefined): EventHandler {

@@ -1,62 +1,18 @@
-import {beep, panel} from '../ui/ui';
+import {beep, row} from '../ui/ui';
 import {sendCommand} from '../http/http';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate.js';
 import {btnIcon, button} from '../ui/button';
-import {css, cssClass} from '../ui/commonStyles';
-import {floatButton} from '../dialog/numpad';
+import {btnClass} from '../ui/commonStyles';
 import {Icon} from '../ui/icons';
-import {FloatSetting} from '../config/settings';
+import {SelectOption, SelectSetting} from '../config/settings';
+import {select} from '../config/settingsui';
+import {coordButton} from '../dialog/numpad';
+import {setCurrentToolOffset} from './tools';
+import {setAxisValue} from './machine';
 
 export let isProbing = false;
-let maxTravel = new FloatSetting("Travel", 1000, 0, 10000)
-let feedRate = new FloatSetting("Feed", 100, 0, 10000)
-let touchPlateThickness = new FloatSetting("Offset", 10.0, 0, 10000)
-let retract = new FloatSetting("Retract", 10, 0, 10000)
 let spindleSpeedSetTimeout: NodeJS.Timeout;
-
-export function probeLine(): HTMLDivElement {
-  return panel("", probeLineClass, [
-    floatButton("probe", feedRate),
-    floatButton("probe", maxTravel),
-    floatButton("probe", touchPlateThickness),
-    floatButton("probe", retract),
-    button("", btnIcon(Icon.probe), "", startProbeProcess)
-  ])
-}
-
-// export function probePanel(): HTMLDivElement {
-//   let children = [label("", "Probing", settingsPaneTitleClass)]
-//
-//   children.push(label("", "Feed Rate", settingsLabelClass))
-//   children.push(numpadButton("", "", "" + feedRate, NumpadType.INTEGER, v => {
-//     feedRate = Number(v)
-//   }))
-//
-//   children.push(label("", "Probe Height", settingsLabelClass))
-//   children.push(numpadButton("", "", "" + touchPlateThickness, NumpadType.FLOAT, v => {
-//     touchPlateThickness = Number(v)
-//   }))
-//
-//   children.push(label("", "Max Travel", settingsLabelClass))
-//   children.push(numpadButton("", "", "" + maxTravel, NumpadType.FLOAT, v => {
-//     maxTravel = Number(v)
-//   }))
-//
-//   children.push(button("", "Start Probe", "", startProbeProcess, "", startProbeClass))
-//
-//   let list = panel("", settingsListClass, children);
-//   return panel("", settingsPaneClass, list)
-// }
-
-const probeLineClass = cssClass("probeLine", css`
-  display: grid;
-  grid-template-columns: 3fr 3fr 3fr 3fr 1fr;
-  gap: 10px;
-  height: 100%;
-  font-size: 25px;
-  overflow: auto;
-`)
 
 const startProbeProcess = (_: Event) => {
   for (let styleSheet of document.styleSheets) {
@@ -69,28 +25,55 @@ const startProbeProcess = (_: Event) => {
   // always incremental.  This avoids problems with probing when in G20
   // inches mode and undoing a preexisting G91 incremental mode
   isProbing = true;
-  sendCommand(`G38.6 Z-${maxTravel.value} F${feedRate.value} P${touchPlateThickness.value}`)
-      .catch(reason => finalizeProbing(0, reason));
+  sendCommand(`G38.6 Z-${maxTravelBtn.getValue()} F${feedRateBtn.getValue()} P${offsetBtn.getValue()}`)
+      .catch(reason => error(reason));
 }
 
+// [PRB: 151.000,149.000,-137.505 : 1]
 export const processProbeResult = (response: string) => {
-  const split = response.split(":");
-  if (split.length > 2) {
-    const status = parseInt(split[2].replace("]", "").trim());
-    if (isProbing) {
-      finalizeProbing(status, "");
+  if (isProbing) {
+    isProbing = false;
+    const [_, coordsStr, status] = response.split(":").map(s => s.trim());
+    if (parseInt(status) == 0) {
+      error("")
+    } else {
+      setAxisValue("Z", 0)
+      sendCommand(`$J=G90 G21 F1000 Z${retractBtn.getValue()}`); // retract the tool
+      let coords = coordsStr.split(",").map(s => parseFloat(s.trim()));
+      setCurrentToolOffset(coords[2])
     }
   }
 }
 
-const finalizeProbing = (status: number, reason: any) => {
-  if (status != 0) {
-    sendCommand(`$J=G90 G21 F1000 Z${touchPlateThickness.value}${retract.value}`);
-  } else {
-    new AlertDialog(translate("Error"), reason);
-    beep();
-  }
-  isProbing = false;
+function error(reason: string) {
+  isProbing = false
+  new AlertDialog(translate("Error"), reason);
+  beep();
+}
+
+let probeType = new SelectSetting("Type", "manual", [new SelectOption("manual", "TLO Manual", 0), new SelectOption("probe", "TLO Probe", 1)])
+let enabled = () => probeType.value == "probe";
+let offsetBtn = coordButton("Offset", 0.01, 0, 10000);
+let feedRateBtn = coordButton("Feed", 100, 0, 10000).setEnabled(enabled);
+let maxTravelBtn = coordButton("Travel", 1000, 0, 10000).setEnabled(enabled);
+let retractBtn = coordButton("Retract", 10, 0, 10000).setEnabled(enabled);
+let probeStart = button("probeStart", btnIcon(Icon.probe), "", startProbeProcess);
+
+export function probeRow() {
+  probeStart.disabled = !enabled()
+  return row()
+      .child("3fr", select("probeType", btnClass, probeType, (probeType: string) => {
+        feedRateBtn.update()
+        maxTravelBtn.update()
+        retractBtn.update()
+        probeStart.disabled = !enabled()
+      }))
+      .child("3fr", offsetBtn.build())
+      .child("3fr", feedRateBtn.build())
+      .child("3fr", maxTravelBtn.build())
+      .child("3fr", retractBtn.build())
+      .child("1fr", probeStart)
+      .build()
 }
 
 const setSpindleSpeed = (speed: number) => {
@@ -102,12 +85,3 @@ const setSpindleSpeed = (speed: number) => {
     spindleSpeedSetTimeout = setTimeout(() => sendCommand('S' + spindleTabSpindleSpeed), 500)
   }
 }
-
-const probePanelClass = cssClass("probePanel", css`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
-  gap: 10px;
-  height: 100%;
-  font-size: 30px;
-`)

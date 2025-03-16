@@ -1,20 +1,20 @@
-import {label, panel} from './ui';
+import {label, panel, panel2} from './ui';
 import {btnIcon, button, getButtonValueAsString} from './button';
 import {axisNames, getAxisValue, gotoAxisValue, lockAxis, setAxisValue} from '../machine/machine';
 import {Numpad, NumpadType} from '../dialog/numpad';
-import {factor} from '../machine/modal';
-import {css, cssClass} from './commonStyles';
+import {mmToCurrent, currentToMm} from '../machine/modal';
+import {css, cssClass, grid} from './commonStyles';
 import {Icon} from './icons';
 import {jogPanel} from '../machine/jog';
 
-export const axesDRO = () => panel('axes-controls', axesControlsClass, [
+export const axesDRO = () => panel2('axes-controls', grid().columns("1fr auto").maxWidth("100%"), [
   panel('axis-position', droClass, axisNames.map(makeDRO)),
   jogPanel()
 ])
 
 function makeDRO(axis: string): HTMLElement {
   let axisU = axis.toUpperCase()
-  return panel(`${axis}-dro`, axisRowClass, [
+  return panel2(`${axis}-dro`, grid().columns("1fr 5fr 2fr 3fr 3fr 3fr 3fr").maxWidth("100%"), [
     label('', axisU),
     button(`wpos-${axis}`, '0.00', `Modify ${axis} position`, showAxisNumpad, axis),
     label(`mpos-${axis}`, '0.00', mposClass),
@@ -32,7 +32,7 @@ function showAxisNumpad(e: Event) {
 
 const btnHalfAxis = (e: Event) => {
   let axis = getButtonValueAsString(e)
-  setAxisValue(axis, getAxisValue(axis) / factor() / 2);
+  setAxisValue(axis, mmToCurrent(getAxisValue(axis)) / 2);
 }
 
 const btnZeroAxis = (e: Event) => setAxisValue(getButtonValueAsString(e), 0);
@@ -47,25 +47,10 @@ const droClass = cssClass("dro", css`
   max-width: 100%;
 `)
 
-const axesControlsClass = cssClass("axesControls", css`
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-`)
-
-const axisRowClass = cssClass("axisRow", css`
-  display: grid;
-  grid-template-columns: 1fr 5fr 2fr 3fr 3fr 3fr 3fr;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-`)
-
-const mposClass = cssClass("mpos", css`
+export const mposClass = cssClass("mpos", css`
   padding-top: 0.1em;
   font-size: 0.9em;
   color: #606060;
+  justify-self: right;
 `)
 

@@ -1,6 +1,7 @@
 import {EventHandler} from '../common';
-import {css, cssClass, CssClass, registerClass, textInputClass} from './commonStyles';
+import {css, cssClass, CssClass, grid, registerClass, textInputClass} from './commonStyles';
 import {FeedbackMode, preferences} from '../config/preferences';
+import {CSSStyleDeclarationBuilder} from '../machine/style';
 
 export type ContentElement = HTMLElement | SVGSVGElement | string
 export type Content = ContentElement | ContentElement[]
@@ -137,23 +138,70 @@ export function panel(id: string, css?: CssClass, content?: Content): HTMLDivEle
   return e
 }
 
-const gridUnit = (i: number) => i == 0 ? "auto" : i + "px";
+export class PanelBuilder {
+  style = grid()
+  children: HTMLElement[] = []
+  weights = ""
+  private type: "row" | "col";
 
-export function rowPanel(id: string, cols: number[], content: Content): HTMLDivElement {
-  let css = registerClass(`row${cols.join("")}`, css => {
-    css.display = "grid"
-    css.gridTemplateColumns = cols.map(gridUnit).join(" ")
-    css.gap = "10px"
-    css.width = "100%";
-    css.maxWidth = "100%";
-    css.maxHeight = "100%";
-    css.overflow = "auto";
-  });
-  return element('div', id, css, content) as HTMLDivElement
+  constructor(type: "row" | "col") {
+    this.type = type;
+  }
+
+  child(weight: string | number, e: HTMLElement | PanelBuilder): PanelBuilder {
+    e = e instanceof PanelBuilder ? e.build() : e
+    this.children.push(e)
+    this.weights += weight + " "
+    return this
+  }
+
+  maxWidth(s: string): PanelBuilder {
+    this.style.maxWidth(s)
+    return this
+  }
+
+  height(s: string) {
+    this.style.height(s)
+    return this
+  }
+
+  overflow(overflow: string) {
+    this.style.overflow(overflow)
+    return this
+  }
+
+  build(): HTMLDivElement {
+    if (this.type == "row") {
+      this.style.columns(this.weights)
+    } else {
+      this.style.gridTemplateRows(this.weights)
+    }
+    return panel2("", this.style, this.children);
+  }
 }
 
+export function column(): PanelBuilder {
+  return new PanelBuilder("col")
+}
+
+export function row(): PanelBuilder {
+  return new PanelBuilder("row")
+}
+
+export function panel3(type: "row" | "col"): PanelBuilder {
+  return new PanelBuilder(type)
+}
+
+export function panel2(id: string, style: CSSStyleDeclarationBuilder, content: Content): HTMLDivElement {
+  let e = element('div', id, undefined, content) as HTMLDivElement;
+  style.applyTo(e)
+  return e
+}
+
+const gridUnit = (i: number) => i == 0 ? "auto" : i + "fr";
+
 export function colPanel(id: string, rows: number[], content: Content): HTMLDivElement {
-  let css = registerClass(`col${rows.join("")}`, css => {
+  let css = registerClass(`col_${rows.map(gridUnit).join("_")}`, css => {
     css.display = "grid"
     css.gridTemplateRows = rows.map(gridUnit).join(" ")
     css.gap = "10px"

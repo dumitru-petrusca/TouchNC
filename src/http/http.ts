@@ -73,6 +73,7 @@ export function sendCommandAndGetStatus(cmd: string): Promise<void> {
 }
 
 export function sendCommand(cmd: string): Promise<void> {
+  console.log("CMD: "+cmd)
   log("sendCommand: " + cmd)
   if (commandList.length >= maxCommandCount) {
     throw new Error(`Too many http requests, maximum ${maxCommandCount} allowed.`)
