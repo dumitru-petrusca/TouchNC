@@ -6,7 +6,7 @@ import {sendHttpRequest} from '../http/http';
 import {FS, FSResponse, FSType, toSizeString} from './fs';
 import {translate} from '../translate';
 import {button} from '../ui/button';
-import {Setting, SettingGroup} from '../config/settings';
+import {SettingGroup} from '../config/settings';
 import {machineSettings} from '../config/machinesettings';
 import {AlertDialog} from './alertdlg';
 

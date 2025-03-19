@@ -194,26 +194,9 @@ export function numpadButton(id: string, title: string, value: string, type: Num
   return btn
 }
 
-const observer = new MutationObserver((mutations, observer) => {
-  for (const mutation of mutations) {
-    if (mutation.type === 'childList') {
-      mutation.addedNodes.forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          console.log('Element added:', node);
-        }
-      });
-      mutation.removedNodes.forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          console.log('Element removed:', node);
-        }
-      });
-    }
-  }
-});
-
 class CoordinateButton {
-  private readonly name: string;
   private readonly id: string
+  private readonly name: string;
   private value: number;
   private min: number;
   private max: number;
@@ -242,7 +225,7 @@ class CoordinateButton {
   build(): HTMLButtonElement {
     this.e = numpadButton(this.id, this.name, "", NumpadType.FLOAT, v => this.setValue(parseFloat(v)));
     this.update()
-    unitChannel.register(_ => this.update())
+    unitChannel.register(_ => this.update())  // TODO-dp should remove the listener when the component dies?
     return this.e
   }
 
@@ -267,22 +250,13 @@ const numpadClass = cssClass("numpad", css`
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr;
   gap: 5px;
-  font-size: 32px;
   width: 40%;
-  height: fit-content;
-
-  border-radius: 10px;
   border: 2px solid #337AB7;
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-  position: relative;
   margin: auto;
   padding: 10px;
   background-color: #fefefe;
-  -webkit-animation-name: slideIn;
-  -webkit-animation-duration: 0.4s;
-  animation-name: slideIn;
-  animation-duration: 0.4s;
-  font-family: sans-serif;
+  font-size: 32px;
 `)
 
 const valueClass = cssClass("value", css`

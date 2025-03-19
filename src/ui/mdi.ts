@@ -1,24 +1,24 @@
-import {panel, textInput} from './ui';
+import {row, textInput} from './ui';
 import {button, getButton, getButtonValueAsString} from './button';
 import {Icon, svgIcon} from './icons';
 import {sendCommandAndGetStatus} from '../http/http';
 import {css, cssClass} from './commonStyles';
 
 export function mdi() {
-  return panel('mdi', mdiRowClass, [
-    mdiInput('mditext0'),
-    mdiInput('mditext1'),
-    mdiInput('mditext2'),
-  ]);
+  return row('mdi')
+      .child("1fr", mdiInput('mditext0'))
+      .child("1fr", mdiInput('mditext1'))
+      .child("1fr", mdiInput('mditext2'))
+      .build()
 }
 
 function mdiInput(id: string) {
   let input = textInput(id, "GCode", "");
   input.addEventListener('keyup', mdiEnterKey);
-  return panel('mdi', mdiInputClass, [
-    button('mdi0', svgIcon(Icon.play), 'Submit GCode Command', btnMDI, id, mdiBtnClass),
-    input,
-  ]);
+  return row().gap("0px")
+      .child("1fr", button('mdi0', svgIcon(Icon.play), 'Submit GCode Command', btnMDI, id, mdiBtnClass))
+      .child("8fr", input)
+      .build()
 }
 
 function btnMDI(e: Event) {
@@ -33,21 +33,6 @@ const mdiEnterKey = (e: KeyboardEvent) => {
     (e.target as HTMLElement).blur();
   }
 }
-
-const mdiRowClass = cssClass("mdiRow", css`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-  max-width: 100%;
-`)
-
-const mdiInputClass = cssClass("mdiInput", css`
-  display: grid;
-  grid-template-columns: 1fr 8fr;
-  width: 100%;
-  max-width: 100%;
-`)
 
 const mdiBtnClass = cssClass("mdiBtn", css`
   background-color: lightcyan;;

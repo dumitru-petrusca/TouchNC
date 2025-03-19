@@ -166,6 +166,11 @@ export class PanelBuilder {
     return this
   }
 
+  gap(gap: string) {
+    this.style.gap = gap
+    return this
+  }
+
   overflow(overflow: string) {
     this.style.overflow = overflow
     return this

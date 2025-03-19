@@ -170,15 +170,9 @@ const filesContentClass = cssClass("filesContent", css`
   border-radius: 10px;
   border: 2px solid #337AB7;
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-  position: relative;
   margin: auto;
   padding: 10px;
   background-color: #fefefe;
-  -webkit-animation-name: slideIn;
-  -webkit-animation-duration: 0.4s;
-  animation-name: slideIn;
-  animation-duration: 0.4s;
-  font-family: sans-serif;
   font-size: 3.2rem;
   width: fit-content;
 `)

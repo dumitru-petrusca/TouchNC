@@ -1,4 +1,4 @@
-import {sendCommand, sendCommandAndGetStatus} from '../http/http';
+import {CANCEL_JOG_CMD, sendCommand, sendCommandAndGetStatus} from '../http/http';
 import {btnIcon, button} from '../ui/button';
 import {currentModal} from './modal';
 import {Content, panel} from '../ui/ui';
@@ -38,8 +38,8 @@ export function axisJogPanel(axis: string) {
 export const jogButton = (id: string, content: Content, axis: string, feedRate: number) => {
   let btn = button(id, content, `Move ${axis}`, undefined, axis);
   btn.addEventListener('pointerdown', handleDown(axis, feedRate));
-  btn.addEventListener('pointerup', handleUp);
-  btn.addEventListener('pointerout', handleUp);
+  btn.addEventListener('pointerup', _ => sendCommand(CANCEL_JOG_CMD));
+  btn.addEventListener('pointerout', _ => sendCommand(CANCEL_JOG_CMD));
   return btn
 }
 
@@ -52,10 +52,6 @@ function handleDown(axis: string, feedrate: number) {
     // tabletShowMessage("Jog: " + axis + ": " + cmd);
     sendCommandAndGetStatus(cmd);
   }
-}
-
-const handleUp = (event: Event) => {
-  sendCommand('\x85');
 }
 
 const jogRowClass = cssClass("jogRow", css`

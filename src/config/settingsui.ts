@@ -2,7 +2,7 @@ import {numpadButton, NumpadType} from '../dialog/numpad';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
-import {Consumer, EventHandler} from '../common';
+import {Consumer} from '../common';
 import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting} from './settings';
 import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
 import {btnIcon, button} from '../ui/button';

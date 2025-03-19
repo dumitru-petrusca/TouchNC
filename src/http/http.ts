@@ -16,6 +16,7 @@ export const HOMEA_CMD = '$HA'; // Starts the homing cycle for the A axis
 export const FORCE_START_CMD = '$F'; // Force the planner to start a new cycle from the current state, used for testing
 export const GET_TOOL_TABLE_CMD = '$TT'; // Fetch the tool table
 export const GET_STARTUP_LOG = '$SS'; // Get startup log
+export const CANCEL_JOG_CMD = '\x85';
 
 export const GET_STATUS_CMD = '?'; // Get status report (<Idle,MPos:10.000,20.000,5.000,WPos:0.000,0.000,0.000,FS:500,...>)
 export const FEED_HOLD_CMD = '!'; // Initiates a feed hold, which pauses the machine's motion

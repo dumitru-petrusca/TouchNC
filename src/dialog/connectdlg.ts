@@ -130,13 +130,6 @@ function parseFirmwareData(response: string) {
   return true;
 }
 
-export const connectingClass = cssClass("connecting", css`
-  align-content: center;
-  font-size: 40px;
-  text-align: center;
-  background: coral;
-`)
-
 export function disableUI() {
   console.log(`WebSocket unresponsive, reconnecting...`);
   new ConnectDialog()
@@ -145,3 +138,10 @@ export function disableUI() {
 export function enableUI() {
   closeModal("Connection successful");
 }
+
+export const connectingClass = cssClass("connecting", css`
+  align-content: center;
+  font-size: 40px;
+  text-align: center;
+  background: coral;
+`)

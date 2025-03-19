@@ -1,4 +1,4 @@
-import {int_, select_, Setting, SettingAttr, SettingGroup, Settings} from './settings';
+import {float_, int_, select_, SelectOption, SelectSetting, Setting, SettingAttr, SettingGroup, Settings} from './settings';
 import {sendHttpRequest, writeFile} from '../http/http';
 import {messages} from '../messages/messages';
 
@@ -19,6 +19,12 @@ export const TAB_TOOLS = "Tools"
 export const TAB_WIFI = "WiFi"
 export const TAB_SETTINGS = "Settings"
 export const TAB_PREFERENCES = "Preferences"
+
+export const PROBE_TYPE = "type"
+export const PROBE_OFFSET = "Offset"
+export const PROBE_FEED = "Feed"
+export const PROBE_MAX_TRAVEL = "Travel"
+export const PROBE_RETRACT = "Retract"
 
 export enum FeedbackMode {
   None,
@@ -109,6 +115,13 @@ function createSettings(js: any) {
     new SettingGroup("/connection/recovery", SettingAttr.VIRTUAL, [
       select_(CONNECTION_MONITORING, js[CONNECTION_MONITORING], ["None", "Report"]),
       int_(RECOVER_AFTER, js[RECOVER_AFTER], 1, 60000),
+    ]),
+    new SettingGroup("/tool_length_offset", SettingAttr.VIRTUAL, [
+      new SelectSetting(PROBE_TYPE, js[PROBE_TYPE], [new SelectOption("manual", "Manual", 0), new SelectOption("probe", "Probe", 1)]),
+      float_(PROBE_OFFSET, js[PROBE_OFFSET], 0, 10000),
+      float_(PROBE_FEED, js[PROBE_FEED], 0, 10000),
+      float_(PROBE_MAX_TRAVEL, js[PROBE_MAX_TRAVEL], 0, 10000),
+      float_(PROBE_RETRACT, js[PROBE_RETRACT], 0, 10000),
     ])
   ]);
 }
@@ -120,6 +133,11 @@ function applyDefaults(js: any) {
   applyDefault(REPORT_INTERVAL, 50, js)
   applyDefault(RECOVER_AFTER, 5000, js)
   applyDefault(REPORT_TYPE, "Auto", js)
+  applyDefault(PROBE_TYPE, "probe", js)
+  applyDefault(PROBE_OFFSET, 0, js)
+  applyDefault(PROBE_FEED, 100, js)
+  applyDefault(PROBE_MAX_TRAVEL, 1000, js)
+  applyDefault(PROBE_RETRACT, 10, js)
   return js
 }
 

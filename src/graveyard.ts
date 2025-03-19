@@ -62,3 +62,20 @@ const setSpindleSpeed = (speed: number) => {
     spindleSpeedSetTimeout = setTimeout(() => sendCommand('S' + spindleTabSpindleSpeed), 500)
   }
 }
+
+const observer = new MutationObserver((mutations, observer) => {
+  for (const mutation of mutations) {
+    if (mutation.type === 'childList') {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          console.log('Element added:', node);
+        }
+      });
+      mutation.removedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          console.log('Element removed:', node);
+        }
+      });
+    }
+  }
+});
