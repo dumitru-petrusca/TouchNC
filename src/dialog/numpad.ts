@@ -6,6 +6,7 @@ import {modalClass} from './dialogStyles';
 import {button} from '../ui/button';
 import {unitChannel} from '../events/eventbus';
 import {currentToMm, mmToCurrent, mmToDisplay} from '../machine/modal';
+import {Setting, FloatSetting} from '../config/settings';
 
 export enum NumpadType {
   INTEGER,
@@ -197,29 +198,25 @@ export function numpadButton(id: string, title: string, value: string, type: Num
 export class CoordinateButton {
   private readonly id: string
   private readonly name: string;
-  private value: number;
-  private min: number;
-  private max: number;
   private enabled: Producer<boolean>;
-  private e?: HTMLButtonElement
+  private e?: HTMLButtonElement;
+  private setting: FloatSetting;
 
-  constructor(name: string, value: number, min: number, max: number) {
-    this.name = name;
-    this.id = name + "-" + randomString(5)
-    this.value = mmToCurrent(value);
-    this.min = mmToCurrent(min);
-    this.max = mmToCurrent(max);
-    this.enabled = () => true
+  constructor(setting: FloatSetting) {
+    this.setting = setting;
+    this.name = setting.name;
+    this.id = setting.path + "-" + randomString(5);
+    this.enabled = () => true;
   }
 
   setEnabled(enabled: Producer<boolean>) {
     this.enabled = enabled;
-    return this
+    return this;
   }
 
   setValue(value: number) {
-    this.value = currentToMm(value)
-    this.update()
+    this.setting.setValue(currentToMm(value));
+    this.update();
   }
 
   build(): HTMLButtonElement {
@@ -230,19 +227,19 @@ export class CoordinateButton {
   }
 
   update() {
-    this.e?.replaceChildren(this.name + " " + mmToDisplay(this.value))
+    this.e?.replaceChildren(this.name + " " + mmToDisplay(this.setting.getValue()));
     if (this.e != undefined) {
-      this.e.disabled = !this.enabled()
+      this.e.disabled = !this.enabled();
     }
   }
 
-  getValue() {
-    return this.value
+  getValueMm() {
+    return this.setting.getValue();
   }
 }
 
-export function coordButton(name: string, value: number, min: number, max: number): CoordinateButton {
-  return new CoordinateButton(name, value, min, max)
+export function coordButton(setting: FloatSetting): CoordinateButton {
+  return new CoordinateButton(setting);
 }
 
 const numpadClass = cssClass("numpad", css`

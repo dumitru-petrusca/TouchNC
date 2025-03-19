@@ -16,6 +16,7 @@ import {messagesPanel} from '../messages/messagesui';
 import {Icon} from './icons';
 import {mdi} from './mdi';
 import {coordButton} from '../dialog/numpad';
+import {FloatSetting} from '../config/settings';
 
 export class LatheUI implements MachineUI {
   manualTab(): HTMLElement | null {
@@ -39,19 +40,19 @@ export class LatheUI implements MachineUI {
 }
 
 export function latheControls() {
-  let minBtn = coordButton("Min", 0, -1e6, 1e6);
-  let maxBtn = coordButton("Max", 0, -1e6, 1e6);
-  let pitchBtn = coordButton("Pitch", 0, 0, 1e6);
+  let minBtn = coordButton(new FloatSetting("min", 0, -1e6, 1e6));
+  let maxBtn = coordButton(new FloatSetting("max", 0, -1e6, 1e6));
+  let pitchBtn = coordButton(new FloatSetting("pitch", 0, 0, 1e6));
 
   return panel('lathe_rpm', latheRowClass, [
-    button('', "\u25C0", 'Cut Left', doCutMove(minBtn.getValue(), pitchBtn.getValue())),
+    button('', "\u25C0", 'Cut Left', doCutMove(minBtn.getValueMm(), pitchBtn.getValueMm())),
     spacer(1),
-    button('', "\u25B6", "Cut Right", doCutMove(maxBtn.getValue(), pitchBtn.getValue())),
+    button('', "\u25B6", "Cut Right", doCutMove(maxBtn.getValueMm(), pitchBtn.getValueMm())),
     spacer(1),
 
-    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(minBtn.getValue())),
+    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(minBtn.getValueMm())),
     spacer(1),
-    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(maxBtn.getValue())),
+    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(maxBtn.getValueMm())),
     spacer(1),
 
     minBtn.build(),
