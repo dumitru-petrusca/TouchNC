@@ -15,7 +15,7 @@ import {toolPathPanel} from './program';
 import {createToolTable} from '../machine/tools';
 import {Icon} from './icons';
 import {sendCommandAndGetStatus, UNLOCK_CMD} from '../http/http';
-import {probeRow} from '../machine/probe';
+import {probe} from '../machine/probe';
 
 export interface MachineUI {
   manualTab(): HTMLElement | null;
@@ -55,7 +55,7 @@ export class MillUI implements MachineUI {
           .maxWidth("100%")
           .child("2fr", createToolTable())
           .child("3fr", column()
-              .child("auto", probeRow())
+              .child("auto", probe.probeRow())
               .child("1fr", messagesPanel())
           )
           .build()

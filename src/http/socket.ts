@@ -3,7 +3,7 @@ import {processMachineState, processSettingRead, setMachineProperties} from '../
 import {processTool, processTools} from '../machine/tools';
 import {ConnectDialog, disableUI, enableUI, firmware} from '../dialog/connectdlg';
 import {CancelCurrentUpload, getPageId, processCommandCompletion, processCommandError, setPageId} from './http';
-import {isProbing, processProbeResult} from '../machine/probe';
+import {probe} from '../machine/probe';
 import {registerClasses} from '../ui/commonStyles';
 import {processModal} from '../machine/modal';
 import {messages} from '../messages/messages';
@@ -200,14 +200,14 @@ function processControllerMessage(msg: string) {
   } else if (msg.startsWith('ok')) {
     processCommandCompletion(true);
   } else if (msg.startsWith('[PRB:')) {
-    processProbeResult(msg);
+    probe.processProbeResult(msg);
   } else if (msg.startsWith('[MSG:')) {
     displayMsg = processMessage(msg);
   } else if (msg.startsWith('error:')) {
     processCommandError(msg);
     displayMsg = '<span style="color:red;">' + msg + '</span>';
   } else if (msg.startsWith('ALARM:') || msg.startsWith('Hold:') || msg.startsWith('Door:')) {
-    if (isProbing) {
+    if (probe.isCurrentlyProbing()) {
       // probe_failed_notification(msg); //TODO-dp function missing
     }
   } else if (msg.startsWith('$')) {

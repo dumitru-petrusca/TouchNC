@@ -194,7 +194,7 @@ export function numpadButton(id: string, title: string, value: string, type: Num
   return btn
 }
 
-class CoordinateButton {
+export class CoordinateButton {
   private readonly id: string
   private readonly name: string;
   private value: number;

@@ -7,65 +7,81 @@ import {btnClass} from '../ui/commonStyles';
 import {Icon} from '../ui/icons';
 import {SelectOption, SelectSetting} from '../config/settings';
 import {select} from '../config/settingsui';
-import {coordButton} from '../dialog/numpad';
+import {coordButton, CoordinateButton} from '../dialog/numpad';
 import {setCurrentToolOffset} from './tools';
 import {setAxisValue} from './machine';
 
-export let isProbing = false;
+export class Probe {
+  private isProbing: boolean = false;
+  private probeType: SelectSetting;
+  private offsetBtn: CoordinateButton;
+  private feedRateBtn: CoordinateButton;
+  private maxTravelBtn: CoordinateButton;
+  private retractBtn: CoordinateButton;
+  private probeStart: HTMLButtonElement;
 
-const startProbeProcess = (_: Event) => {
-  // G38.6 is FluidNC-specific.  It is like G38.2 except that the units
-  // are always G21 units, i.e. mm in the usual case, and distance is
-  // always incremental.  This avoids problems with probing when in G20
-  // inches mode and undoing a preexisting G91 incremental mode
-  isProbing = true;
-  sendCommand(`G38.6 Z-${maxTravelBtn.getValue()} F${feedRateBtn.getValue()} P${offsetBtn.getValue()}`)
-      .catch(reason => error(reason));
-}
+  constructor() {
+    this.probeType = new SelectSetting("Type", "manual", [
+      new SelectOption("manual", "TLO Manual", 0),
+      new SelectOption("probe", "TLO Probe", 1)
+    ]);
+    
+    const enabled = () => this.probeType.value == "probe";
+    this.offsetBtn = coordButton("Offset", 0.01, 0, 10000);
+    this.feedRateBtn = coordButton("Feed", 100, 0, 10000).setEnabled(enabled);
+    this.maxTravelBtn = coordButton("Travel", 1000, 0, 10000).setEnabled(enabled);
+    this.retractBtn = coordButton("Retract", 10, 0, 10000).setEnabled(enabled);
+    this.probeStart = button("probeStart", btnIcon(Icon.probe), "", this.startProbeProcess.bind(this));
+  }
 
-// [PRB: 151.000,149.000,-137.505 : 1]
-export const processProbeResult = (response: string) => {
-  if (isProbing) {
-    isProbing = false;
-    const [_, coordsStr, status] = response.split(":").map(s => s.trim());
-    if (parseInt(status) == 0) {
-      error("")
-    } else {
-      setAxisValue("Z", 0)
-      sendCommand(`$J=G90 G21 F1000 Z${retractBtn.getValue()}`);  // retract the tool
-      let coords = coordsStr.split(",").map(s => parseFloat(s.trim()));
-      setCurrentToolOffset(coords[2])
+  private startProbeProcess(_: Event) {
+    this.isProbing = true;
+    sendCommand(`G38.6 Z-${this.maxTravelBtn.getValue()} F${this.feedRateBtn.getValue()} P${this.offsetBtn.getValue()}`)
+      .catch(reason => this.error(reason));
+  }
+
+  public processProbeResult(response: string) {
+    if (this.isProbing) {
+      this.isProbing = false;
+      const [_, coordsStr, status] = response.split(":").map(s => s.trim());
+      if (parseInt(status) == 0) {
+        this.error("")
+      } else {
+        setAxisValue("Z", 0)
+        sendCommand(`$J=G90 G21 F1000 Z${this.retractBtn.getValue()}`);  // retract the tool
+        let coords = coordsStr.split(",").map(s => parseFloat(s.trim()));
+        setCurrentToolOffset(coords[2])
+      }
     }
+  }
+
+  private error(reason: string) {
+    this.isProbing = false;
+    new AlertDialog(translate("Error"), reason);
+    beep();
+  }
+
+  public isCurrentlyProbing(): boolean {
+    return this.isProbing;
+  }
+
+  public probeRow() {
+    const enabled = () => this.probeType.value == "probe";
+    this.probeStart.disabled = !enabled();
+    return row()
+      .child("3fr", select("probeType", btnClass, this.probeType, (_: string) => {
+        this.feedRateBtn.update();
+        this.maxTravelBtn.update();
+        this.retractBtn.update();
+        this.probeStart.disabled = !enabled();
+      }))
+      .child("3fr", this.offsetBtn.build())
+      .child("3fr", this.feedRateBtn.build())
+      .child("3fr", this.maxTravelBtn.build())
+      .child("3fr", this.retractBtn.build())
+      .child("1fr", this.probeStart)
+      .build();
   }
 }
 
-function error(reason: string) {
-  isProbing = false
-  new AlertDialog(translate("Error"), reason);
-  beep();
-}
-
-let probeType = new SelectSetting("Type", "manual", [new SelectOption("manual", "TLO Manual", 0), new SelectOption("probe", "TLO Probe", 1)])
-let enabled = () => probeType.value == "probe";
-let offsetBtn = coordButton("Offset", 0.01, 0, 10000);
-let feedRateBtn = coordButton("Feed", 100, 0, 10000).setEnabled(enabled);
-let maxTravelBtn = coordButton("Travel", 1000, 0, 10000).setEnabled(enabled);
-let retractBtn = coordButton("Retract", 10, 0, 10000).setEnabled(enabled);
-let probeStart = button("probeStart", btnIcon(Icon.probe), "", startProbeProcess);
-
-export function probeRow() {
-  probeStart.disabled = !enabled()
-  return row()
-      .child("3fr", select("probeType", btnClass, probeType, (_: string) => {
-        feedRateBtn.update()
-        maxTravelBtn.update()
-        retractBtn.update()
-        probeStart.disabled = !enabled()
-      }))
-      .child("3fr", offsetBtn.build())
-      .child("3fr", feedRateBtn.build())
-      .child("3fr", maxTravelBtn.build())
-      .child("3fr", retractBtn.build())
-      .child("1fr", probeStart)
-      .build()
-}
+export const probe = new Probe();
