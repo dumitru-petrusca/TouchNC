@@ -29,7 +29,7 @@ export function setMachineProperties(firmware: Firmware) {
   axisNames = axisNames.slice(0, axisCount)
 }
 
-export function getAxisValue(axis: string): number {
+export function getAxisPosition(axis: string): number {
   axis = axis.toLowerCase()
   for (let i = 0; i < axisNames.length; i++) {
     if (axisNames[i] == axis) {
@@ -39,14 +39,24 @@ export function getAxisValue(axis: string): number {
   throw "No such axis " + axis
 }
 
-export const setAxisValue = (axis: string, coordinate: number) => {
-  sendCommandAndGetStatus('G10 L20 P0 ' + axis + coordinate);
+export function getAxisMachinePosition(axis: string): number {
+  axis = axis.toLowerCase()
+  for (let i = 0; i < axisNames.length; i++) {
+    if (axisNames[i] == axis) {
+      return currentState.mpos[i];
+    }
+  }
+  throw "No such axis " + axis
 }
 
-export const gotoAxisValue = (axis: string, coordinate: number) => {
+export const setAxisPosition = (axis: string, position: number) => {
+  sendCommandAndGetStatus('G10 L20 P0 ' + axis + position);
+}
+
+export const gotoAxisPosition = (axis: string, position: number) => {
   // Always force G90 mode because synchronization of modal reports is unreliable
   // For controllers that permit it, specifying mode and move in one block is safer
-  sendCommandAndGetStatus('G90 G0 ' + axis + coordinate);
+  sendCommandAndGetStatus('G90 G0 ' + axis + position);
 }
 
 export function lockAxis(e: Event) {
@@ -68,7 +78,7 @@ export const requestModes = () => sendCommandAndGetStatus(GET_PARSER_STATE_CMD);
 export const stopAndRecover = () => {
   sendCommand(RESET_CMD);
   // if (isProbing) {
-    // probe_failed_notification('Probe Canceled'); //TODO(dp) function is missing
+  // probe_failed_notification('Probe Canceled'); //TODO(dp) function is missing
   // }
   // To stop FluidNC you send a reset character, which causes some modes
   // be reset to their default values.  In particular, it sets G21 mode,

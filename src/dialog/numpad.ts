@@ -233,7 +233,7 @@ export class CoordinateButton {
     }
   }
 
-  getValueMm() {
+  getValue() {
     return this.setting.getValue();
   }
 }

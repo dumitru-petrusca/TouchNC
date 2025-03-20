@@ -359,6 +359,7 @@ export abstract class Settings {
   }
 
   get = (path: string) => this.settings?.getSetting(path.toLowerCase());
+  floatSetting = (path: string) => this.get(path) as FloatSetting;
   getOrDefault = <T>(name: string, def: T): T => this.get(name)?.getValue() ?? def;
   getSelect = (name: string) => this.get(name) as SelectSetting;
   isConfigured = (name: string) => this.get(name)?.isConfigured();

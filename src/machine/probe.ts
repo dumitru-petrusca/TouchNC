@@ -1,58 +1,74 @@
-import {beep, row} from '../ui/ui';
-import {sendCommand} from '../http/http';
-import {AlertDialog} from '../dialog/alertdlg';
-import {translate} from '../translate.js';
-import {btnIcon, button} from '../ui/button';
-import {btnClass} from '../ui/commonStyles';
-import {Icon} from '../ui/icons';
-import {SelectOption, SelectSetting, FloatSetting} from '../config/settings';
-import {select} from '../config/settingsui';
-import {coordButton, CoordinateButton} from '../dialog/numpad';
-import {setCurrentToolOffset} from './tools';
-import {setAxisValue} from './machine';
-import {preferences, PROBE_TYPE, PROBE_OFFSET, PROBE_FEED, PROBE_MAX_TRAVEL, PROBE_RETRACT} from '../config/preferences';
+import { beep, row } from '../ui/ui';
+import { sendCommand } from '../http/http';
+import { AlertDialog } from '../dialog/alertdlg';
+import { translate } from '../translate.js';
+import { btnIcon, button } from '../ui/button';
+import { btnClass } from '../ui/commonStyles';
+import { Icon } from '../ui/icons';
+import { SelectSetting } from '../config/settings';
+import { select } from '../config/settingsui';
+import { coordButton, CoordinateButton } from '../dialog/numpad';
+import { setCurrentToolOffset } from './tools';
+import {getAxisMachinePosition, getAxisPosition, setAxisPosition} from './machine';
+import { preferences, PROBE_TYPE, PROBE_OFFSET, PROBE_FEED, PROBE_MAX_TRAVEL, PROBE_RETRACT } from '../config/preferences';
+import {mmToCurrent} from './modal';
 
+/**
+ * The Probe class manages tool length offset measurement through either manual input or automated probing.
+ * 
+ * It provides a UI row with controls for:
+ * - Selecting between manual and probe modes
+ * - Setting probe parameters (offset, feed rate, travel distance, retract distance)
+ * - Initiating the probing sequence
+ * 
+ * Manual Mode:
+ * - Used when there is no probe
+ * - The operator manually moves Z to touch the workpiece (typically using a feeler gauge)
+ * - When Z is at the touch point, clicking the probe button will:
+ *   1. Set the current Z position to zero
+ *   2. Apply the offset value as the tool length offset
+ * 
+ * Probe Mode:
+ * When in probe mode, it executes a probing cycle that:
+ * 1. Moves the Z-axis down at the specified feed rate until contact is made
+ * 2. Records the contact position
+ * 3. Retracts the tool to a safe distance
+ * 4. Updates the current tool's offset based on the probe result
+ */
 export class Probe {
   private isProbing: boolean = false;
-  private probeType: SelectSetting | null = null;
-  private offsetBtn: CoordinateButton | null = null;
-  private feedRateBtn: CoordinateButton | null = null;
-  private maxTravelBtn: CoordinateButton | null = null;
-  private retractBtn: CoordinateButton | null = null;
-  private probeStart: HTMLButtonElement | null = null;
+  private probeType?: SelectSetting;
+  private offsetBtn?: CoordinateButton;
+  private feedRateBtn?: CoordinateButton;
+  private maxTravelBtn?: CoordinateButton;
+  private retractBtn?: CoordinateButton;
+  private probeStart?: HTMLButtonElement;
 
   private initializeIfNeeded() {
-    if (this.probeType === null) {
-      const probeTypeSetting = preferences.getSelect(PROBE_TYPE);
-      if (!probeTypeSetting) {
-        throw new Error("Probe type setting not found");
-      }
-      this.probeType = probeTypeSetting;
-      
-      const enabled = () => this.probeType!.value == "probe";
-      
-      const offsetSetting = preferences.get(PROBE_OFFSET) as FloatSetting;
-      const feedSetting = preferences.get(PROBE_FEED) as FloatSetting;
-      const travelSetting = preferences.get(PROBE_MAX_TRAVEL) as FloatSetting;
-      const retractSetting = preferences.get(PROBE_RETRACT) as FloatSetting;
-
-      if (!offsetSetting || !feedSetting || !travelSetting || !retractSetting) {
-        throw new Error("Required probe settings not found");
-      }
-
-      this.offsetBtn = coordButton(offsetSetting);
-      this.feedRateBtn = coordButton(feedSetting).setEnabled(enabled);
-      this.maxTravelBtn = coordButton(travelSetting).setEnabled(enabled);
-      this.retractBtn = coordButton(retractSetting).setEnabled(enabled);
+    if (this.probeType === undefined) {
+      this.probeType = preferences.getSelect(PROBE_TYPE);
+      const isProbeMode = () => this.probeType!.value == "probe";
+      this.offsetBtn = coordButton(preferences.floatSetting(PROBE_OFFSET));
+      this.feedRateBtn = coordButton(preferences.floatSetting(PROBE_FEED)).setEnabled(isProbeMode);
+      this.maxTravelBtn = coordButton(preferences.floatSetting(PROBE_MAX_TRAVEL)).setEnabled(isProbeMode);
+      this.retractBtn = coordButton(preferences.floatSetting(PROBE_RETRACT)).setEnabled(isProbeMode);
       this.probeStart = button("probeStart", btnIcon(Icon.probe), "", this.startProbeProcess.bind(this));
     }
   }
 
   private startProbeProcess(_: Event) {
     this.initializeIfNeeded();
-    this.isProbing = true;
-    sendCommand(`G38.6 Z-${this.maxTravelBtn!.getValueMm()} F${this.feedRateBtn!.getValueMm()} P${this.offsetBtn!.getValueMm()}`)
-      .catch(reason => this.error(reason));
+    let zOffset = this.offsetBtn!.getValue();
+    if (this.probeType!.value === "probe") {
+      this.isProbing = true;
+      sendCommand(`G38.6 Z-${this.maxTravelBtn!.getValue()} F${this.feedRateBtn!.getValue()} P${zOffset}`)
+        .catch(reason => this.error(reason));
+    } else {
+      // Manual probing mode - operator has already positioned Z at touch point
+      setCurrentToolOffset(getAxisMachinePosition('Z'));  // Apply the offset in mm
+      setAxisPosition("Z", mmToCurrent(zOffset)); // the axis is at the probe offset
+      // sendCommand(`$J=G90 G21 F1000 Z${this.retractBtn!.getValue()}`);  // retract the tool
+    }
   }
 
   public processProbeResult(response: string) {
@@ -62,10 +78,10 @@ export class Probe {
       if (parseInt(status) == 0) {
         this.error("")
       } else {
-        setAxisValue("Z", 0)
-        sendCommand(`$J=G90 G21 F1000 Z${this.retractBtn!.getValueMm()}`);  // retract the tool
         let coords = coordsStr.split(",").map(s => parseFloat(s.trim()));
         setCurrentToolOffset(coords[2])
+        setAxisPosition("Z", 0)
+        sendCommand(`$J=G90 G21 F1000 Z${this.retractBtn!.getValue()}`);  // retract the tool
       }
     }
   }
@@ -82,14 +98,11 @@ export class Probe {
 
   public probeRow() {
     this.initializeIfNeeded();
-    const enabled = () => this.probeType!.value == "probe";
-    this.probeStart!.disabled = !enabled();
     return row()
       .add("3fr", select("probeType", btnClass, this.probeType!, (_: string) => {
         this.feedRateBtn!.update();
         this.maxTravelBtn!.update();
         this.retractBtn!.update();
-        this.probeStart!.disabled = !enabled();
       }))
       .add("3fr", this.offsetBtn!.build())
       .add("3fr", this.feedRateBtn!.build())
@@ -100,5 +113,4 @@ export class Probe {
   }
 }
 
-// Create the singleton instance
 export const probe = new Probe();

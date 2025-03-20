@@ -8,13 +8,13 @@ import { Icon } from '../ui/icons';
 import { spacer } from '../ui/ui';
 import { range } from '../common';
 
-let tools = range(0, 15).map(n => ({ number: n, name: "--", offset: 0.0 }) as Tool);
-
 interface Tool {
   number: number;
   name: string;
   offset: number;
 }
+
+export let tools = range(0, 15).map(n => ({ number: n, name: "--", offset: 0.0 }) as Tool);
 
 const makeToolRow = (tool: Tool) => {
   const n = tool.number;
@@ -54,6 +54,11 @@ const btnSelectTool = (event: Event) => {
   sendCommandAndGetStatus(`T${n}`);
 }
 
+/**
+ * Sets the tool length offset for the current tool based on a Z machine position.
+ * The tool table stores relative Z offsets between the tool and the reference tool 1.
+ * The absolute Z position of tool 1 is stored in tool 0 and the offset of tool 1 is 0.
+ */
 export const setCurrentToolOffset = (zMPos: number) => {
   let n = currentModal.tool;
   let offset = 0

@@ -1,6 +1,6 @@
 import {column, label, row} from './ui';
 import {btnIcon, button, getButtonValueAsString} from './button';
-import {axisNames, getAxisValue, gotoAxisValue, lockAxis, setAxisValue} from '../machine/machine';
+import {axisNames, getAxisPosition, gotoAxisPosition, lockAxis, setAxisPosition} from '../machine/machine';
 import {Numpad, NumpadType} from '../dialog/numpad';
 import {mmToCurrent} from '../machine/modal';
 import {mposClass} from './commonStyles';
@@ -33,14 +33,14 @@ function makeDRO(axis: string): HTMLElement {
 
 function showAxisNumpad(e: Event) {
   let axis = getButtonValueAsString(e);
-  new Numpad(NumpadType.FLOAT, () => "" + getAxisValue(axis), v => setAxisValue(axis, Number(v)), v => gotoAxisValue(axis, Number(v)));
+  new Numpad(NumpadType.FLOAT, () => "" + getAxisPosition(axis), v => setAxisPosition(axis, Number(v)), v => gotoAxisPosition(axis, Number(v)));
 }
 
 const btnHalfAxis = (e: Event) => {
   let axis = getButtonValueAsString(e)
-  setAxisValue(axis, mmToCurrent(getAxisValue(axis)) / 2);
+  setAxisPosition(axis, mmToCurrent(getAxisPosition(axis)) / 2);
 }
 
-const btnZeroAxis = (e: Event) => setAxisValue(getButtonValueAsString(e), 0);
+const btnZeroAxis = (e: Event) => setAxisPosition(getButtonValueAsString(e), 0);
 
-const btnGoto0 = (e: Event) => gotoAxisValue(getButtonValueAsString(e), 0)
+const btnGoto0 = (e: Event) => gotoAxisPosition(getButtonValueAsString(e), 0)

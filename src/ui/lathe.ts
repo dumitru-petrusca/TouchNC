@@ -45,14 +45,14 @@ export function latheControls() {
   let pitchBtn = coordButton(new FloatSetting("pitch", 0, 0, 1e6));
 
   return panel('lathe_rpm', latheRowClass, [
-    button('', "\u25C0", 'Cut Left', doCutMove(minBtn.getValueMm(), pitchBtn.getValueMm())),
+    button('', "\u25C0", 'Cut Left', doCutMove(minBtn.getValue(), pitchBtn.getValue())),
     spacer(1),
-    button('', "\u25B6", "Cut Right", doCutMove(maxBtn.getValueMm(), pitchBtn.getValueMm())),
+    button('', "\u25B6", "Cut Right", doCutMove(maxBtn.getValue(), pitchBtn.getValue())),
     spacer(1),
 
-    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(minBtn.getValueMm())),
+    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(minBtn.getValue())),
     spacer(1),
-    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(maxBtn.getValueMm())),
+    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(maxBtn.getValue())),
     spacer(1),
 
     minBtn.build(),
