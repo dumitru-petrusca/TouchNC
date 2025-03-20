@@ -144,11 +144,16 @@ export class PanelBuilder {
     this.style.height = "100%"
   }
 
-  child(weight: string | number, e: HTMLElement | PanelBuilder): PanelBuilder {
+  add(weight: string, e: HTMLElement | PanelBuilder): PanelBuilder {
     e = e instanceof PanelBuilder ? e.build() : e
     this.children.push(e)
     this.weights += weight + " "
     return this
+  }
+
+  addAll(weight: string, elements: (HTMLElement | PanelBuilder)[]): PanelBuilder {
+    elements.forEach(e => this.add(weight, e));
+    return this;
   }
 
   maxWidth(width: string): PanelBuilder {
@@ -173,6 +178,11 @@ export class PanelBuilder {
 
   overflow(overflow: string) {
     this.style.overflow = overflow
+    return this
+  }
+
+  overflowY(overflow: string) {
+    this.style.overflowY = overflow
     return this
   }
 

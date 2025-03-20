@@ -85,17 +85,17 @@ export class Probe {
     const enabled = () => this.probeType!.value == "probe";
     this.probeStart!.disabled = !enabled();
     return row()
-      .child("3fr", select("probeType", btnClass, this.probeType!, (_: string) => {
+      .add("3fr", select("probeType", btnClass, this.probeType!, (_: string) => {
         this.feedRateBtn!.update();
         this.maxTravelBtn!.update();
         this.retractBtn!.update();
         this.probeStart!.disabled = !enabled();
       }))
-      .child("3fr", this.offsetBtn!.build())
-      .child("3fr", this.feedRateBtn!.build())
-      .child("3fr", this.maxTravelBtn!.build())
-      .child("3fr", this.retractBtn!.build())
-      .child("1fr", this.probeStart!)
+      .add("3fr", this.offsetBtn!.build())
+      .add("3fr", this.feedRateBtn!.build())
+      .add("3fr", this.maxTravelBtn!.build())
+      .add("3fr", this.retractBtn!.build())
+      .add("1fr", this.probeStart!)
       .build();
   }
 }

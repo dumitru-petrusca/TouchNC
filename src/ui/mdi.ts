@@ -6,9 +6,9 @@ import {css, cssClass} from './commonStyles';
 
 export function mdi() {
   return row('mdi')
-      .child("1fr", mdiInput('mditext0'))
-      .child("1fr", mdiInput('mditext1'))
-      .child("1fr", mdiInput('mditext2'))
+      .add("1fr", mdiInput('mditext0'))
+      .add("1fr", mdiInput('mditext1'))
+      .add("1fr", mdiInput('mditext2'))
       .build()
 }
 
@@ -16,8 +16,8 @@ function mdiInput(id: string) {
   let input = textInput(id, "GCode", "");
   input.addEventListener('keyup', mdiEnterKey);
   return row().gap("0px")
-      .child("1fr", button('mdi0', svgIcon(Icon.play), 'Submit GCode Command', btnMDI, id, mdiBtnClass))
-      .child("8fr", input)
+      .add("1fr", button('mdi0', svgIcon(Icon.play), 'Submit GCode Command', btnMDI, id, mdiBtnClass))
+      .add("8fr", input)
       .build()
 }
 

@@ -1,57 +1,38 @@
-import {ifPresent, label, panel, row, setTextInput, textInput} from '../ui/ui';
-import {GET_TOOL_TABLE_CMD, sendCommandAndGetStatus} from '../http/http';
-import {css, cssClass, mposClass} from '../ui/commonStyles';
-import {btnIcon, button, getButtonValuesAsNumber, setButtonText} from '../ui/button';
-import {currentModal, mmToDisplay} from './modal';
-import {toolChannel, unitChannel} from '../events/eventbus';
-import {Icon} from '../ui/icons';
+import { ifPresent, label, row, setTextInput, textInput, column } from '../ui/ui';
+import { GET_TOOL_TABLE_CMD, sendCommandAndGetStatus } from '../http/http';
+import { mposClass } from '../ui/commonStyles';
+import { btnIcon, button, getButtonValuesAsNumber, setButtonText } from '../ui/button';
+import { currentModal, mmToDisplay } from './modal';
+import { toolChannel, unitChannel } from '../events/eventbus';
+import { Icon } from '../ui/icons';
+import { spacer } from '../ui/ui';
+import { range } from '../common';
 
-class Tool {
-  number: number
-  name: string
-  offset: number
+let tools = range(0, 15).map(n => ({ number: n, name: "--", offset: 0.0 }) as Tool);
 
-  constructor(number: number, name: string, offset: number) {
-    this.number = number;
-    this.name = name;
-    this.offset = offset;
-  }
+interface Tool {
+  number: number;
+  name: string;
+  offset: number;
 }
 
-let tools = [
-  new Tool(0, "--", 0.0),
-  new Tool(1, "--", 0.0),
-  new Tool(2, "--", 0.0),
-  new Tool(3, "--", 0.0),
-  new Tool(4, "--", 0.0),
-  new Tool(5, "--", 0.0),
-  new Tool(6, "--", 0.0),
-  new Tool(7, "--", 0.0),
-  new Tool(8, "--", 0.0),
-  new Tool(9, "--", 0.0),
-  new Tool(10, "--", 0.0),
-  new Tool(11, "--", 0.0),
-  new Tool(12, "--", 0.0),
-  new Tool(13, "--", 0.0),
-  new Tool(14, "--", 0.0),
-  new Tool(15, "--", 0.0),
-]
-
-const makeTool = (n: number) => {
+const makeToolRow = (tool: Tool) => {
+  const n = tool.number;
   return row()
-      .child("2fr", button(`tool-${n}-number`, "" + n, `Select tool ${n}`, btnSelectTool, "" + n))
-      .child("20fr", textInput(`tool-${n}-name`, "Tool Name", tools[n].name, btnSetToolName(n)))
-      .child("5fr", label(`tool-${n}-offset`, "" + tools[n].offset, mposClass))
-      .child("2fr", button(`tool-${n}-delete`, btnIcon(Icon.x), `Remove tool ${n}`, btnRemoveTool, "" + n))
-      .build()
+    .add("2fr", button(`tool-${n}-number`, "" + n, `Select tool ${n}`, btnSelectTool, "" + n))
+    .add("20fr", textInput(`tool-${n}-name`, "Tool Name", tool.name, btnSetToolName(n)))
+    .add("5fr", label(`tool-${n}-offset`, "" + tool.offset, mposClass))
+    .add("2fr", button(`tool-${n}-delete`, btnIcon(Icon.x), `Remove tool ${n}`, btnRemoveTool, "" + n))
+    .build()
 }
 
 export function createToolTable() {
-  const tools = []
-  for (let i = 1; i < 16; i++) {
-    tools.push(makeTool(i))
-  }
-  return panel('tool-table', toolTableClass, tools)
+  return column('tool-table')
+    .overflowY('auto')
+    .gap('10px')
+    .addAll("auto", tools.slice(1).map(makeToolRow))
+    .add("1fr", spacer(1))
+    .build();
 }
 
 function btnSetToolName(n: number) {
@@ -59,8 +40,7 @@ function btnSetToolName(n: number) {
     let text = (event.target as HTMLInputElement).value
     let name = text.substring(0, 32)
     let offset = tools[n].offset
-    let e = `$T${n}=${name},${offset}`;
-    sendCommandAndGetStatus(e);
+    sendCommandAndGetStatus(`$T${n}=${name},${offset}`);
   }
 }
 
@@ -117,22 +97,6 @@ export function requestTools() {
     sendCommandAndGetStatus(GET_TOOL_TABLE_CMD);
   }
 }
-
-const toolTableClass = cssClass("toolTable", css`
-  display: grid;
-  grid-template-rows: repeat(15, auto) 1fr;
-  gap: 10px;
-  overflow-y: scroll;
-  text-align: center;
-  vertical-align: middle;
-  background-color: #ffffff;
-  font-family: sans-serif;
-  font-size: 3.2rem;
-  user-select: none;
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-`)
 
 unitChannel.register(updateUI)
 toolChannel.register(updateUI)
