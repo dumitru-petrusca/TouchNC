@@ -1,14 +1,15 @@
-import {closeModal, pushModal} from './modaldlg';
-import {label, panel} from '../ui/ui';
-import {contentClass, modalClass, oneButtonRowClass, titleClass, titleRowClass} from './dialogStyles';
-import {css, cssClass} from '../ui/commonStyles';
-import {sendHttpRequest} from '../http/http';
-import {FS, FSResponse, FSType, toSizeString} from './fs';
-import {translate} from '../translate';
-import {button} from '../ui/button';
-import {SettingGroup} from '../config/settings';
-import {machineSettings} from '../config/machinesettings';
-import {AlertDialog} from './alertdlg';
+import { closeModal, pushModal } from './modaldlg';
+import { label, panel } from '../ui/ui';
+import { contentClass, modalClass, oneButtonRowClass, titleClass, titleRowClass } from './dialogStyles';
+import { css, cssClass } from '../ui/commonStyles';
+import { sendHttpRequest } from '../http/http';
+import { FS, FSResponse, FSType, toSizeString } from './fs';
+import { translate } from '../translate';
+import { button } from '../ui/button';
+import { SettingGroup } from '../config/settings';
+import { machineSettings } from '../config/machinesettings';
+import { AlertDialog } from './alertdlg';
+import { row } from '../ui/ui';
 
 const web_ui_version = "TouchNC 0.1"
 
@@ -26,9 +27,9 @@ export class StatusDialog {
   }
 
   createUI(response: PromiseSettledResult<string>,
-           sdFS: PromiseSettledResult<FSResponse>,
-           localFS: PromiseSettledResult<FSResponse>,
-           settings: PromiseSettledResult<SettingGroup>) {
+    sdFS: PromiseSettledResult<FSResponse>,
+    localFS: PromiseSettledResult<FSResponse>,
+    settings: PromiseSettledResult<SettingGroup>) {
 
     if (response.status == "rejected") {
       return new AlertDialog("Error reading firmware", response.reason)
@@ -70,11 +71,11 @@ export class StatusDialog {
     rows.push(newRow("Web UI", web_ui_version))
 
     let dialog = panel("", modalClass,
-        panel("", contentClass, [
-          panel("", titleRowClass, label("", "System Properties", titleClass)),
-          panel("status-values", statusClass, rows),
-          panel("", oneButtonRowClass, button("", "Close", "Close", _ => closeModal("")))
-        ])
+      panel("", contentClass, [
+        panel("", titleRowClass, label("", "System Properties", titleClass)),
+        panel("status-values", statusClass, rows),
+        panel("", oneButtonRowClass, button("", "Close", "Close", _ => closeModal("")))
+      ])
     );
 
     document.body.appendChild(dialog)
@@ -87,19 +88,12 @@ export class StatusDialog {
 }
 
 function newRow(name: string, value: string) {
-  return panel("", statusRow, [
-    label("", name),
-    label("", value),
-  ]);
+  return row()
+    .gap("10px")
+    .add("1fr", label("", name))
+    .add("4fr", label("", value))
+    .build();
 }
-
-const statusRow = cssClass("statusRow", css`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: 100%;
-  max-width: 100%;
-  gap: 10px;
-`)
 
 const statusClass = cssClass("status", css`
   display: grid;
