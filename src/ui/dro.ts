@@ -1,11 +1,12 @@
-import {column, label, row} from './ui';
+import { label,} from './ui';
 import {btnIcon, button, getButtonValueAsString} from './button';
 import {axisNames, getAxisPosition, gotoAxisPosition, lockAxis, setAxisPosition} from '../machine/machine';
-import {Numpad, NumpadType} from '../dialog/numpad';
+import {Numpad, NumpadType} from './numpad';
 import {mmToCurrent} from '../machine/modal';
 import {mposClass} from './commonStyles';
 import {Icon} from './icons';
 import {jogPanel} from '../machine/jog';
+import {column, row} from './panel';
 
 export function axesDRO() {
   let droRows = column('axis-position').maxWidth("100%");

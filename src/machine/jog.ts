@@ -5,6 +5,7 @@ import {Content, panel} from '../ui/ui';
 import {css, cssClass} from '../ui/commonStyles';
 import {Icon} from '../ui/icons';
 
+
 export function jogPanel() {
   return panel('', jogPanelClass, [
     panel(""),

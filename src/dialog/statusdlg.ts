@@ -3,13 +3,13 @@ import { label, panel } from '../ui/ui';
 import { contentClass, modalClass, oneButtonRowClass, titleClass, titleRowClass } from './dialogStyles';
 import { css, cssClass } from '../ui/commonStyles';
 import { sendHttpRequest } from '../http/http';
-import { FS, FSResponse, FSType, toSizeString } from './fs';
+import { FS, FSResponse, FSType, toSizeString } from '../fs/fs';
 import { translate } from '../translate';
 import { button } from '../ui/button';
 import { SettingGroup } from '../config/settings';
 import { machineSettings } from '../config/machinesettings';
 import { AlertDialog } from './alertdlg';
-import { row } from '../ui/ui';
+import {row} from '../ui/panel';
 
 const web_ui_version = "TouchNC 0.1"
 

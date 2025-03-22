@@ -1,8 +1,9 @@
-import {row, textInput} from './ui';
+import {textInput} from './ui';
 import {button, getButton, getButtonValueAsString} from './button';
 import {Icon, svgIcon} from './icons';
 import {sendCommandAndGetStatus} from '../http/http';
 import {css, cssClass} from './commonStyles';
+import {row} from './panel';
 
 export function mdi() {
   return row('mdi')

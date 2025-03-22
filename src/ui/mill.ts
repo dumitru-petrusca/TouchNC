@@ -2,12 +2,12 @@ import {axesDRO} from './dro';
 import {mdi} from './mdi';
 import {messagesPanel} from '../messages/messagesui';
 import {createOverridesPanel} from '../machine/override';
-import {column, label, panel, row, toggleFullscreen} from './ui';
+import {label, panel, toggleFullscreen} from './ui';
 import {navRowClass, tabletTabClass} from './commonStyles';
 import {createMenu, MenuItem} from './menu';
 import {StatusDialog} from '../dialog/statusdlg';
-import {FSDialog} from '../dialog/fsdialog';
-import {FSType} from '../dialog/fs';
+import {FSDialog} from '../fs/fsdialog';
+import {FSType} from '../fs/fs';
 import {homeAll, restart} from '../machine/machine';
 import {btnIcon, button} from './button';
 import {toggleCoolantState, toggleCoordinateSystem, toggleDistanceMode, toggleSpindleState, toggleUnits} from '../machine/modal';
@@ -16,6 +16,7 @@ import {createToolTable} from '../machine/tools';
 import {Icon} from './icons';
 import {sendCommandAndGetStatus, UNLOCK_CMD} from '../http/http';
 import {probe} from '../machine/probe';
+import {column, row} from './panel';
 
 export interface MachineUI {
   manualTab(): HTMLElement | null;

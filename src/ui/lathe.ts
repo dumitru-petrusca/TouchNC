@@ -7,16 +7,16 @@ import {sendCommandAndGetStatus} from '../http/http';
 import {axisJogPanel} from '../machine/jog';
 import {toggleCoolantState, toggleCoordinateSystem, toggleDistanceMode, toggleSpindleState, toggleUnits} from '../machine/modal';
 import {createMenu, MenuItem} from './menu';
-import {FSDialog} from '../dialog/fsdialog';
-import {FSType} from '../dialog/fs';
+import {FSDialog} from '../fs/fsdialog';
+import {FSType} from '../fs/fs';
 import {StatusDialog} from '../dialog/statusdlg';
 import {MachineUI} from './mill';
 import {axesDRO} from './dro';
 import {messagesPanel} from '../messages/messagesui';
 import {Icon} from './icons';
 import {mdi} from './mdi';
-import {coordButton} from '../dialog/numpad';
 import {FloatSetting} from '../config/settings';
+import {coordButton} from './coordinateButton';
 
 export class LatheUI implements MachineUI {
   manualTab(): HTMLElement | null {

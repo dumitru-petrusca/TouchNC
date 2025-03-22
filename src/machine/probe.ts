@@ -1,33 +1,34 @@
-import { beep, row } from '../ui/ui';
-import { sendCommand } from '../http/http';
-import { AlertDialog } from '../dialog/alertdlg';
-import { translate } from '../translate.js';
-import { btnIcon, button } from '../ui/button';
-import { btnClass } from '../ui/commonStyles';
-import { Icon } from '../ui/icons';
-import { SelectSetting } from '../config/settings';
-import { select } from '../config/settingsui';
-import { coordButton, CoordinateButton } from '../dialog/numpad';
-import { setCurrentToolOffset } from './tools';
+import {beep} from '../ui/ui';
+import {sendCommand} from '../http/http';
+import {AlertDialog} from '../dialog/alertdlg';
+import {translate} from '../translate.js';
+import {btnIcon, button} from '../ui/button';
+import {btnClass} from '../ui/commonStyles';
+import {Icon} from '../ui/icons';
+import {SelectSetting} from '../config/settings';
+import {select} from '../config/settingsui';
+import {setCurrentToolOffset} from './tools';
 import {getAxisMachinePosition, getAxisPosition, setAxisPosition} from './machine';
-import { preferences, PROBE_TYPE, PROBE_OFFSET, PROBE_FEED, PROBE_MAX_TRAVEL, PROBE_RETRACT } from '../config/preferences';
+import {preferences, PROBE_TYPE, PROBE_OFFSET, PROBE_FEED, PROBE_MAX_TRAVEL, PROBE_RETRACT} from '../config/preferences';
 import {mmToCurrent} from './modal';
+import {row} from '../ui/panel';
+import {coordButton, CoordinateButton} from '../ui/coordinateButton';
 
 /**
  * The Probe class manages tool length offset measurement through either manual input or automated probing.
- * 
+ *
  * It provides a UI row with controls for:
  * - Selecting between manual and probe modes
  * - Setting probe parameters (offset, feed rate, travel distance, retract distance)
  * - Initiating the probing sequence
- * 
+ *
  * Manual Mode:
  * - Used when there is no probe
  * - The operator manually moves Z to touch the workpiece (typically using a feeler gauge)
  * - When Z is at the touch point, clicking the probe button will:
  *   1. Set the current Z position to zero
  *   2. Apply the offset value as the tool length offset
- * 
+ *
  * Probe Mode:
  * When in probe mode, it executes a probing cycle that:
  * 1. Moves the Z-axis down at the specified feed rate until contact is made
@@ -62,7 +63,7 @@ export class Probe {
     if (this.probeType!.value === "probe") {
       this.isProbing = true;
       sendCommand(`G38.6 Z-${this.maxTravelBtn!.getValue()} F${this.feedRateBtn!.getValue()} P${zOffset}`)
-        .catch(reason => this.error(reason));
+          .catch(reason => this.error(reason));
     } else {
       // Manual probing mode - operator has already positioned Z at touch point
       setCurrentToolOffset(getAxisMachinePosition('Z'));  // Apply the offset in mm
@@ -99,17 +100,17 @@ export class Probe {
   public probeRow() {
     this.initializeIfNeeded();
     return row()
-      .add("3fr", select("probeType", btnClass, this.probeType!, (_: string) => {
-        this.feedRateBtn!.update();
-        this.maxTravelBtn!.update();
-        this.retractBtn!.update();
-      }))
-      .add("3fr", this.offsetBtn!.build())
-      .add("3fr", this.feedRateBtn!.build())
-      .add("3fr", this.maxTravelBtn!.build())
-      .add("3fr", this.retractBtn!.build())
-      .add("1fr", this.probeStart!)
-      .build();
+        .add("3fr", select("probeType", btnClass, this.probeType!, (_: string) => {
+          this.feedRateBtn!.update();
+          this.maxTravelBtn!.update();
+          this.retractBtn!.update();
+        }))
+        .add("3fr", this.offsetBtn!.build())
+        .add("3fr", this.feedRateBtn!.build())
+        .add("3fr", this.maxTravelBtn!.build())
+        .add("3fr", this.retractBtn!.build())
+        .add("1fr", this.probeStart!)
+        .build();
   }
 }
 

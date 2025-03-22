@@ -1,4 +1,4 @@
-import {FSFile} from '../dialog/fs';
+import {FSFile} from '../fs/fs';
 import {EventChannel} from './eventchannel';
 
 export let startupChannel = new EventChannel<void>()

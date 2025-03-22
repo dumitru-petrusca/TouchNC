@@ -1,12 +1,12 @@
 import {getElement, label, panel, setEnabled, setLabel} from '../ui/ui';
 import {httpCommunicationLocked} from '../http/http';
 import {FS, FSFile, FSResponse, FSType, toSizeString} from './fs';
-import {closeModal, pushModal} from './modaldlg';
-import {AlertDialog} from './alertdlg';
+import {closeModal, pushModal} from '../dialog/modaldlg';
+import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate.js';
-import {ConfirmDialog} from './confirmdlg';
-import {InputDialog} from './inputdlg';
-import {modalClass, titleClass, titleRowClass} from './dialogStyles';
+import {ConfirmDialog} from '../dialog/confirmdlg';
+import {InputDialog} from '../dialog/inputdlg';
+import {modalClass, titleClass, titleRowClass} from '../dialog/dialogStyles';
 import {css, cssClass, transparentClass} from '../ui/commonStyles';
 import {Consumer, EventHandler} from '../common';
 import {btnIcon, button} from '../ui/button';

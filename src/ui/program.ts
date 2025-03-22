@@ -1,4 +1,4 @@
-import {FSFile, FSType} from '../dialog/fs';
+import {FSFile, FSType} from '../fs/fs';
 import {GCodeFile, messageChannel, positionChannel, stateChannel} from '../events/eventbus';
 import {element, label, panel, setLabel} from './ui';
 import {display} from '../toolpath/display';
@@ -6,7 +6,7 @@ import {currentState, pauseGCode, resumeGCode, stopAndRecover, unlock, wposToXYZ
 import {sendCommandAndGetStatus} from '../http/http';
 import {button, setButton} from './button';
 import {Icon, svgIcon} from './icons';
-import {FSDialog} from '../dialog/fsdialog';
+import {FSDialog} from '../fs/fsdialog';
 import {css, cssClass, floatingButtonClass} from './commonStyles';
 
 let gCodeFile: GCodeFile | undefined = undefined;

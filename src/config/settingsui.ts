@@ -1,4 +1,4 @@
-import {numpadButton, NumpadType} from '../dialog/numpad';
+import {numpadButton, NumpadType} from '../ui/numpad';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';

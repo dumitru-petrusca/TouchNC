@@ -1,12 +1,13 @@
-import { ifPresent, label, row, setTextInput, textInput, column } from '../ui/ui';
-import { GET_TOOL_TABLE_CMD, sendCommandAndGetStatus } from '../http/http';
-import { mposClass } from '../ui/commonStyles';
-import { btnIcon, button, getButtonValuesAsNumber, setButtonText } from '../ui/button';
-import { currentModal, mmToDisplay } from './modal';
-import { toolChannel, unitChannel } from '../events/eventbus';
-import { Icon } from '../ui/icons';
-import { spacer } from '../ui/ui';
-import { range } from '../common';
+import {ifPresent, label, setTextInput, textInput} from '../ui/ui';
+import {GET_TOOL_TABLE_CMD, sendCommandAndGetStatus} from '../http/http';
+import {mposClass} from '../ui/commonStyles';
+import {btnIcon, button, getButtonValuesAsNumber, setButtonText} from '../ui/button';
+import {currentModal, mmToDisplay} from './modal';
+import {toolChannel, unitChannel} from '../events/eventbus';
+import {Icon} from '../ui/icons';
+import {spacer} from '../ui/ui';
+import {range} from '../common';
+import {column, row} from '../ui/panel';
 
 interface Tool {
   number: number;
@@ -14,25 +15,29 @@ interface Tool {
   offset: number;
 }
 
-export let tools = range(0, 15).map(n => ({ number: n, name: "--", offset: 0.0 }) as Tool);
+export let tools = range(0, 15).map(n => ({
+  number: n,
+  name: "--",
+  offset: 0.0
+}) as Tool);
 
 const makeToolRow = (tool: Tool) => {
   const n = tool.number;
   return row()
-    .add("2fr", button(`tool-${n}-number`, "" + n, `Select tool ${n}`, btnSelectTool, "" + n))
-    .add("20fr", textInput(`tool-${n}-name`, "Tool Name", tool.name, btnSetToolName(n)))
-    .add("5fr", label(`tool-${n}-offset`, "" + tool.offset, mposClass))
-    .add("2fr", button(`tool-${n}-delete`, btnIcon(Icon.x), `Remove tool ${n}`, btnRemoveTool, "" + n))
-    .build()
+      .add("2fr", button(`tool-${n}-number`, "" + n, `Select tool ${n}`, btnSelectTool, "" + n))
+      .add("20fr", textInput(`tool-${n}-name`, "Tool Name", tool.name, btnSetToolName(n)))
+      .add("5fr", label(`tool-${n}-offset`, "" + tool.offset, mposClass))
+      .add("2fr", button(`tool-${n}-delete`, btnIcon(Icon.x), `Remove tool ${n}`, btnRemoveTool, "" + n))
+      .build()
 }
 
 export function createToolTable() {
   return column('tool-table')
-    .overflowY('auto')
-    .gap('10px')
-    .addAll("auto", tools.slice(1).map(makeToolRow))
-    .add("1fr", spacer(1))
-    .build();
+      .overflowY('auto')
+      .gap('10px')
+      .addAll("auto", tools.slice(1).map(makeToolRow))
+      .add("1fr", spacer(1))
+      .build();
 }
 
 function btnSetToolName(n: number) {
