@@ -5,8 +5,8 @@ import {Numpad, NumpadType} from './numpad';
 import {mmToCurrent} from '../machine/modal';
 import {mposClass} from './commonStyles';
 import {Icon} from './icons';
-import {jogPanel} from '../machine/jog';
 import {column, row} from './panel';
+import {JogPanel} from '../machine/jogPanel';
 
 export function axesDRO() {
   let droRows = column('axis-position').maxWidth("100%");
@@ -14,7 +14,7 @@ export function axesDRO() {
   return row()
       .maxWidth(`100%`)
       .add("1fr", droRows)
-      .add("auto", jogPanel())
+      .add("auto", new JogPanel().create())
       .build()
 }
 

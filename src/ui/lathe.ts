@@ -4,7 +4,6 @@ import {homeAll, restart} from '../machine/machine';
 import {EventHandler} from '../common';
 import {css, cssClass, navRowClass} from './commonStyles';
 import {sendCommandAndGetStatus} from '../http/http';
-import {axisJogPanel} from '../machine/jog';
 import {toggleCoolantState, toggleCoordinateSystem, toggleDistanceMode, toggleSpindleState, toggleUnits} from '../machine/modal';
 import {createMenu, MenuItem} from './menu';
 import {FSDialog} from '../fs/fsdialog';
@@ -17,13 +16,14 @@ import {Icon} from './icons';
 import {mdi} from './mdi';
 import {FloatSetting} from '../config/settings';
 import {coordButton} from './coordinateButton';
+import {JogPanel} from '../machine/jogPanel';
 
 export class LatheUI implements MachineUI {
   manualTab(): HTMLElement | null {
     return panel('tablettab', latheTabClass, [
       latheNavPanel(),
       axesDRO(),
-      axisJogPanel('X'),
+      new JogPanel().axisPanel('X'),
       latheControls(),
       mdi(),
       messagesPanel(),

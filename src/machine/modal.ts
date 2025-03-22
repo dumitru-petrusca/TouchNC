@@ -112,7 +112,8 @@ function getCoolantIcon() {
   return icon
 }
 
-const isInchMode = () => currentModal.units == INCH;
+export const isInchMode = () => currentModal.units == INCH;
+export const isMmMode = () => currentModal.units == MM;
 export const currentToMm = (x: number): number => isInchMode() ? x * 25.4 : x;
 export const mmToCurrent = (x: number): number => isInchMode() ? x / 25.4 : x;
 export const mmToDisplay = (x: number): string => mmToCurrent(x).toFixed(isInchMode() ? 3 : 2);

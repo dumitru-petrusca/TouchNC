@@ -110,7 +110,8 @@ function updateProgramProgress() {
 
 const previewPaneClass = cssClass("previewPane", css`
   position: relative;
-  overflow: auto;
+  overflow: hidden;
+  height: 100%;
 `)
 
 const toolPathClass = cssClass("toolPath", css`
@@ -118,7 +119,8 @@ const toolPathClass = cssClass("toolPath", css`
   width: 100%;
   z-index: 0;
   user-select: none;
-  overflow: clip;
+  overflow: hidden;
+  box-sizing: border-box;
   border: 0.05rem solid #5755d9;
 `)
 

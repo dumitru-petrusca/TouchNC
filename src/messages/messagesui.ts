@@ -25,6 +25,7 @@ const messagePaneClass = cssClass("messagePane", css`
 `)
 
 const messagesClass = cssClass("messages", css`
+  box-sizing: border-box;
   text-align: left;
   font-size: 0.65em;
   border: 0.05rem solid #5755d9;
