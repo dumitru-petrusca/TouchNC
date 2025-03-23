@@ -77,7 +77,8 @@ export const btnClass = cssClass("btn", css`
   height: 40px;
   vertical-align: middle;
   user-select: none;           /* Disable text selection (standard) */
-  touch-action: none;          /* Disable default touch behavior */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 `)
 
 cssClass("btn:disabled", css`
@@ -85,11 +86,14 @@ cssClass("btn:disabled", css`
   color: black;
 `)
 
+cssClass("btn:active", css`
+  //background: #d0f0d0
+`)
+
 cssClass("btn:hover", css`
 `)
 
-cssClass("btn:active", css`
-  background: #d0f0d0
+cssClass("btn:focus", css`
 `)
 
 export const floatingButtonClass = cssClass("floatingButton", css`

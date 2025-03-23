@@ -69,5 +69,5 @@ export function btnIcon(icon: Icon, color: string = "black") {
 const btnIconClass = cssClass("btnIcon", css`
   vertical-align: text-top;
   user-select: none;           /* Disable text selection (standard) */
-  touch-action: none;          /* Disable default touch behavior */
+  touch-action: manipulation;
 `)

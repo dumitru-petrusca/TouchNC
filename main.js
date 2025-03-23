@@ -23,7 +23,6 @@ app.whenReady().then(() => {
     mainWindow.webContents.openDevTools();
   }
   mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
-  // mainWindow.loadURL(isDev ? `http://127.0.0.1:8080` : `http://demo.local`);
 });
 
 // Handle app close for macOS

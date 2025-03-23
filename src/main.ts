@@ -72,9 +72,10 @@ window.onbeforeunload = (event) => {
   }
 }
 
-// document.addEventListener("contextmenu", function (event) {
-//   event.preventDefault();
-// });
+document.addEventListener("contextmenu", function (event) {
+  event.preventDefault();
+});
+
 // document.addEventListener("touchstart", function (event) {
 //   if (event.touches.length > 1) {
 //     event.preventDefault(); // Prevent multi-touch gestures

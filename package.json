@@ -60,7 +60,7 @@
     "gulp-cli": "^3.0.0"
   },
   "version": "1.0.0",
-  "main": "electron.js",
+  "main": "main.js",
   "scripts": {
     "test": "jest"
   },

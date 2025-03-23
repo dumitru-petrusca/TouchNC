@@ -31,7 +31,7 @@ export class JogPanel {
       this.jogButton('y+', btnIcon(Icon.up), `Y+`, 100),
       feedButtons[1],
       this.jogButton('z+', btnIcon(Icon.up), `Z+`, 100),
-      this.jogButton('x-', btnIcon(Icon.left), `X-`, 100),
+      this.jogButton('x-', "", `X-`, 100),
       panel("X/Y", undefined, "X / Y"),
       this.jogButton('x+', btnIcon(Icon.right), `X+`, 100),
       panel("Z", undefined, "Z"),
@@ -57,32 +57,31 @@ export class JogPanel {
 
   jogButton = (id: string, content: Content, axis: string, feedRate: number) => {
     let btn = button(id, content, `Move ${axis}`, undefined, axis);
-    btn.addEventListener('pointerdown', this.handleDown(axis, feedRate));
-    btn.addEventListener('pointerup', _ => this.cancelJog());
-    btn.addEventListener('pointerout', _ => this.cancelJog());
-    // logEvents(btn)
+    btn.addEventListener('touchstart', _ => this.handleDown(axis, feedRate, btn));
+    btn.addEventListener('touchend', _ => this.cancelJog(btn));
+    // btn.addEventListener('pointerout', _ => this.cancelJog(btn));
     return btn
   }
 
-  cancelJog() {
-    if (this.jogging) {
-      this.jogging = false
-      sendCommand(CANCEL_JOG_CMD);
+  handleDown(axis: string, _feedRate: number, btn: HTMLButtonElement) {
+    btn.style.backgroundColor = "#d0f0d0"
+    if (this.setting.getValue() == STEP) {
+      let step = isMmMode() ? "0.01" : "0.001"
+      let feed = mmToDisplay(100);
+      sendCommandAndGetStatus(`$J=G91 F${feed} ${axis}${step}`);
+    } else {
+      let feed = Number(this.setting.getValue());
+      this.jogging = true
+      console.log("Start Jog")
+      sendCommandAndGetStatus(`$J=G91 F${feed.toFixed(2)} ${axis}1000`);
     }
   }
 
-  handleDown(axis: string, _feedRate: number) {
-    return (_: Event) => {
-      if (this.setting.getValue() == STEP) {
-        let step = isMmMode() ? "0.01" : "0.001"
-        let feed = mmToDisplay(100);
-        sendCommandAndGetStatus(`$J=G91 F${feed} ${axis}${step}`);
-      } else {
-        let feed = Number(this.setting.getValue());
-        this.jogging = true
-        sendCommandAndGetStatus(`$J=G91 F${feed.toFixed(2)} ${axis}1000`);
-      }
-    }
+  cancelJog(btn: HTMLButtonElement) {
+    this.jogging = false
+    btn.style.backgroundColor = "lightblue"
+    console.log("Cancel Jog")
+    sendCommand(CANCEL_JOG_CMD);
   }
 }
 
