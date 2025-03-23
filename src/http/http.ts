@@ -23,8 +23,7 @@ export const FEED_HOLD_CMD = '!'; // Initiates a feed hold, which pauses the mac
 export const FEED_RESUME_CMD = '~'; // Resumes program execution after a feed hold
 export const RESET_CMD = '\x18'; // Performs a reset of the FluidNC controller (same as Ctrl-X)
 
-const WAIT_FOR_OK_CMD = new Set<string>([
-])
+const WAIT_FOR_OK_CMD = new Set<string>([])
 
 const maxCommandCount = 20;
 
@@ -74,7 +73,7 @@ export function sendCommandAndGetStatus(cmd: string): Promise<void> {
 }
 
 export function sendCommand(cmd: string): Promise<void> {
-  console.log("CMD: "+cmd)
+  console.log("CMD: " + cmd)
   log("sendCommand: " + cmd)
   if (commandList.length >= maxCommandCount) {
     throw new Error(`Too many http requests, maximum ${maxCommandCount} allowed.`)
@@ -140,7 +139,7 @@ export const processCommandError = (msg: string) => {
 }
 
 export function sendHttpRequest(url: string): Promise<string> {
-  return fetch(withPath(url))
+  return fetch(fullUrl(url))
       .then(response => {
         if (!response.ok) {
           throw new Error(`Http error: ${response}`);
@@ -150,12 +149,11 @@ export function sendHttpRequest(url: string): Promise<string> {
 }
 
 
-function withPath(url: string) {
-  let s = ""
+function fullUrl(url: string) {
   if (url.startsWith("/command")) {
-    s = url.indexOf("?") == -1 ? "?" : "&PAGEID=" + pageId;
+    url = url.indexOf("?") == -1 ? `${url}?` : `${url}&PAGEID=${pageId}`;
   }
-  return url + s;
+  return `${process.env.SERVER_URL}/${url}`.replaceAll("//", "/");
 }
 
 export function writeFile(name: string, js: string): Promise<Response> {

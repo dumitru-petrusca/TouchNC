@@ -76,6 +76,8 @@ export const btnClass = cssClass("btn", css`
   width: 100%;
   height: 40px;
   vertical-align: middle;
+  user-select: none;           /* Disable text selection (standard) */
+  touch-action: none;          /* Disable default touch behavior */
 `)
 
 cssClass("btn:disabled", css`

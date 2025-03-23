@@ -15,6 +15,8 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import gulpSass from 'gulp-sass';
 import * as sass from 'sass';
+import {build} from 'electron-builder';
+import {spawn} from 'child_process';
 
 function parseArgs() {
   let args = {};
@@ -151,5 +153,37 @@ function scss() {
       .pipe(gulp.dest('./dist/css/'));
 }
 
-gulp.task('compile', gulp.series(ts, js, scss, lang, html));
+function buildElectron() {
+  return build({
+    config: {
+      directories: {
+        output: "dist"
+      },
+      win: {
+        target: "nsis"
+      },
+      mac: {
+        target: "dmg"
+      },
+      linux: {
+        target: "AppImage"
+      }
+    }
+  });
+}
+
+gulp.task('run-electron', (done) => {
+  const electronProcess = spawn('electron', ['.'], { 
+    stdio: 'inherit',
+    env: { ...process.env, NODE_ENV: 'development' }
+  });
+  electronProcess.on('close', () => done()); // Exit Gulp task when Electron exits
+});
+
+gulp.task('run', gulp.series(ts, js, scss, lang, html, 'run-electron'));
+
+gulp.task('compile', gulp.series(ts, js, scss, lang, html, buildElectron));
 gulp.task('package', gulp.series(clean, ts, js, scss, lang, min, html, zip));
+
+gulp.task('electron',
+    gulp.series(clean, ts, js, scss, lang, min, html, buildElectron));

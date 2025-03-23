@@ -78,8 +78,10 @@ function startSocket() {
       }
       socket = new WebSocket('ws://' + document.location.host + '/ws', ['arduino']);
     } else {
-      console.log("Connecting to WebSocket " + firmware.ip + ":" + firmware.port);
-      socket = new WebSocket('ws://' + firmware.ip + ':' + firmware.port, ['arduino']);
+      let serverUrl = (process as any).env.SERVER_URL.replace("http", "ws");
+      let url = `${serverUrl}:${firmware.port}`
+      console.log(`Connecting to WebSocket ${url}`);
+      socket = new WebSocket(url, ['arduino']);
     }
   } catch (exception) {
     console.error(exception);

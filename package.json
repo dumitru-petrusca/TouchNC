@@ -11,6 +11,8 @@
     "@types/three": "^0.172.0",
     "del": "6.0.0",
     "deprecated": "latest",
+    "electron": "^35.0.3",
+    "electron-builder": "^25.1.8",
     "fs": "latest",
     "glob": "^11.0.1",
     "gulp": "^4.0.2",
@@ -58,10 +60,7 @@
     "gulp-cli": "^3.0.0"
   },
   "version": "1.0.0",
-  "main": "gulpfile-.js",
-  "directories": {
-    "doc": "docs"
-  },
+  "main": "electron.js",
   "scripts": {
     "test": "jest"
   },

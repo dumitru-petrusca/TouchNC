@@ -71,3 +71,20 @@ window.onbeforeunload = (event) => {
     event.preventDefault();
   }
 }
+
+// document.addEventListener("contextmenu", function (event) {
+//   event.preventDefault();
+// });
+// document.addEventListener("touchstart", function (event) {
+//   if (event.touches.length > 1) {
+//     event.preventDefault(); // Prevent multi-touch gestures
+//   }
+// }, {passive: false});
+//
+// document.addEventListener("gesturestart", function (event) {
+//   event.preventDefault(); // Disable pinch-to-zoom
+// });
+//
+// document.addEventListener("selectstart", function(event) {
+//   event.preventDefault(); // Prevent text selection
+// });
