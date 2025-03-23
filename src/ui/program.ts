@@ -19,7 +19,7 @@ export const loadGCodeFile = (file: FSFile) => {
   }
   setLabel('filename', file.path);
   let t1 = new Date().getTime()
-  fetch(encodeURIComponent('SD' + file.path))
+  fetch(encodeURI(`${process.env.SERVER_URL}/SD${file.path}`))
       .then(response => response.text())
       .then(gcode => {
         console.log("Leaded file in " + (new Date().getTime() - t1) / 1000.0 + "sec")

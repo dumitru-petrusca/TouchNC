@@ -1,7 +1,8 @@
 const events = [
-  "click", "dblclick", "mousedown", "mouseup", "mousemove",
-  "mouseenter", "mouseleave", "mouseover", "mouseout",
+  "click", "dblclick",
+  "mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "mouseover", "mouseout",
   "touchstart", "touchmove", "touchend", "touchcancel",
+  "pointerdown", "pointerup", "pointerout",
   "keydown", "keyup", "keypress",
   "focus", "blur", "contextmenu"
 ];

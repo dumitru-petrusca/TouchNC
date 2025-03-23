@@ -142,7 +142,7 @@ export function sendHttpRequest(url: string): Promise<string> {
   return fetch(fullUrl(url))
       .then(response => {
         if (!response.ok) {
-          throw new Error(`Http error: ${response}`);
+          throw new Error(`Response: ${JSON.stringify(response)}`);
         }
         return response.text();
       })
@@ -162,5 +162,5 @@ export function writeFile(name: string, js: string): Promise<Response> {
   let form = new FormData();
   form.append('path', '/');
   form.append('myfile[]', file, name);
-  return fetch('/files', {method: 'POST', body: form})
+  return fetch(`${process.env.SERVER_URL}/files`, {method: 'POST', body: form})
 }

@@ -34,7 +34,7 @@ export class ConnectDialog {
       const url = "/command?plain=" + encodeURIComponent("[ESP800]");
       sendHttpRequest(url)
           .then(response => this.connectSuccess(response))
-          .catch(reason => new AlertDialog(`Firmware identification error: ${reason}`, reason))
+          .catch(reason => new AlertDialog(`Firmware Identification Error`, reason))
     }
   }
 
