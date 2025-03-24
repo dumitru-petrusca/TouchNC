@@ -8,7 +8,7 @@ import {createMenu, MenuItem} from './menu';
 import {StatusDialog} from '../dialog/statusdlg';
 import {FSDialog} from '../fs/fsdialog';
 import {FSType} from '../fs/fs';
-import {homeAll, restart} from '../machine/machine';
+import {currentState, homeAll, restart} from '../machine/machine';
 import {btnIcon, button} from './button';
 import {toggleCoolantState, toggleCoordinateSystem, toggleDistanceMode, toggleSpindleState, toggleUnits} from '../machine/modal';
 import {toolPathPanel} from './program';
@@ -17,6 +17,7 @@ import {Icon} from './icons';
 import {sendCommandAndGetStatus, UNLOCK_CMD} from '../http/http';
 import {probe} from '../machine/probe';
 import {column, row} from './panel';
+import {AlertDialog} from '../dialog/alertdlg';
 
 export interface MachineUI {
   manualTab(): HTMLElement | null;
@@ -68,6 +69,7 @@ function millNavPanel() {
   return panel('', navRowClass, [
     createMenu('dropdown', "Menu", "left", [
       new MenuItem("Status", () => new StatusDialog()),
+      new MenuItem("Pins", () => new AlertDialog("Pins", currentState.pins)),
       new MenuItem("Files", () => new FSDialog(FSType.Local)),
       new MenuItem("Homing", homeAll),
       new MenuItem("Restart", restart),

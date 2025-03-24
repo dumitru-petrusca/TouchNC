@@ -1,6 +1,6 @@
 import {label, panel, spacer, toggleFullscreen} from './ui';
 import {btnIcon, button} from './button';
-import {homeAll, restart} from '../machine/machine';
+import {currentState, homeAll, restart} from '../machine/machine';
 import {EventHandler} from '../common';
 import {css, cssClass, navRowClass} from './commonStyles';
 import {sendCommandAndGetStatus} from '../http/http';
@@ -17,6 +17,7 @@ import {mdi} from './mdi';
 import {FloatSetting} from '../config/settings';
 import {coordButton} from './coordinateButton';
 import {JogPanel} from '../machine/jogPanel';
+import {AlertDialog} from '../dialog/alertdlg';
 
 export class LatheUI implements MachineUI {
   manualTab(): HTMLElement | null {

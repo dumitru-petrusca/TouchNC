@@ -139,7 +139,7 @@ export const processCommandError = (msg: string) => {
 }
 
 export function sendHttpRequest(url: string): Promise<string> {
-  return fetch(fullUrl(url))
+  return fetch(serverUrl(url))
       .then(response => {
         if (!response.ok) {
           throw new Error(`Response: ${JSON.stringify(response)}`);
@@ -149,11 +149,14 @@ export function sendHttpRequest(url: string): Promise<string> {
 }
 
 
-function fullUrl(url: string) {
+export function serverUrl(url: string) {
   if (url.startsWith("/command")) {
     url = url.indexOf("?") == -1 ? `${url}?` : `${url}&PAGEID=${pageId}`;
   }
-  return `${process.env.SERVER_URL}/${url}`.replaceAll("//", "/");
+  let server = (process.env.SERVER_URL ?? "").trim()
+  server += server.endsWith("/") ? "" : "/"
+  url = url.startsWith("/") ? url.substring(1) : url
+  return server + url;
 }
 
 export function writeFile(name: string, js: string): Promise<Response> {
@@ -162,5 +165,5 @@ export function writeFile(name: string, js: string): Promise<Response> {
   let form = new FormData();
   form.append('path', '/');
   form.append('myfile[]', file, name);
-  return fetch(`${process.env.SERVER_URL}/files`, {method: 'POST', body: form})
+  return fetch(serverUrl("/files"), {method: 'POST', body: form})
 }

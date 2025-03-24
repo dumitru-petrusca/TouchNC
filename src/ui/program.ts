@@ -3,7 +3,7 @@ import {GCodeFile, messageChannel, positionChannel, stateChannel} from '../event
 import {element, label, panel, setLabel} from './ui';
 import {display} from '../toolpath/display';
 import {currentState, pauseGCode, resumeGCode, stopAndRecover, unlock, wposToXYZ} from '../machine/machine';
-import {sendCommandAndGetStatus} from '../http/http';
+import {serverUrl, sendCommandAndGetStatus} from '../http/http';
 import {button, setButton} from './button';
 import {Icon, svgIcon} from './icons';
 import {FSDialog} from '../fs/fsdialog';
@@ -19,7 +19,7 @@ export const loadGCodeFile = (file: FSFile) => {
   }
   setLabel('filename', file.path);
   let t1 = new Date().getTime()
-  fetch(encodeURI(`${process.env.SERVER_URL}/SD${file.path}`))
+  fetch(serverUrl(`/SD${file.path}`))
       .then(response => response.text())
       .then(gcode => {
         console.log("Leaded file in " + (new Date().getTime() - t1) / 1000.0 + "sec")

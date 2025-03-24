@@ -2,11 +2,9 @@ import {element, getElement, label, panel} from '../ui/ui';
 import {btnClass, css, cssClass} from '../ui/commonStyles';
 import {contentClass, modalClass, titleClass, titleRowClass, twoButtonRowStyle} from '../dialog/dialogStyles';
 import {closeModal, pushModal} from '../dialog/modaldlg';
-import {PinSetting, SelectOption} from './settings';
+import {NO_PIN, PinSetting, SelectOption} from './settings';
 import {Consumer} from '../common';
 import {button} from '../ui/button';
-
-const NO_PIN = "NO_PIN";
 
 let OD = new SelectOption("od", "Open Drain", 0)
 let PU = new SelectOption("pu", "Pull Up", 1)
@@ -23,7 +21,7 @@ class Pin {
   active: string = AH.text
 }
 
-function parsePinValue(value: string) {
+function parsePinValue(value: string): Pin {
   let pin = new Pin()
   let s = value.split(":").map(s => s.trim());
   if (s.length == 1) {
@@ -74,7 +72,7 @@ export class PinDialog {
 
   pinNumber(value: string) {
     const e = element("select", "pin_name", btnClass, undefined, undefined) as HTMLSelectElement;
-    this.pin.options.forEach((pin, i) => {
+    this.pin.pins.forEach((pin, i) => {
       const option = document.createElement("option") as HTMLOptionElement
       option.value = "" + i;
       option.text = pin;
@@ -120,7 +118,7 @@ export class PinDialog {
   private value() {
     let bias = BIAS[(getElement("pin_bias") as HTMLSelectElement).selectedIndex];
     let active = ACTIVE[(getElement("pin_active") as HTMLSelectElement).selectedIndex];
-    let v = this.pin.options[(getElement("pin_name") as HTMLSelectElement).selectedIndex];
+    let v = this.pin.pins[(getElement("pin_name") as HTMLSelectElement).selectedIndex];
     if (v == NO_PIN) {
       return NO_PIN
     }

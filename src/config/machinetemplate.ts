@@ -107,7 +107,6 @@ export let machineTemplate = {
     _attributes: SettingAttr.VIRTUAL,
     name: string("None", 0, 32),
     board: string("None", 0, 32),
-    host: string("fluidnc", 0, 32),
     meta: string("", 0, 32),
     machine: select("MILL", ["MILL", "LATHE"])
   },

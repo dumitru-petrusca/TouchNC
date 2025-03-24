@@ -1,4 +1,4 @@
-import {sendHttpRequest} from '../http/http';
+import {serverUrl, sendHttpRequest} from '../http/http';
 
 export enum FSType {
   Local,
@@ -90,7 +90,7 @@ export class FS {
       }
     }
     this.uploadingFile = files.length == 1 ? files[0].name : "";
-    return fetch(`${process.env.SERVER_URL}/${this.baseUrl}`, {method: 'POST', body: form})
+    return fetch(serverUrl(this.baseUrl), {method: 'POST', body: form})
         .then(response => {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

@@ -1,6 +1,8 @@
 import {capitalize, splitNumber} from '../common';
 import {YAML} from './yaml';
 
+export const NO_PIN = "NO_PIN";
+
 export enum SettingAttr {
   DEFAULT = 0,
   VIRTUAL = 1 << 0,
@@ -143,19 +145,15 @@ export class SelectSetting extends Setting<string, SelectSetting> {
 }
 
 export class PinSetting extends Setting<string, PinSetting> {
-  options: string[];
+  pins: string[];
 
-  constructor(name: string, defaultValue: string, options: string[]) {
+  constructor(name: string, defaultValue: string, pins: string[]) {
     super(name, defaultValue);
-    this.options = options;
+    this.pins = pins;
   }
 
   setValue(value: string): PinSetting {
-    value = value.toLowerCase();
-    if (value == "no_pin") {
-      value = "NO_PIN"
-    }
-    super.setValue(value)
+    super.setValue(value.toUpperCase())
     return this
   }
 
@@ -166,7 +164,7 @@ export class PinSetting extends Setting<string, PinSetting> {
         (s.length == 3 && this.pinOk(s[0]) && this.isUpDown(s[1]) && this.isLowHigh(s[2]))
   }
 
-  pinOk = (pin: string) => this.options.includes(pin);
+  pinOk = (pin: string) => this.pins.includes(pin);
   isUpDown = (s: string) => s == "pu" || s == "pd";
   isLowHigh = (s: string) => s == "low" || s == "high";
 }
@@ -241,7 +239,7 @@ export class SelectOption {
   }
 }
 
-function pins(prefix: "gpio" | "i2so", from: number, to: number): string[] {
+function pins(prefix: "GPIO" | "I2SO", from: number, to: number): string[] {
   let pins = []
   for (let i = from; i <= to; i++) {
     pins.push(prefix + "." + i)
@@ -250,15 +248,15 @@ function pins(prefix: "gpio" | "i2so", from: number, to: number): string[] {
 }
 
 const pinsIO = [
-  "None",
-  ...pins("gpio", 0, 5),
-  ...pins("gpio", 12, 19),
-  ...pins("gpio", 21, 23),
-  ...pins("gpio", 25, 27),
-  ...pins("gpio", 32, 33)
+  NO_PIN,
+  ...pins("GPIO", 0, 5),
+  ...pins("GPIO", 12, 19),
+  ...pins("GPIO", 21, 23),
+  ...pins("GPIO", 25, 27),
+  ...pins("GPIO", 32, 33)
 ]
-const pinsI = [...pinsIO, ...pins("gpio", 34, 39)]
-const pinsO = [...pinsIO, ...pins("i2so", 0, 15)]
+const pinsI = [...pinsIO, ...pins("GPIO", 34, 39)]
+const pinsO = [...pinsIO, ...pins("I2SO", 0, 15)]
 
 export const string = (value: string, min: number, max: number) => string_("", value, min, max)
 export const string_ = (name: string, value: string, min: number, max: number) => new StringSetting(name, value, min, max).setValue(value);
@@ -273,9 +271,9 @@ export const position = (min: number, max: number) => new StringSetting("", "0, 
 export const select = (value: string, values: string[]) => new SelectSetting("", value, values.map((v, i) => new SelectOption(v, v, i))).setValue(value);
 export const select_ = (name: string, value: string, values: string[]) => new SelectSetting(name, value, values.map((v, i) => new SelectOption(v, v, i))).setValue(value);
 export const group = (group: string, attr: SettingAttr = 0) => new GroupSetting("", group, attr);
-export const pinI = () => new PinSetting("", "NO_PIN", pinsI).setValue("NO_PIN");
-export const pinO = () => new PinSetting("", "NO_PIN", pinsO).setValue("NO_PIN");
-export const pinIO = () => new PinSetting("", "NO_PIN", pinsIO).setValue("NO_PIN");
+export const pinI = () => new PinSetting("", NO_PIN, pinsI).setValue(NO_PIN);
+export const pinO = () => new PinSetting("", NO_PIN, pinsO).setValue(NO_PIN);
+export const pinIO = () => new PinSetting("", NO_PIN, pinsIO).setValue(NO_PIN);
 
 export function cloneSetting<T extends Setting<any, T>>(s: T): T {
   let ss: Setting<any, any>
@@ -290,7 +288,7 @@ export function cloneSetting<T extends Setting<any, T>>(s: T): T {
   } else if (s instanceof AlphanumericSetting) {
     ss = new AlphanumericSetting(s.path, s.defaultValue)
   } else if (s instanceof PinSetting) {
-    ss = new PinSetting(s.path, s.defaultValue, s.options)
+    ss = new PinSetting(s.path, s.defaultValue, s.pins)
   } else if (s instanceof GroupSetting) {
     ss = new GroupSetting(s.path, s.groupPath, s.attr)
   } else if (s instanceof SelectSetting) {
