@@ -6,7 +6,7 @@ import {currentModal, mmToDisplay} from './modal';
 import {toolChannel, unitChannel} from '../events/eventbus';
 import {Icon} from '../ui/icons';
 import {spacer} from '../ui/ui';
-import {range} from '../common';
+import {range} from '../common/common';
 import {column, row} from '../ui/panel';
 
 interface Tool {

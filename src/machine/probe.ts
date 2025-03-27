@@ -48,7 +48,7 @@ export class Probe {
   private initializeIfNeeded() {
     if (this.probeType === undefined) {
       this.probeType = preferences.getSelect(PROBE_TYPE);
-      const isProbeMode = () => this.probeType!.value == "probe";
+      const isProbeMode = () => this.probeType!.getValue() == "probe";
       this.offsetBtn = coordButton(preferences.floatSetting(PROBE_OFFSET));
       this.feedRateBtn = coordButton(preferences.floatSetting(PROBE_FEED)).setEnabled(isProbeMode);
       this.maxTravelBtn = coordButton(preferences.floatSetting(PROBE_MAX_TRAVEL)).setEnabled(isProbeMode);
@@ -60,7 +60,7 @@ export class Probe {
   private startProbeProcess(_: Event) {
     this.initializeIfNeeded();
     let zOffset = this.offsetBtn!.getValue();
-    if (this.probeType!.value === "probe") {
+    if (this.probeType!.getValue() === "probe") {
       this.isProbing = true;
       sendCommand(`G38.6 Z-${this.maxTravelBtn!.getValue()} F${this.feedRateBtn!.getValue()} P${zOffset}`)
           .catch(reason => this.error(reason));

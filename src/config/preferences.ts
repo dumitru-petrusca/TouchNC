@@ -81,7 +81,7 @@ class Preferences extends Settings {
   }
 
   feedbackMode(): FeedbackMode {
-    return this.getIndexOrDefault(FEEDBACK, FeedbackMode.None)
+    return this.getSelect(FEEDBACK)?.index() ?? FeedbackMode.None
   }
 
   recoveryPeriod(): number {
@@ -93,11 +93,11 @@ class Preferences extends Settings {
   }
 
   reportType(): ReportType {
-    return this.getIndexOrDefault(REPORT_TYPE, ReportType.NONE);
+    return this.getSelect(REPORT_TYPE)?.index() ?? ReportType.NONE;
   }
 
   connectionMonitoring(): ConnectionMonitoring {
-    return this.getIndexOrDefault(CONNECTION_MONITORING, ConnectionMonitoring.None);
+    return this.getSelect(CONNECTION_MONITORING)?.index() ?? ConnectionMonitoring.None;
   }
 }
 
@@ -117,7 +117,7 @@ function createSettings(js: any) {
       int_(RECOVER_AFTER, js[RECOVER_AFTER], 1, 60000),
     ]),
     new SettingGroup("/tool_length_offset", SettingAttr.VIRTUAL, [
-      new SelectSetting(PROBE_TYPE, js[PROBE_TYPE], [new SelectOption("manual", "Manual", 0), new SelectOption("probe", "Probe", 1)]),
+      new SelectSetting(PROBE_TYPE, js[PROBE_TYPE], [new SelectOption(0, "manual", "Manual"), new SelectOption(1, "probe", "Probe")]),
       float_(PROBE_OFFSET, js[PROBE_OFFSET], 0, 10000),
       float_(PROBE_FEED, js[PROBE_FEED], 0, 10000),
       float_(PROBE_MAX_TRAVEL, js[PROBE_MAX_TRAVEL], 0, 10000),

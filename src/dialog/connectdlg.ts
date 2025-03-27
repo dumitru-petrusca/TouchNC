@@ -1,6 +1,6 @@
 import {label, panel} from '../ui/ui';
 import {closeModal, pushModal} from './modaldlg';
-import {Consumer} from '../common';
+import {Consumer} from '../common/common';
 import {modalClass} from './dialogStyles';
 import {css, cssClass} from '../ui/commonStyles';
 import {AlertDialog} from './alertdlg';

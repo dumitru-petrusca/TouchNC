@@ -1,7 +1,7 @@
 import {label, panel, spacer, toggleFullscreen} from './ui';
 import {btnIcon, button} from './button';
 import {currentState, homeAll, restart} from '../machine/machine';
-import {EventHandler} from '../common';
+import {EventHandler} from '../common/common';
 import {css, cssClass, navRowClass} from './commonStyles';
 import {sendCommandAndGetStatus} from '../http/http';
 import {toggleCoolantState, toggleCoordinateSystem, toggleDistanceMode, toggleSpindleState, toggleUnits} from '../machine/modal';

@@ -61,7 +61,6 @@ test('iterate', () => {
   expect(s).toStrictEqual([
     "/name=Demo",
     "/board=ESP32v4",
-    "/host=demo",
     "/meta=",
     "/machine=MILL",
     "/arc_tolerance_mm=0.002",
@@ -205,7 +204,6 @@ test('iterate', () => {
 export let configYaml =
     `name: Demo
 board: ESP32v4
-host: demo
 meta:
 machine: MILL
 arc_tolerance_mm: 0.002

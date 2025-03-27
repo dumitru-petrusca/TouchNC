@@ -1,4 +1,4 @@
-import {EventHandler} from '../common';
+import {EventHandler} from '../common/common';
 import {css, cssClass, CssClass, textInputClass} from './commonStyles';
 import {FeedbackMode, preferences} from '../config/preferences';
 

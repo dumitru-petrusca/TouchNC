@@ -1,4 +1,4 @@
-import {EventHandler, valueOrError} from '../common';
+import {EventHandler, valueOrError} from '../common/common';
 import {btnClass, css, cssClass, CssClass} from './commonStyles';
 import {beep, Content, element, getElement, ifPresent} from './ui';
 import {Icon, svgIcon} from './icons';

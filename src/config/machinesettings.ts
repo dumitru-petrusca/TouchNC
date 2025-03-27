@@ -4,6 +4,8 @@ import {SettingsUI} from './settingsui';
 import {toYAML, YAML} from './yaml';
 import {messages} from '../messages/messages';
 import {machineTemplate} from './machinetemplate';
+import {PinConfig, PinCap, Pin} from './esp32';
+import {Set2} from '../common/set';
 
 let configFileName = "config.yaml"
 
@@ -45,7 +47,7 @@ export class MachineSettings extends Settings {
 
   serializeSettings() {
     let obj = {}
-    this.settings!.insert(obj)
+    this.settings!.serialize(obj)
     return toYAML("", obj, "");
   }
 
@@ -58,6 +60,12 @@ export class MachineSettings extends Settings {
   getDisplayGroups() {
     let groups = this.settings?.groups ?? [];
     return [...groups].sort((a, b) => layout.indexOf(a.path) - layout.indexOf(b.path))
+  }
+
+  getUsedPins(): Set2<Pin> {
+    let set = new Set2<Pin>();
+    this.settings?.getUsedPins(set)
+    return set
   }
 }
 
@@ -108,4 +116,3 @@ let layout = [
 ]
 
 export let machineSettings = new MachineSettings()
-export let machineSettingsUI = new SettingsUI(machineSettings, "machineSettings")

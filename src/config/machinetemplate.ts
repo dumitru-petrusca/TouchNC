@@ -1,27 +1,28 @@
-import {bool, float, group, int, pinI, pinIO, pinO, position, select, SettingAttr, string} from './settings';
+import {bool, float, group, int, pin, position, select, SettingAttr, string} from './settings';
+import {PinCap} from './esp32';
 
 let motor = {
-  limit_neg_pin: pinI(),
-  limit_pos_pin: pinI(),
-  limit_all_pin: pinI(),
+  limit_neg_pin: pin(PinCap.Input),
+  limit_pos_pin: pin(PinCap.Input),
+  limit_all_pin: pin(PinCap.Input),
   hard_limits: bool(false),
   pulloff_mm: float(1, 0.1, 100000.0),
   driver: {
     _attributes: SettingAttr.VIRTUAL | SettingAttr.ONE_OF,
     _type: group("this", SettingAttr.VIRTUAL),
     standard_stepper: {
-      step_pin: pinO(),
-      direction_pin: pinO(),
-      disable_pin: pinI(),
+      step_pin: pin(PinCap.Output),
+      direction_pin: pin(PinCap.Output),
+      disable_pin: pin(PinCap.Input),
     },
     stepstick: {
-      step_pin: pinO(),
-      direction_pin: pinO(),
-      disable_pin: pinI(),
-      ms1_pin: pinIO(),
-      ms2_pin: pinIO(),
-      ms3_pin: pinIO(),
-      reset_pin: pinI(),
+      step_pin: pin(PinCap.Output),
+      direction_pin: pin(PinCap.Output),
+      disable_pin: pin(PinCap.Output),
+      ms1_pin: pin(PinCap.Output),
+      ms2_pin: pin(PinCap.Output),
+      ms3_pin: pin(PinCap.Output),
+      reset_pin: pin(PinCap.Input),
     }
     //TODO-dp other types of motors
   }
@@ -45,8 +46,8 @@ let axis = {
     feed_scaler: float(1.1, 1.0, 100.0),
   },
   mpg: {
-    a_pin: pinI(),
-    b_pin: pinI(),
+    a_pin: pin(PinCap.Input),
+    b_pin: pin(PinCap.Input),
     reverse: bool(false),
     pulses_per_rev: int(1000, 0, 20000),
     max_rpm: int(250, 0, 1000),
@@ -57,8 +58,8 @@ let axis = {
 }
 
 let i2c = {
-  sda_pin: pinIO(),
-  scl_pin: pinIO(),
+  sda_pin: pin(PinCap.Input | PinCap.Output),
+  scl_pin: pin(PinCap.Output),
   frequency: int(100000, 0, 20000000)
 }
 
@@ -75,9 +76,9 @@ let vfd = {
 }
 
 let uart = {
-  rxd_pin: pinIO(),
-  rts_pin: pinIO(),
-  txd_pin: pinIO(),
+  rxd_pin: pin(PinCap.Input),
+  rts_pin: pin(PinCap.Output),
+  txd_pin: pin(PinCap.Output),
   baud: int(115200, 2400, 10000000),
   mode: select("8N1", ["8N1", "8E1", "8O1", "8N2", "7N1", "7E1", "7O1"]),
 }
@@ -89,8 +90,8 @@ let uart_channel = {
 }
 
 let onOffSpindle = {
-  output_pin: pinO(),
-  enable_pin: pinI(),
+  output_pin: pin(PinCap.Output),
+  enable_pin: pin(PinCap.Input),
   disable_with_s0: bool(false),
   s0_with_disable: bool(true),
   spinup_ms: int(0, 0, 60000),
@@ -138,14 +139,14 @@ export let machineTemplate = {
   },
 
   coolant: {
-    flood_pin: pinO(),
-    mist_pin: pinO(),
+    flood_pin: pin(PinCap.Output),
+    mist_pin: pin(PinCap.Output),
     delay_ms: int(0, 0, 10000),
   },
 
   probe: {
-    pin: pinI(),
-    toolsetter_pin: pinI(),
+    pin: pin(PinCap.Input),
+    toolsetter_pin: pin(PinCap.Input),
     check_mode_start: bool(true),
     hard_stop: bool(false),
   },
@@ -189,8 +190,8 @@ export let machineTemplate = {
   },
 
   axes: {
-    shared_stepper_disable_pin: pinI(),
-    shared_stepper_reset_pin: pinI(),
+    shared_stepper_disable_pin: pin(PinCap.Input),
+    shared_stepper_reset_pin: pin(PinCap.Input),
     homing_runs: int(2, 1, 5),
     x: axis,
     y: axis,
@@ -215,64 +216,63 @@ export let machineTemplate = {
   // Input / Output
 
   control: {
-    safety_door_pin: pinI(),
-    reset_pin: pinI(),
-    feed_hold_pin: pinI(),
-    cycle_start_pin: pinI(),
-    macro0_pin: pinI(),
-    macro1_pin: pinI(),
-    macro2_pin: pinI(),
-    macro3_pin: pinI(),
-    fault_pin: pinI(),
-    estop_pin: pinI(),
+    safety_door_pin: pin(PinCap.Input),
+    reset_pin: pin(PinCap.Input),
+    feed_hold_pin: pin(PinCap.Input),
+    cycle_start_pin: pin(PinCap.Input),
+    macro0_pin: pin(PinCap.Input),
+    macro1_pin: pin(PinCap.Input),
+    macro2_pin: pin(PinCap.Input),
+    macro3_pin: pin(PinCap.Input),
+    fault_pin: pin(PinCap.Input),
   },
 
   status_outputs: {
     report_interval_ms: int(500, 100, 5000),
-    idle_pin: pinO(),
-    run_pin: pinO(),
-    hold_pin: pinO(),
-    alarm_pin: pinO(),
+    idle_pin: pin(PinCap.Output),
+    run_pin: pin(PinCap.Output),
+    hold_pin: pin(PinCap.Output),
+    alarm_pin: pin(PinCap.Output),
   },
 
   user_outputs: {
-    analog0_pin: pinO(),
-    analog1_pin: pinO(),
-    analog2_pin: pinO(),
-    analog3_pin: pinO(),
+    analog0_pin: pin(PinCap.Output),
+    analog1_pin: pin(PinCap.Output),
+    analog2_pin: pin(PinCap.Output),
+    analog3_pin: pin(PinCap.Output),
     analog0_hz: int(5000, 1, 20000000),
     analog1_hz: int(5000, 1, 20000000),
     analog2_hz: int(5000, 1, 20000000),
     analog3_hz: int(5000, 1, 20000000),
-    digital0_pin: pinO(),
-    digital1_pin: pinO(),
-    digital2_pin: pinO(),
-    digital3_pin: pinO(),
-    digital4_pin: pinO(),
-    digital5_pin: pinO(),
-    digital6_pin: pinO(),
-    digital7_pin: pinO(),
+    digital0_pin: pin(PinCap.Output),
+    digital1_pin: pin(PinCap.Output),
+    digital2_pin: pin(PinCap.Output),
+    digital3_pin: pin(PinCap.Output),
+    digital4_pin: pin(PinCap.Output),
+    digital5_pin: pin(PinCap.Output),
+    digital6_pin: pin(PinCap.Output),
+    digital7_pin: pin(PinCap.Output),
   },
 
   user_inputs: {
-    analog0_pin: pinI(),
-    analog1_pin: pinI(),
-    analog2_pin: pinI(),
-    analog3_pin: pinI(),
-    digital0_pin: pinI(),
-    digital1_pin: pinI(),
-    digital2_pin: pinI(),
-    digital3_pin: pinI(),
-    digital4_pin: pinI(),
-    digital5_pin: pinI(),
-    digital6_pin: pinI(),
-    digital7_pin: pinI(),
+    analog0_pin: pin(PinCap.Input),
+    analog1_pin: pin(PinCap.Input),
+    analog2_pin: pin(PinCap.Input),
+    analog3_pin: pin(PinCap.Input),
+    digital0_pin: pin(PinCap.Input),
+    digital1_pin: pin(PinCap.Input),
+    digital2_pin: pin(PinCap.Input),
+    digital3_pin: pin(PinCap.Input),
+    digital4_pin: pin(PinCap.Input),
+    digital5_pin: pin(PinCap.Input),
+    digital6_pin: pin(PinCap.Input),
+    digital7_pin: pin(PinCap.Input),
   },
 
   // Lathe
 
   synchro: {
-    index_pin: pinI(),
+    index_pin: pin(PinCap.Input),
   },
 
   // Hardware
@@ -288,20 +288,20 @@ export let machineTemplate = {
   uart_channel2: uart_channel,
 
   spi: {
-    miso_pin: pinIO(),
-    mosi_pin: pinIO(),
-    sck_pin: pinIO(),
+    miso_pin: pin(PinCap.Output),
+    mosi_pin: pin(PinCap.Input),
+    sck_pin: pin(PinCap.Output),
   },
 
   i2so: {
-    bck_pin: pinIO(),
-    data_pin: pinIO(),
-    ws_pin: pinIO(),
+    bck_pin: pin(PinCap.Output),
+    data_pin: pin(PinCap.Output),
+    ws_pin: pin(PinCap.Output),
   },
 
   sdcard: {
-    cs_pin: pinIO(),
-    card_detect_pin: pinIO(),
+    cs_pin: pin(PinCap.Output),
+    card_detect_pin: pin(PinCap.Input),
     frequency_hz: int(8000000, 400000, 20000000),
   },
 
@@ -334,9 +334,9 @@ export let machineTemplate = {
 
     PWM: {
       pwm_hz: int(5000, 1, 20000000),
-      direction_pin: pinO(),
-      output_pin: pinO(),
-      enable_pin: pinO(),
+      direction_pin: pin(PinCap.Output),
+      output_pin: pin(PinCap.Output),
+      enable_pin: pin(PinCap.Output),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
       spinup_ms: int(0, 0, 60000),
@@ -350,9 +350,9 @@ export let machineTemplate = {
 
     BESC: {
       pwm_hz: int(5000, 1, 20000000),
-      direction_pin: pinI(),
-      output_pin: pinO(),
-      enable_pin: pinI(),
+      direction_pin: pin(PinCap.Input),
+      output_pin: pin(PinCap.Output),
+      enable_pin: pin(PinCap.Input),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
       spinup_ms: int(0, 0, 60000),
@@ -368,8 +368,8 @@ export let machineTemplate = {
 
     Laser: {
       pwm_hz: int(5000, 1000, 100000),
-      output_pin: pinO(),
-      enable_pin: pinI(),
+      output_pin: pin(PinCap.Output),
+      enable_pin: pin(PinCap.Input),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
       spinup_ms: int(0, 0, 60000),
@@ -382,12 +382,12 @@ export let machineTemplate = {
     },
 
     _10v: {
-      forward_pin: pinI(),
-      reverse_pin: pinI(),
+      forward_pin: pin(PinCap.Input),
+      reverse_pin: pin(PinCap.Input),
       pwm_hz: int(5000, 1, 20000000),
-      direction_pin: pinI(),
-      output_pin: pinO(),
-      enable_pin: pinI(),
+      direction_pin: pin(PinCap.Input),
+      output_pin: pin(PinCap.Output),
+      enable_pin: pin(PinCap.Input),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
       spinup_ms: int(0, 0, 60000),
@@ -401,9 +401,9 @@ export let machineTemplate = {
 
     HBridge: {
       pwm_hz: int(5000, 1, 20000000),
-      output_cw_pin: pinO(),
-      output_ccw_pin: pinO(),
-      enable_pin: pinI(),
+      output_cw_pin: pin(PinCap.Output),
+      output_ccw_pin: pin(PinCap.Output),
+      enable_pin: pin(PinCap.Input),
       disable_with_s0: bool(false),
       spinup_ms: int(0, 0, 60000),
       spindown_ms: int(0, 0, 60000),

@@ -104,8 +104,8 @@ function build_dlg_macrolist_line(index) {
     } else {
         content += "btn-danger' style='padding-top: 3px;padding-left: 2px;padding-right: 3px;padding-bottom: 0px;' >" + get_icon_svg("trash") + "</button></td>";
         content += "<td style='vertical-align:middle'><input type='text' id='macro_name_line_" + index + "' style='width:4em' class='form-control' onchange='on_macro_name(this," + index + ")' value='";
-        if (entry.text != "&nbsp;") {
-            content += entry.text;
+        if (entry.value != "&nbsp;") {
+            content += entry.value;
         }
         content += "'/></td>";
         content += "<td style='vertical-align:middle'>" + build_glyph_selection(index) + "</td>";
@@ -158,7 +158,7 @@ function build_dlg_macrolist_ui() {
     macrodlg_macrolist = [];
     for (var i = 0; i < 9; i++) {
         var entry = {
-            name: control_macrolist[i].text,
+            name: control_macrolist[i].value,
             glyph: control_macrolist[i].glyph,
             filename: control_macrolist[i].filename,
             target: control_macrolist[i].target,
@@ -216,7 +216,7 @@ function macro_select_glyph(event, glyph, index) {
 function closeMacroDialog() {
     var modified = false;
     for (var i = 0; i < 9; i++) {
-        if ((macrodlg_macrolist[i].filename !== control_macrolist[i].filename) || (macrodlg_macrolist[i].text !== control_macrolist[i].text) || (macrodlg_macrolist[i].glyph !== control_macrolist[i].glyph) || (macrodlg_macrolist[i].class !== control_macrolist[i].class) || (macrodlg_macrolist[i].target !== control_macrolist[i].target)) {
+        if ((macrodlg_macrolist[i].filename !== control_macrolist[i].filename) || (macrodlg_macrolist[i].value !== control_macrolist[i].value) || (macrodlg_macrolist[i].glyph !== control_macrolist[i].glyph) || (macrodlg_macrolist[i].class !== control_macrolist[i].class) || (macrodlg_macrolist[i].target !== control_macrolist[i].target)) {
             modified = true;
         }
     }
@@ -280,7 +280,7 @@ function macroUploadsuccess(response) {
         var entry;
         if ((macrodlg_macrolist.length != 0)) {
             entry = {
-                name: macrodlg_macrolist[i].text,
+                name: macrodlg_macrolist[i].value,
                 glyph: macrodlg_macrolist[i].glyph,
                 filename: macrodlg_macrolist[i].filename,
                 target: macrodlg_macrolist[i].target,

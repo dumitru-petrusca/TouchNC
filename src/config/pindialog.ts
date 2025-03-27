@@ -1,62 +1,42 @@
-import {element, getElement, label, panel} from '../ui/ui';
+import {element, label, panel} from '../ui/ui';
 import {btnClass, css, cssClass} from '../ui/commonStyles';
 import {contentClass, modalClass, titleClass, titleRowClass, twoButtonRowStyle} from '../dialog/dialogStyles';
 import {closeModal, pushModal} from '../dialog/modaldlg';
-import {NO_PIN, PinSetting, SelectOption} from './settings';
-import {Consumer} from '../common';
+import {PinSetting, SelectOption} from './settings';
+import {Consumer} from '../common/common';
 import {button} from '../ui/button';
+import {machineSettings} from './machinesettings';
+import {esp32, NO_PIN, NO_PIN_CONFIG, NO_PIN_TEXT, parsePinConfig, Pin, PinActive, PinBias, PinCap, pinComparator, PinConfig} from './esp32';
+import {List} from '../common/list';
 
-let OD = new SelectOption("od", "Open Drain", 0)
-let PU = new SelectOption("pu", "Pull Up", 1)
-let PD = new SelectOption("pd", "Pull Down", 2)
-let BIAS = [OD, PU, PD]
-
-let AH = new SelectOption("high", "Active High", 0)
-let AL = new SelectOption("low", "Active Low", 1)
+let AH = new SelectOption(0, "high", "Active High")
+let AL = new SelectOption(1, "low", "Active Low")
 let ACTIVE = [AH, AL]
 
-class Pin {
-  name: string = NO_PIN
-  bias: string = OD.text
-  active: string = AH.text
-}
-
-function parsePinValue(value: string): Pin {
-  let pin = new Pin()
-  let s = value.split(":").map(s => s.trim());
-  if (s.length == 1) {
-    pin.name = s[0].trim()
-  }
-  if (s.length == 2) {
-    pin.name = s[0].trim()
-    if (s[1] == PU.text || s[1] == PD.text) {
-      pin.bias = s[1].trim()
-    } else {
-      pin.active = s[1].trim()
-    }
-  }
-  if (s.length == 3) {
-    pin.name = s[0].trim()
-    pin.bias = s[1].trim()
-    pin.active = s[2].trim()
-  }
-  return pin
-}
-
 export class PinDialog {
-  pin: PinSetting;
+  pin: Pin;
+  pinElement = element("select", "pin_bias", btnClass, undefined, _ => {
+    this.pin = this.value().pin
+    this.updateBiasOptions()
+  }) as HTMLSelectElement;
+  biasElement = element("select", "pin_name", btnClass, undefined, undefined) as HTMLSelectElement;
+  activeElement = element("select", "pin_active", btnClass, undefined, undefined) as HTMLSelectElement;
+  private caps: PinCap;
+  private active: PinActive;
+  private bias: PinBias;
 
-  constructor(title: string, pin: PinSetting, set: Consumer<string>) {
-    this.pin = pin;
-    let p = parsePinValue(pin.getValue());
+  constructor(title: string, pinSetting: PinSetting, set: Consumer<PinConfig>) {
+    this.pin = pinSetting.pin();
+    this.caps = pinSetting.caps;
+    this.bias = pinSetting.bias();
+    this.active = pinSetting.active();
+    this.addPinOptions();
+    this.updateBiasOptions();
+    this.addActiveOptions();
     let dialog = panel("", modalClass,
         panel("", contentClass, [
           panel("", titleRowClass, label("", title, titleClass)),
-          panel("", controlRowClass, [
-            this.pinNumber(p.name),
-            this.bias(p.bias),
-            this.active(p.active),
-          ]),
+          panel("", controlRowClass, [this.pinElement, this.biasElement, this.activeElement]),
           panel("", twoButtonRowStyle, [
             button("", "Ok", "Ok", () => {
               set(this.value())
@@ -70,73 +50,63 @@ export class PinDialog {
     pushModal(dialog, () => document.body.removeChild(dialog))
   }
 
-  pinNumber(value: string) {
-    const e = element("select", "pin_name", btnClass, undefined, undefined) as HTMLSelectElement;
-    this.pin.pins.forEach((pin, i) => {
-      const option = document.createElement("option") as HTMLOptionElement
-      option.value = "" + i;
-      option.text = pin;
-      option.textContent = pin;
-      e.appendChild(option);
-      if (value == pin) {
-        e.value = "" + i
-      }
-    });
-    return e
+  addPinOptions() {
+    let pins = esp32.getPins(this.caps)
+        .remove(machineSettings.getUsedPins())
+        .addAll(NO_PIN, this.pin)
+        .sortedList(pinComparator)
+        .map(p => optionElement(p.toString(), p.toString()))
+    this.pinElement.replaceChildren(...pins)
+    this.pinElement.value = this.pin.toString()
   }
 
-  bias(value: string) {
-    const e = element("select", "pin_bias", btnClass, undefined, undefined) as HTMLSelectElement;
-    [OD, PU, PD].forEach((o, i) => {
-      const option = document.createElement("option") as HTMLOptionElement
-      option.value = "" + i;
-      option.text = o.displayText;
-      option.textContent = o.displayText;
-      e.appendChild(option);
-      if (value == o.text) {
-        e.value = "" + i
-      }
-    });
-    return e
+  updateBiasOptions() {
+    let biasList = new List<SelectOption>()
+        .push(new SelectOption(0, "od", "Open Drain"))
+        .pushIf(this.pin.hasCaps(PinCap.PullUp), () => new SelectOption(1, "pu", "Pull Up"))
+        .pushIf(this.pin.hasCaps(PinCap.PullDown), () => new SelectOption(2, "pd", "Pull Down"))
+        .map(o => optionElement(o.value, o.text))
+    this.biasElement.replaceChildren(...biasList)
+    if (biasList.find(b => b.value == this.bias) == undefined) {
+      this.bias = "od"
+    }
+    this.biasElement.value = this.bias
   }
 
-  active(value: string) {
-    const e = element("select", "pin_active", btnClass, undefined, undefined) as HTMLSelectElement;
-    [AH, AL].forEach((o, i) => {
-      const option = document.createElement("option") as HTMLOptionElement
-      option.value = "" + i;
-      option.text = o.displayText;
-      option.textContent = o.displayText;
-      e.appendChild(option);
-      if (value == o.text) {
-        e.value = "" + i
-      }
-    });
-    return e
+  addActiveOptions() {
+    this.activeElement.replaceChildren(...ACTIVE.map(o => optionElement(o.value, o.text)))
+    this.activeElement.value = this.active
   }
 
-  private value() {
-    let bias = BIAS[(getElement("pin_bias") as HTMLSelectElement).selectedIndex];
-    let active = ACTIVE[(getElement("pin_active") as HTMLSelectElement).selectedIndex];
-    let v = this.pin.pins[(getElement("pin_name") as HTMLSelectElement).selectedIndex];
-    if (v == NO_PIN) {
-      return NO_PIN
+  value(): PinConfig {
+    let bias = this.biasElement.selectedOptions.item(0)?.value
+    let active = this.activeElement.selectedOptions.item(0)?.value
+    let v = this.pinElement.selectedOptions.item(0)?.value!
+    if (v == NO_PIN_TEXT) {
+      return NO_PIN_CONFIG
     }
-    if (bias != OD) {
-      v += ":" + bias.text
+    if (bias != "od") {
+      v += ":" + bias
     }
-    if (active != AH) {
-      v += ":" + active.text
+    if (active != "ah") {
+      v += ":" + active
     }
-    return v;
+    return parsePinConfig(v);
   }
 }
 
-export function pinButton(id: string, title: string, pin: PinSetting, set: Consumer<string>): HTMLButtonElement {
-  const btn = element('button', id, btnClass, pin.value) as HTMLButtonElement
+function optionElement(value: string, text: string) {
+  const option = document.createElement("option") as HTMLOptionElement
+  option.value = value;
+  option.text = text;
+  return option
+}
+
+export function pinButton(id: string, title: string, pinSetting: PinSetting, set: Consumer<PinConfig>): HTMLButtonElement {
+  const btn = element('button', id, btnClass, pinSetting.stringValue()) as HTMLButtonElement
   btn.onclick = function (_: Event) {
-    new PinDialog(title, pin, value => {
-      btn.innerText = value
+    new PinDialog(title, pinSetting, value => {
+      btn.innerText = value.toString()
       set(value)
     })
   }

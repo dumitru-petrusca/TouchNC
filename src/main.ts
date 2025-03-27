@@ -4,13 +4,14 @@ import {requestTools} from './machine/tools';
 import {closeModal} from './dialog/modaldlg';
 import {tabSelectChannel} from './events/eventbus';
 import {addTab, createMainMenu, selectTab, Tab} from './ui/tabs';
-import {machineSettings, machineSettingsUI} from './config/machinesettings';
+import {machineSettings} from './config/machinesettings';
 import {preferencesUI} from './config/preferencesui';
 import {preferences, TAB_MANUAL, TAB_PREFERENCES, TAB_PROGRAM, TAB_SETTINGS, TAB_TOOLS, TAB_WIFI} from './config/preferences';
 import {MillUI} from './ui/mill';
 import {LatheUI} from './ui/lathe';
 import {Icon} from './ui/icons';
 import {wifiUI} from './config/wifi';
+import {machineSettingsUI} from './config/machinesettingsui';
 
 let app: HTMLElement
 

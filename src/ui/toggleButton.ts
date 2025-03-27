@@ -1,4 +1,4 @@
-import {Consumer, Producer, randomString} from '../common';
+import {Consumer, Producer, randomString} from '../common/common';
 import {BooleanSetting, SelectOption, SelectSetting} from '../config/settings';
 import {button} from './button';
 
@@ -72,10 +72,10 @@ export class SettingButtonGroup {
   }
 
   private makeButton(option: SelectOption) {
-    return button(option.text, option.displayText, `Feed ${option.displayText}`, _ => {
-      this.setting.setValue(option.text)
+    return button(option.value, option.text, `Feed ${option.text}`, _ => {
+      this.setting.setValue(option.value)
       this.update();
-      this.consumer?.(option.text)
+      this.consumer?.(option.value)
     });
   }
 }

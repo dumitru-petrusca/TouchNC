@@ -31,7 +31,7 @@ function serializeSetting(s: Setting<any, any>): any {
 
 function serializeOption(o: SelectOption) {
   let js: any = {};
-  js[o.text] = o.value
+  js[o.value] = o.id
   return js;
 }
 

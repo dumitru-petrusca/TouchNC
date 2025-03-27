@@ -8,7 +8,7 @@ import {ConfirmDialog} from '../dialog/confirmdlg';
 import {InputDialog} from '../dialog/inputdlg';
 import {modalClass, titleClass, titleRowClass} from '../dialog/dialogStyles';
 import {css, cssClass, transparentClass} from '../ui/commonStyles';
-import {Consumer, EventHandler} from '../common';
+import {Consumer, EventHandler} from '../common/common';
 import {btnIcon, button} from '../ui/button';
 import {Icon, svgIcon} from '../ui/icons';
 

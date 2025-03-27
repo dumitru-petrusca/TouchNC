@@ -1,6 +1,6 @@
 import {Content, element, getElement, panel} from './ui';
 import {css, cssClass} from './commonStyles';
-import {EventHandler} from '../common';
+import {EventHandler} from '../common/common';
 import {button} from './button';
 import {Icon, svgIcon} from './icons';
 

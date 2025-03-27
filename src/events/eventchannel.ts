@@ -1,4 +1,4 @@
-import {WeightList} from '../common';
+import {WeightList} from '../common/common';
 
 type Listener<E> = (e: E) => void
 

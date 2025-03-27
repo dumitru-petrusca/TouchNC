@@ -10,6 +10,7 @@ import {messages} from '../messages/messages';
 import {restartChannel, startupChannel} from '../events/eventbus';
 import {ConnectionMonitoring, preferences} from '../config/preferences';
 import {reporting} from './reporting';
+import {InputDialog} from '../dialog/inputdlg';
 
 enum ConnectionStatus {
   CONNECTED,
@@ -34,14 +35,25 @@ let enable_ping = true;
 
 window.onload = function () {
   registerClasses();
-  console.log("Connect to board");
+  console.log(`Connecting to ${process.env.SERVER_URL}`);
+  if (process.env.SERVER_URL == undefined) {
+    new InputDialog("Please enter the server URL", "", "http://demo.local", value => {
+      process.env.SERVER_URL = value
+      connect();
+    });
+  } else {
+    connect();
+  }
+};
+
+function connect() {
   new ConnectDialog(firmware => {
     setMachineProperties(firmware)
     preferences.load().then(_ => {
       setupSocketWatchdog();
     })
   });
-};
+}
 
 export function setupSocketWatchdog() {
   recoveryPeriodMs = preferences.recoveryPeriod()
@@ -78,8 +90,8 @@ function startSocket() {
       }
       socket = new WebSocket('ws://' + document.location.host + '/ws', ['arduino']);
     } else {
-      let serverUrl = (process as any).env.SERVER_URL.replace("http", "ws");
-      let url = `${serverUrl}:${firmware.port}`
+      let parts = (process as any).env.SERVER_URL.split(":");
+      let url = `ws:${parts[1]}:${firmware.port}`
       console.log(`Connecting to WebSocket ${url}`);
       socket = new WebSocket(url, ['arduino']);
     }

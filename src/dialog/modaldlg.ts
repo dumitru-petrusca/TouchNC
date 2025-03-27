@@ -1,5 +1,5 @@
 import {getElement} from '../ui/ui';
-import {Consumer} from '../common';
+import {Consumer} from '../common/common';
 
 let modalStack: Modal[] = [];
 

@@ -29,13 +29,6 @@
       "M": "0"
     },
     {
-      "P": "/host",
-      "T": "S",
-      "V": "demo",
-      "S": "255",
-      "M": "0"
-    },
-    {
       "P": "/stepping/engine",
       "T": "B",
       "V": "2",
@@ -697,7 +690,7 @@
       "M": "0"
     },
     {
-      "P": "/control/estop_pin",
+      "P": "/control/fault_pin",
       "T": "S",
       "V": "NO_PIN",
       "S": "255",

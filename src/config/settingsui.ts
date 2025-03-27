@@ -2,7 +2,7 @@ import {numpadButton, NumpadType} from '../ui/numpad';
 import {AlertDialog} from '../dialog/alertdlg';
 import {translate} from '../translate';
 import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
-import {Consumer} from '../common';
+import {Consumer} from '../common/common';
 import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting} from './settings';
 import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
 import {btnIcon, button} from '../ui/button';
@@ -175,16 +175,16 @@ export class SettingsUI {
 export function select(id: string, css: CssClass, select: SelectSetting, onChange?: Consumer<string>) {
   let listener = (e: Event) => {
     let index = Number((e.target as HTMLSelectElement).value);
-    let value = select.findOption(index)!.text;
+    let value = select.findOption(index)!.value;
     select.setValue(value)
     onChange?.(value)
   }
   const e = element("select", id, css, undefined, listener) as HTMLSelectElement;
   select.options.forEach(o => {
     const option = document.createElement("option") as HTMLOptionElement
-    option.value = "" + o.value;
-    option.text = o.displayText;
-    option.textContent = o.displayText;
+    option.value = "" + o.id;
+    option.text = o.text;
+    option.textContent = o.text;
     e.appendChild(option);
   });
   e.value = "" + select.index()

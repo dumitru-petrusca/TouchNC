@@ -5,7 +5,7 @@ import {Icon, svgIcon} from '../ui/icons';
 import {Coordinate, positionChannel, progressChannel, restartChannel, State, stateChannel, tabSelectChannel, unitChannel} from '../events/eventbus';
 import {getButtonValueAsString} from '../ui/button';
 import {currentModal, mmToDisplay} from './modal';
-import {arraysEqual} from '../common';
+import {arraysEqual} from '../common/common';
 import {ConfirmDialog} from '../dialog/confirmdlg';
 import {translate} from '../translate';
 import {machineSettings} from '../config/machinesettings';

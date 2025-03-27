@@ -1,5 +1,5 @@
 import {element, panel, textInput} from './ui';
-import {Consumer, countCharInstances, EventHandler, Producer} from '../common';
+import {Consumer, countCharInstances, EventHandler, Producer} from '../common/common';
 import {btnClass, css, CssClass, cssClass} from './commonStyles';
 import {closeModal, pushModal} from '../dialog/modaldlg';
 import {modalClass} from '../dialog/dialogStyles';

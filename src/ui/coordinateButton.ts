@@ -1,4 +1,4 @@
-import {Producer, randomString} from '../common';
+import {Producer, randomString} from '../common/common';
 import {FloatSetting} from '../config/settings';
 import {currentToMm, mmToDisplay} from '../machine/modal';
 import {unitChannel} from '../events/eventbus';

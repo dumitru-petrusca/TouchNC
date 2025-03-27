@@ -1,42 +1,43 @@
-import {MachineSettings, machineSettings, machineSettingsUI} from './machinesettings';
+import {MachineSettings, machineSettings} from './machinesettings';
 import {configYaml} from './yaml.test';
 import {getElement, panel} from '../ui/ui';
 import {SettingsUI} from './settingsui';
+import {machineSettingsUI} from './machinesettingsui';
 
 test('spindle type', () => {
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.get("/_type");
-  expect(s?.value).toBe("PWM")
+  expect(s?.getValue()).toBe("PWM")
 });
 
 test('flood pin', () => {
   machineSettings.settings = machineSettings.parseSettings(configYaml)
-  let s = machineSettings.get("/coolant/flood_pin");
-  expect(s?.value).toBe("i2so.7")
+  let s = machineSettings.pinSetting("/coolant/flood_pin");
+  expect(s?.stringValue()).toBe("i2so.7")
 });
 
 test('PWM atc', () => {
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.get("/PWM/atc");
-  expect(s?.value).toBe("atc_manual")
+  expect(s?.getValue()).toBe("atc_manual")
 });
 
 test('PWM direction pin', () => {
   machineSettings.settings = machineSettings.parseSettings(configYaml)
-  let s = machineSettings.get("/PWM/direction_pin");
-  expect(s?.value).toBe("i2so.9")
+  let s = machineSettings.pinSetting("/PWM/direction_pin");
+  expect(s?.stringValue()).toBe("i2so.9")
 });
 
 test('pin with direction', () => {
   machineSettings.settings = machineSettings.parseSettings(configYaml)
-  let s = machineSettings.get("/axes/x/motor0/limit_neg_pin");
-  expect(s?.value).toBe("gpio.34:low")
+  let s = machineSettings.pinSetting("/axes/x/motor0/limit_neg_pin");
+  expect(s?.stringValue()).toBe("gpio.34:low")
 });
 
 test('kinematics', () => {
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.get("/kinematics/_type");
-  expect(s?.value).toBe("Cartesian")
+  expect(s?.getValue()).toBe("Cartesian")
 });
 
 test('save settings', () => {
@@ -53,7 +54,6 @@ test('change ATC to tool table', () => {
   expect(s).toBe(
       `name: Demo
 board: ESP32v4
-host: demo
 meta:
 machine: MILL
 arc_tolerance_mm: 0.002
@@ -249,7 +249,6 @@ test('switch spindle type', () => {
   expect(s).toBe(
       `name: Demo
 board: ESP32v4
-host: demo
 meta:
 machine: MILL
 arc_tolerance_mm: 0.002
@@ -444,7 +443,6 @@ test('change x axis driver', () => {
   expect(s).toBe(
       `name: Demo
 board: ESP32v4
-host: demo
 meta:
 machine: MILL
 arc_tolerance_mm: 0.002
@@ -640,7 +638,6 @@ test('change coordinate system', () => {
   expect(s).toBe(
       `name: Demo
 board: ESP32v4
-host: demo
 meta:
 machine: MILL
 arc_tolerance_mm: 0.002
@@ -866,7 +863,6 @@ function setupUI() {
 }
 
 let configYamlCased = `name: "Epoxy Granite Mill"
-host: "mill"
 machine: MILL
 board: "ESP32v4"
 
@@ -887,7 +883,7 @@ start:
 
 
 control:
-  estop_pin: gpio.12:pd
+  fault_pin: gpio.12:pd
 
 
 # SD Card

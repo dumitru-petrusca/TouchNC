@@ -1,7 +1,7 @@
 import {closeModal, pushModal} from './modaldlg';
 import {getTextInput, label, panel, textInput} from '../ui/ui';
 import {contentClass, modalClass, textRowClass, titleClass, titleRowClass, twoButtonRowStyle} from './dialogStyles';
-import {Consumer} from '../common';
+import {Consumer} from '../common/common';
 import {button} from '../ui/button';
 
 export class InputDialog {

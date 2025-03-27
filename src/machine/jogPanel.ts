@@ -16,10 +16,10 @@ export class JogPanel {
 
   constructor() {
     this.setting = new SelectSetting("speeds", STEP, [
-      new SelectOption(STEP, STEP, 0),
-      new SelectOption("10", "10", 1),
-      new SelectOption("100", "100", 2),
-      new SelectOption("1000", "1000", 3)
+      new SelectOption(0, STEP, STEP),
+      new SelectOption(1, "10", "10"),
+      new SelectOption(2, "100", "100"),
+      new SelectOption(3, "1000", "1000")
     ]);
     this.feedGroup = new SettingButtonGroup(this.setting);
   }

@@ -1,7 +1,7 @@
 import {closeModal, pushModal} from './modaldlg';
 import {label, panel} from '../ui/ui';
 import {contentClass, modalClass, titleClass, titleRowClass, twoButtonRowStyle} from './dialogStyles';
-import {Consumer} from '../common';
+import {Consumer} from '../common/common';
 import {button} from '../ui/button';
 
 export class ConfirmDialog {

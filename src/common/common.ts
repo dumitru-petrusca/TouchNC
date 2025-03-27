@@ -1,5 +1,6 @@
 export type Consumer<T> = (value: T) => void
 export type Producer<T> = () => T
+export type Predicate<T> = (t: T) => boolean
 export type EventHandler = Consumer<Event>
 
 export function valueOrError<T>(v: T, error: () => string): NonNullable<T> {

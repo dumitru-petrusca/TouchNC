@@ -1,4 +1,4 @@
-import {Consumer} from '../common';
+import {Consumer} from '../common/common';
 import {getButton, getParentButton} from './button';
 import {panel} from './ui';
 import {Icon, svgIcon} from './icons';

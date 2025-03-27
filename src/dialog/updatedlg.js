@@ -28,7 +28,7 @@ function checkupdatefile() {
     else displayBlock('uploadfw-button');
     if (files.length > 0) {
         if (files.length == 1) {
-            id("fw_file_name").innerHTML = files[0].text;
+            id("fw_file_name").innerHTML = files[0].value;
         } else {
             var tmp = translate("$n files");
             id("fw_file_name").innerHTML = tmp.replace("$n", files.length);
@@ -66,17 +66,17 @@ function StartUploadUpdatefile(response) {
     var url = "/updatefw";
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
-        var arg = "/" + file.text + "S";
+        var arg = "/" + file.value + "S";
         //append file size first to check updload is complete
         formData.append(arg, file.size);
-        formData.append('myfile[]', file, "/" + file.text);
+        formData.append('myfile[]', file, "/" + file.value);
     }
     displayNone('fw-select_form');
     displayNone('uploadfw-button');
     update_ongoing = true;
     displayBlock('updatemsg');
     displayBlock('prgfw');
-    if (files.length == 1) current_update_filename = files[0].text;
+    if (files.length == 1) current_update_filename = files[0].value;
     else current_update_filename = "";
     id('updatemsg').innerHTML = translate("Uploading ") + current_update_filename;
     SendFileHttp(url, formData, UpdateProgressDisplay, updatesuccess, updatefailed)
