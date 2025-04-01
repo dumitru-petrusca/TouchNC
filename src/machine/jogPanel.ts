@@ -31,7 +31,7 @@ export class JogPanel {
       this.jogButton('y+', btnIcon(Icon.up), `Y+`, 100),
       feedButtons[1],
       this.jogButton('z+', btnIcon(Icon.up), `Z+`, 100),
-      this.jogButton('x-', "", `X-`, 100),
+      this.jogButton('x-', btnIcon(Icon.left), `X-`, 100),
       panel("X/Y", undefined, "X / Y"),
       this.jogButton('x+', btnIcon(Icon.right), `X+`, 100),
       panel("Z", undefined, "Z"),

@@ -9,10 +9,6 @@ import {machineSettings} from './machinesettings';
 import {esp32, NO_PIN, NO_PIN_CONFIG, NO_PIN_TEXT, parsePinConfig, Pin, PinActive, PinBias, PinCap, pinComparator, PinConfig} from './esp32';
 import {List} from '../common/list';
 
-let AH = new SelectOption(0, "high", "Active High")
-let AL = new SelectOption(1, "low", "Active Low")
-let ACTIVE = [AH, AL]
-
 export class PinDialog {
   pin: Pin;
   pinElement = element("select", "pin_bias", btnClass, undefined, _ => {
@@ -74,6 +70,7 @@ export class PinDialog {
   }
 
   addActiveOptions() {
+    let ACTIVE = [new SelectOption(0, "high", "Active High"), new SelectOption(1, "low", "Active Low")]
     this.activeElement.replaceChildren(...ACTIVE.map(o => optionElement(o.value, o.text)))
     this.activeElement.value = this.active
   }
