@@ -31,7 +31,8 @@ export class MachineSettings extends Settings {
       if (s != undefined) {
         s.setValue(value)
       } else if (group.getGroup(path) == undefined) {
-        throw Error("Cannot find setting or group " + path)
+        console.error("Cannot find setting or group " + path)
+        // throw Error("Cannot find setting or group " + path)
       }
     })
     group.finalize(yml)
