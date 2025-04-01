@@ -173,17 +173,17 @@ function buildElectron() {
 }
 
 gulp.task('run-electron', (done) => {
+  let url = parseArgs().url;
   const electronProcess = spawn('electron', ['.'], { 
     stdio: 'inherit',
-    env: { ...process.env, NODE_ENV: 'development' }
+    env: { ...process.env, NODE_ENV: 'development', SERVER_URL: url }
   });
   electronProcess.on('close', () => done()); // Exit Gulp task when Electron exits
 });
 
 gulp.task('run', gulp.series(ts, js, scss, lang, html, 'run-electron'));
+gulp.task('electron',
+    gulp.series(clean, ts, js, scss, lang, min, html, buildElectron));
 
 gulp.task('compile', gulp.series(ts, js, scss, lang, html, buildElectron));
 gulp.task('package', gulp.series(clean, ts, js, scss, lang, min, html, zip));
-
-gulp.task('electron',
-    gulp.series(clean, ts, js, scss, lang, min, html, buildElectron));

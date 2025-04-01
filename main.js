@@ -17,7 +17,6 @@ app.whenReady().then(() => {
     },
   });
 
-  process.env.SERVER_URL = "http://demo.local";
   const isDev = process.env.NODE_ENV === 'development';
   if (isDev) {
     mainWindow.webContents.openDevTools();
