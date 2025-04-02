@@ -10,10 +10,11 @@ app.whenReady().then(() => {
     width: 1920,
     height: 1080,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
       webSecurity: true,
-      allowRunningInsecureContent: false
+      allowRunningInsecureContent: false,
+      preload: path.join(__dirname, 'preload.js') // Path to your preload script
     },
   });
 

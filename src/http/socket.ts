@@ -35,10 +35,10 @@ let enable_ping = true;
 
 window.onload = function () {
   registerClasses();
-  console.log(`Connecting to ${process.env.SERVER_URL}`);
-  if (process.env.SERVER_URL == undefined) {
+  console.log(`Connecting to ${(window as any).serverUrl}`);
+  if ((window as any).serverUrl == undefined) {
     new InputDialog("Please enter the server URL", "", "http://demo.local", value => {
-      process.env.SERVER_URL = value
+      (window as any).serverUrl = value
       connect();
     });
   } else {
@@ -90,7 +90,7 @@ function startSocket() {
       }
       socket = new WebSocket('ws://' + document.location.host + '/ws', ['arduino']);
     } else {
-      let parts = (process as any).env.SERVER_URL.split(":");
+      let parts = (window as any).serverUrl.split(":");
       let url = `ws:${parts[1]}:${firmware.port}`
       console.log(`Connecting to WebSocket ${url}`);
       socket = new WebSocket(url, ['arduino']);

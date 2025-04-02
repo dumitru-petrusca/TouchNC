@@ -153,7 +153,7 @@ export function serverUrl(url: string) {
   if (url.startsWith("/command")) {
     url = url.indexOf("?") == -1 ? `${url}?` : `${url}&PAGEID=${pageId}`;
   }
-  let server = (process.env.SERVER_URL ?? "").trim()
+  let server = ((window as any).serverUrl ?? "").trim()
   server += server.endsWith("/") ? "" : "/"
   url = url.startsWith("/") ? url.substring(1) : url
   return server + url;
