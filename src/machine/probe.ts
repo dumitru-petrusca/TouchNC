@@ -8,8 +8,8 @@ import {Icon} from '../ui/icons';
 import {SelectSetting} from '../config/settings';
 import {select} from '../config/settingsui';
 import {setCurrentToolOffset} from './tools';
-import {getAxisMachinePosition, getAxisPosition, setAxisPosition} from './machine';
-import {preferences, PROBE_TYPE, PROBE_OFFSET, PROBE_FEED, PROBE_MAX_TRAVEL, PROBE_RETRACT} from '../config/preferences';
+import {getAxisMachinePosition, setAxisPosition} from './machine';
+import {preferences, PROBE_FEED, PROBE_MAX_TRAVEL, PROBE_OFFSET, PROBE_RETRACT, PROBE_TYPE} from '../config/preferences';
 import {mmToCurrent} from './modal';
 import {row} from '../ui/panel';
 import {coordButton, CoordinateButton} from '../ui/coordinateButton';
@@ -49,11 +49,11 @@ export class Probe {
     if (this.probeType === undefined) {
       this.probeType = preferences.getSelect(PROBE_TYPE);
       const isProbeMode = () => this.probeType!.getValue() == "probe";
-      this.offsetBtn = coordButton(preferences.floatSetting(PROBE_OFFSET));
-      this.feedRateBtn = coordButton(preferences.floatSetting(PROBE_FEED)).setEnabled(isProbeMode);
-      this.maxTravelBtn = coordButton(preferences.floatSetting(PROBE_MAX_TRAVEL)).setEnabled(isProbeMode);
-      this.retractBtn = coordButton(preferences.floatSetting(PROBE_RETRACT)).setEnabled(isProbeMode);
-      this.probeStart = button("probeStart", btnIcon(Icon.probe), "", this.startProbeProcess.bind(this));
+      this.offsetBtn = coordButton(preferences.floatSetting(PROBE_OFFSET), Icon.height);
+      this.feedRateBtn = coordButton(preferences.floatSetting(PROBE_FEED), Icon.running).setEnabled(isProbeMode);
+      this.maxTravelBtn = coordButton(preferences.floatSetting(PROBE_MAX_TRAVEL), Icon.arrowRange).setEnabled(isProbeMode);
+      this.retractBtn = coordButton(preferences.floatSetting(PROBE_RETRACT), Icon.alightTop).setEnabled(isProbeMode);
+      this.probeStart = button("probeStart", btnIcon(Icon.alightBottom), "", this.startProbeProcess.bind(this));
     }
   }
 

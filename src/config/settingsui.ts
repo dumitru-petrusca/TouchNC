@@ -233,7 +233,7 @@ export const settingsPaneTitleClass = cssClass("settingsPaneTitle", css`
 
 export const settingsListClass = cssClass("settingsList", css`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 5fr 2fr;
   gap: 1px;
 `)
 
