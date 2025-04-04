@@ -149,14 +149,15 @@ export function sendHttpRequest(url: string): Promise<string> {
 }
 
 
-export function serverUrl(url: string) {
+export function serverUrl(url: string = "") {
   if (url.startsWith("/command")) {
     url = url.indexOf("?") == -1 ? `${url}?` : `${url}&PAGEID=${pageId}`;
   }
   let server = ((window as any).serverUrl ?? "").trim()
-  server += server.endsWith("/") ? "" : "/"
+  server = server.endsWith("/") ? server.substring(0, server.length - 1) : server
   url = url.startsWith("/") ? url.substring(1) : url
-  return server + url;
+  let separator = url != "" ? "/" : ""
+  return server + separator + url;
 }
 
 export function writeFile(name: string, js: string): Promise<Response> {

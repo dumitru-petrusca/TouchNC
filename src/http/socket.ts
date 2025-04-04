@@ -2,7 +2,7 @@ import {initUI} from '../main';
 import {processMachineState, processSettingRead, setMachineProperties} from '../machine/machine';
 import {processTool, processTools} from '../machine/tools';
 import {ConnectDialog, disableUI, enableUI, firmware} from '../dialog/connectdlg';
-import {CancelCurrentUpload, getPageId, processCommandCompletion, processCommandError, setPageId} from './http';
+import {CancelCurrentUpload, getPageId, processCommandCompletion, processCommandError, serverUrl, setPageId} from './http';
 import {probe} from '../machine/probe';
 import {registerClasses} from '../ui/commonStyles';
 import {processModal} from '../machine/modal';
@@ -35,13 +35,13 @@ let enable_ping = true;
 
 window.onload = function () {
   registerClasses();
-  console.log(`Connecting to ${(window as any).serverUrl}`);
-  if ((window as any).serverUrl == undefined) {
-    new InputDialog("Please enter the server URL", "", "http://demo.local", value => {
+  if (serverUrl() == "") {
+    new InputDialog("Please enter the server URL", "", "http://fluidnc.local", value => {
       (window as any).serverUrl = value
       connect();
     });
   } else {
+    console.log(`Connecting to ${serverUrl()}`);
     connect();
   }
 };
@@ -90,7 +90,7 @@ function startSocket() {
       }
       socket = new WebSocket('ws://' + document.location.host + '/ws', ['arduino']);
     } else {
-      let parts = (window as any).serverUrl.split(":");
+      let parts = serverUrl().split(":");
       let url = `ws:${parts[1]}:${firmware.port}`
       console.log(`Connecting to WebSocket ${url}`);
       socket = new WebSocket(url, ['arduino']);

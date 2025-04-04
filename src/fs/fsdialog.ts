@@ -1,5 +1,5 @@
 import {getElement, label, panel, setEnabled, setLabel} from '../ui/ui';
-import {httpCommunicationLocked} from '../http/http';
+import {httpCommunicationLocked, serverUrl} from '../http/http';
 import {FS, FSFile, FSResponse, FSType, toSizeString} from './fs';
 import {closeModal, pushModal} from '../dialog/modaldlg';
 import {AlertDialog} from '../dialog/alertdlg';
@@ -99,8 +99,14 @@ export class FSDialog {
   }
 
   download(file: FSFile) {
+    let url = (this.fs.type == FSType.SDCard) ? "SD/" + file.path : file.path;
+
+    // (window as any).electron.downloadFile(serverUrl(url))
+    //     .then(() => console.log('Download started!'))
+    //     .catch((error: Error) => console.error('Download failed:', error));
+
     const anchor = document.createElement("a");
-    anchor.href = (this.fs.type == FSType.SDCard) ? "SD/" + file.path : file.path;
+    anchor.href = serverUrl(url);
     anchor.download = file.name;
     document.body.appendChild(anchor);
     anchor.click();
