@@ -1,10 +1,9 @@
 import {sendHttpRequest, writeFile} from '../http/http';
-import {cloneSetting, Setting, SettingAttr, SettingGroup, Settings} from './settings';
-import {SettingsUI} from './settingsui';
+import {AlphanumericSetting, BooleanSetting, cloneSetting, FloatSetting, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingAttr, SettingGroup, Settings, StringSetting} from './settings';
 import {toYAML, YAML} from './yaml';
 import {messages} from '../messages/messages';
 import {machineTemplate} from './machinetemplate';
-import {PinConfig, PinCap, Pin} from './esp32';
+import {Pin} from './esp32';
 import {Set2} from '../common/set';
 
 let configFileName = "config.yaml"
@@ -28,9 +27,23 @@ export class MachineSettings extends Settings {
     yml.forEach((path, value) => {
       path = path.toLowerCase();
       let s = group.getSetting(path);
-      if (s != undefined) {
+      if (s instanceof IntegerSetting) {
+        s.setValue(parseInt(value))
+      } else if (s instanceof FloatSetting) {
+        s.setValue(parseFloat(value))
+      } else if (s instanceof BooleanSetting) {
+        s.setValue(value == "true")
+      } else if (s instanceof StringSetting) {
         s.setValue(value)
-      } else if (group.getGroup(path) == undefined) {
+      } else if (s instanceof PinSetting) {
+        s.setValue(value)
+      } else if (s instanceof AlphanumericSetting) {
+        s.setValue(value)
+      } else if (s instanceof GroupSetting) {
+        s.setValue(value)
+      } else if (s instanceof SelectSetting) {
+        s.setValue(value)
+      } else if (s == undefined) {
         console.error("Cannot find setting or group " + path)
         // throw Error("Cannot find setting or group " + path)
       }
