@@ -70,12 +70,11 @@ export function restart() {
   });
 }
 
-export const reset = () => stopAndRecover();
 export const unlock = () => sendCommandAndGetStatus(UNLOCK_CMD);
 export const homeAll = () => sendCommandAndGetStatus(HOME_CMD);
 export const requestModes = () => sendCommandAndGetStatus(GET_PARSER_STATE_CMD);
 
-export const stopAndRecover = () => {
+export const reset = () => {
   sendCommand(RESET_CMD);
   // if (isProbing) {
   // probe_failed_notification('Probe Canceled'); //TODO(dp) function is missing

@@ -65,21 +65,21 @@ class WeightItem<T> {
   }
 }
 
-const isDigit = (c: string) => c >= '0' && c <= '9';
-const first = (name: string) => charAt(name, 0);
-const last = (name: string, n = 0) => charAt(name, -1);
+export const isDigit = (c: string) => c >= '0' && c <= '9';
+export const first = (name: string) => charAt(name, 0);
+export const last = (name: string, n = 0) => charAt(name, -1);
 
 // 0  - first char, -1 last char, -2 next to last char
-const charAt = (name: string, i = 0) => {
+export const charAt = (name: string, i = 0) => {
   if (name == "") return ""
   while (i < 0) i += name.length
   return name.charAt(i)
 }
 
-const drop = (name: string, n = 0) => name.substring(n);
-const dropLast = (name: string, n = 0) => name.substring(0, name.length - n);
+export const drop = (name: string, n = 0) => name.substring(n);
+export const dropLast = (name: string, n = 1) => name.substring(0, name.length - n);
 
-const substring = (name: string, i = 0, j = -1) => {
+export  const substring = (name: string, i = 0, j = -1) => {
   if (name == "") return ""
   while (i < 0) i += name.length
   while (j < 0) j += name.length
@@ -87,14 +87,6 @@ const substring = (name: string, i = 0, j = -1) => {
 }
 
 export const capitalize = (name: string) => first(name) == '(' ? name : first(name).toUpperCase() + drop(name, 1);
-
-export function splitNumber(name: string) {
-  if (name.length >= 2 && isDigit(charAt(name, -1)) && !isDigit(charAt(name, -2))) {
-    return dropLast(name) + " " + last(name);
-  } else {
-    return name;
-  }
-}
 
 export function randomString(length: number): string {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

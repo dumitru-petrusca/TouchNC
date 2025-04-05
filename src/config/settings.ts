@@ -1,7 +1,8 @@
-import {capitalize, splitNumber} from '../common/common';
+import {capitalize, charAt, dropLast, last} from '../common/common';
 import {YAML} from './yaml';
 import {NO_PIN_CONFIG, parsePinConfig, Pin, PinCap, PinConfig} from './esp32';
 import {Set2} from '../common/set';
+import {isDigit} from 'json5/lib/util';
 
 export enum SettingAttr {
   DEFAULT = 0,
@@ -44,15 +45,7 @@ export abstract class Setting<T, B extends Setting<T, B>> {
 
   setName(name: string): B {
     this.path = name;
-    name = this.path
-        .substring(this.path.lastIndexOf("/") + 1)
-        .replaceAll('_', ' ')
-    name = replaceDimension(name)
-        .split(" ")
-        .map(capitalize)
-        .map(replaceAcronyms)
-        .join(" ");
-    this.name = renames.get(name) ?? name
+    this.name = settingName(name)
     return this as any
   }
 
@@ -503,22 +496,41 @@ let acronyms = new Map([
   ["Oled", "OLED"],
 ]);
 
-let renames = new Map([
-  ["Enable Parking Override Control", "Parking Override Control"],
-]);
-
-export function replaceAcronyms(name: string) {
-  return acronyms.get(name) ?? name
-}
-
 export function groupName(path: string) {
-  return path
+  let name = path
       .replace("/axes/", "")
       .replaceAll('/', ' ')
       .replaceAll('_', ' ')
       .split(" ")
       .map(capitalize)
-      .map(splitNumber)
-      .map(replaceAcronyms)
+      .flatMap(splitNumber)
+      .map(name => acronyms.get(name) ?? name)
       .join(" ");
+  return renames.get(name) ?? name
 }
+
+function settingName(name: string) {
+  name = name
+      .substring(name.lastIndexOf("/") + 1)
+      .replaceAll('_', ' ')
+  name = replaceDimension(name)
+      .split(" ")
+      .map(capitalize)
+      .map(name => acronyms.get(name) ?? name)
+      .join(" ");
+  return renames.get(name) ?? name
+}
+
+function splitNumber(name: string): string[] {
+  if (name.length >= 2 && isDigit(charAt(name, -1)) && !isDigit(charAt(name, -2))) {
+    return [dropLast(name), last(name)];
+  } else {
+    return [name];
+  }
+}
+
+let renames = new Map([
+  ["Enable Parking Override Control", "Parking Override Control"],
+  ["Shared Stepper Disable Pin", "Shared Disable Pin"],
+  ["Shared Stepper Reset Pin", "Shared Reset Pin"],
+]);

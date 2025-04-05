@@ -2,7 +2,7 @@ import {FSFile, FSType} from '../fs/fs';
 import {GCodeFile, messageChannel, positionChannel, stateChannel} from '../events/eventbus';
 import {element, label, panel, setLabel} from './ui';
 import {display} from '../toolpath/display';
-import {currentState, pauseGCode, resumeGCode, stopAndRecover, unlock, wposToXYZ} from '../machine/machine';
+import {currentState, pauseGCode, resumeGCode, reset, unlock, wposToXYZ} from '../machine/machine';
 import {serverUrl, sendCommandAndGetStatus} from '../http/http';
 import {button, setButton} from './button';
 import {Icon, svgIcon} from './icons';
@@ -38,8 +38,46 @@ const showGCode = () => {
     setLabel('filename', gCodeFile!.path + " (too large to show)");
     display.clear();
   }
-  setRunControls();
+  updateRunButtons();
 };
+
+export function updateRunButtons() {
+  switch (currentState.name) {
+    case 'Idle':
+      let gCodeLoaded = gCodeFile != null && gCodeFile.content != '';
+      setButton('btn-start', gCodeLoaded, Icon.play, runGCode);
+      setButton('btn-pause', false, Icon.pause);
+      break;
+    case 'Run':
+    case 'Jog':
+    case 'Home':
+      setButton('btn-start', false, Icon.play);
+      setButton('btn-pause', true, Icon.pause, pauseGCode);
+      break;
+    case 'Sleep':
+      setButton('btn-start', false, Icon.lockClosed);
+      setButton('btn-pause', true, Icon.stop, reset);
+      break;
+    case 'Alarm':
+      setButton('btn-start', true, Icon.lockClosed, unlock);
+      setButton('btn-pause', true, Icon.stop, reset);
+      break;
+    case 'Door1':
+      setButton('btn-start', false, Icon.play, resumeGCode);
+      setButton('btn-pause', true, Icon.stop, reset);
+      break;
+    case 'Door0':
+    case 'Hold':
+      setButton('btn-start', true, Icon.play, resumeGCode);
+      setButton('btn-pause', true, Icon.stop, reset);
+      break;
+    case 'Check':
+      setButton('btn-start', true, Icon.play);
+      setButton('btn-pause', true, Icon.stop, reset);
+      break;
+  }
+  updateProgramProgress();
+}
 
 const runGCode = () => {
   if (gCodeFile != null) {
@@ -54,54 +92,6 @@ export function toolPathPanel() {
     button('open-gcode-file', svgIcon(Icon.file, "1.1em", "1.1em"), 'Open GCode File',
         () => new FSDialog(FSType.SDCard, (file) => loadGCodeFile(file)), "", floatingButtonClass)
   ]);
-}
-
-export const setRunControls = () => {
-  if (gCodeFile != null && gCodeFile.content != '') {
-    // A GCode file is ready to go
-    setButton('btn-start', true, Icon.play, runGCode);
-    setButton('btn-pause', false, Icon.pause);
-  } else {
-    // Can't start because no GCode to run
-    setButton('btn-start', false, Icon.play);
-    setButton('btn-pause', false, Icon.pause);
-  }
-};
-
-export function updateRunButtons() {
-  switch (currentState.name) {
-    case 'Sleep':
-      setButton('btn-start', false, Icon.lockClosed);
-      setButton('btn-pause', true, Icon.stop, stopAndRecover);
-      break;
-    case 'Alarm':
-      setButton('btn-start', true,  Icon.lockClosed, unlock);
-      setButton('btn-pause', true,  Icon.stop, stopAndRecover);
-      break;
-    case 'Idle':
-      setRunControls();
-      break;
-    case 'Door1':
-      setButton('btn-start', false, Icon.play, resumeGCode);
-      setButton('btn-pause', true, Icon.stop, stopAndRecover);
-      break;
-    case 'Door0':
-    case 'Hold':
-      setButton('btn-start', true, Icon.play, resumeGCode);
-      setButton('btn-pause', true, Icon.stop, stopAndRecover);
-      break;
-    case 'Jog':
-    case 'Home':
-    case 'Run':
-      setButton('btn-start', false, Icon.play);
-      setButton('btn-pause', true, Icon.pause, pauseGCode);
-      break;
-    case 'Check':
-      setButton('btn-start', true, Icon.play);
-      setButton('btn-pause', true, Icon.stop, stopAndRecover);
-      break;
-  }
-  updateProgramProgress();
 }
 
 function updateProgramProgress() {
