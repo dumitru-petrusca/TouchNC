@@ -466,34 +466,22 @@ export class SettingGroup {
   isHidden = () => (this.attributes & SettingAttr.HIDDEN) != 0
 }
 
-function replaceDimension(name: string) {
-  name = name.replaceAll(' per ', '/')
-  if (name.includes("mm/min")) {
-    return name.replace("mm/min", "(mm/min)")
-  } else if (name.includes("mm/sec2")) {
-    return name.replace("mm/sec2", "(mm/s\u00B2)")
-  } else if (name.includes(" mm")) {
-    return name.replace(" mm", " (mm)")
-  } else if (name.includes(" ms")) {
-    return name.replace(" ms", " (ms)")
-  } else if (name.includes(" us")) {
-    return name.replace(" us", " (us)")
-  } else if (name.includes(" Hz")) {
-    return name.replace(" Hz", " (Hz)")
-  }
-  return name;
-}
-
 let acronyms = new Map([
-  ["Rpm", "RPM"],
-  ["I2c", "I2C"],
-  ["I2so", "I2SO"],
-  ["Pwm", "PWM"],
-  ["Atc", "ATC"],
-  ["Uart", "UART"],
-  ["Sdcard", "SD Card"],
-  ["Spi", "SPI"],
-  ["Oled", "OLED"],
+  ["mm/min", "(mm/min)"],
+  ["mm/sec2", "(mm/s\u00B2)"],
+  ["mm", "(mm)"],
+  ["ms", "(ms)"],
+  ["us", "(us)"],
+  ["Hz", "(Hz)"],
+  ["rpm", "RPM"],
+  ["i2c", "I2C"],
+  ["i2so", "I2SO"],
+  ["pwm", "PWM"],
+  ["atc", "ATC"],
+  ["uart", "UART"],
+  ["adcard", "SD Card"],
+  ["spi", "SPI"],
+  ["oled", "OLED"],
 ]);
 
 export function groupName(path: string) {
@@ -502,21 +490,21 @@ export function groupName(path: string) {
       .replaceAll('/', ' ')
       .replaceAll('_', ' ')
       .split(" ")
-      .map(capitalize)
       .flatMap(splitNumber)
       .map(name => acronyms.get(name) ?? name)
+      .map(capitalize)
       .join(" ");
   return renames.get(name) ?? name
 }
 
-function settingName(name: string) {
+export function settingName(name: string) {
   name = name
       .substring(name.lastIndexOf("/") + 1)
       .replaceAll('_', ' ')
-  name = replaceDimension(name)
+      .replaceAll(' per ', '/')
       .split(" ")
-      .map(capitalize)
       .map(name => acronyms.get(name) ?? name)
+      .map(capitalize)
       .join(" ");
   return renames.get(name) ?? name
 }
@@ -533,4 +521,5 @@ let renames = new Map([
   ["Enable Parking Override Control", "Parking Override Control"],
   ["Shared Stepper Disable Pin", "Shared Disable Pin"],
   ["Shared Stepper Reset Pin", "Shared Reset Pin"],
+  ["Parking Override Control", "Parking Override"],
 ]);

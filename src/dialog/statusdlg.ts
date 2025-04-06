@@ -90,8 +90,8 @@ export class StatusDialog {
 function newRow(name: string, value: string) {
   return row()
     .gap("10px")
-    .add("1fr", label("", name))
-    .add("4fr", label("", value))
+    .add("1fr", label("", name, textClass))
+    .add("4fr", label("", value, textClass))
     .build();
 }
 
@@ -100,4 +100,8 @@ const statusClass = cssClass("status", css`
   grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
   height: auto;
   overflow-y: scroll;
+`)
+
+const textClass = cssClass("text", css`
+  font-size: 25px;
 `)
