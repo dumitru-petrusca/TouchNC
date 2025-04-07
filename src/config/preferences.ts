@@ -88,9 +88,7 @@ class Preferences extends Settings {
   reportInterval = () => this.getOrDefault(REPORT_INTERVAL, 50);
   reportType = () => this.getSelect(REPORT_TYPE)?.index() ?? ReportType.NONE;
 
-  jogRate1 = () => this.intSetting(JOG_RATE_1).getValue();
-  jogRate2 = () => this.intSetting(JOG_RATE_2).getValue();
-  jogRate3 = () => this.intSetting(JOG_RATE_3).getValue();
+  jogRate = (i: number) => this.intSetting(`Rate ${i} (%)`).getValue();
 }
 
 function createSettings(js: any) {

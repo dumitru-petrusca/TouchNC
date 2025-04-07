@@ -20,9 +20,9 @@ export class JogPanel {
   constructor() {
     this.setting = new SelectSetting("speeds", STEP, [
       new SelectOption(0, STEP, STEP),
-      new SelectOption(1, "" + preferences.jogRate1(), "", Icon.walk),
-      new SelectOption(2, "" + preferences.jogRate2(), "", Icon.run),
-      new SelectOption(3, "" + preferences.jogRate3(), "", Icon.sprint)
+      new SelectOption(1, "1", "", Icon.walk),
+      new SelectOption(2, "2", "", Icon.run),
+      new SelectOption(3, "3", "", Icon.sprint)
     ]);
     this.feedGroup = new SettingButtonGroup(this.setting);
   }
@@ -75,7 +75,8 @@ export class JogPanel {
       let feed = mmToDisplay(100);
       sendCommandAndGetStatus(`$J=G91 F${feed} ${axis}${sign}${step}`);
     } else {
-      let feedPercent = Number(this.setting.getValue()) / 100.0;
+      let i = this.setting.index();
+      let feedPercent = Number(preferences.jogRate(i)) / 100.0;
       let maxFeed = machineSettings.floatSetting(`/axes/${axis}/max_rate_mm_per_min`).getValue();
       let feed = mmToCurrent(maxFeed * feedPercent)
       sendCommandAndGetStatus(`$J=G91 F${feed.toFixed(2)} ${axis}${sign}1000`);
