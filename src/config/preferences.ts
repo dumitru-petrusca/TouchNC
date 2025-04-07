@@ -26,6 +26,10 @@ export const PROBE_FEED = "Feed"
 export const PROBE_MAX_TRAVEL = "Travel"
 export const PROBE_RETRACT = "Retract"
 
+export const JOG_RATE_1 = "Rate 1 (%)"
+export const JOG_RATE_2 = "Rate 2 (%)"
+export const JOG_RATE_3 = "Rate 3 (%)"
+
 export enum FeedbackMode {
   None,
   Audio,
@@ -76,29 +80,17 @@ class Preferences extends Settings {
     return JSON.stringify(js, null, 2);
   }
 
-  defaultTab(): string {
-    return this.getOrDefault(DEFAULT_TAB, TAB_MANUAL)
-  }
+  defaultTab = () => this.getOrDefault(DEFAULT_TAB, TAB_MANUAL);
+  feedbackMode = () => this.getSelect(FEEDBACK)?.index() ?? FeedbackMode.None;
 
-  feedbackMode(): FeedbackMode {
-    return this.getSelect(FEEDBACK)?.index() ?? FeedbackMode.None
-  }
+  connectionMonitoring = () => this.getSelect(CONNECTION_MONITORING)?.index() ?? ConnectionMonitoring.None;
+  recoveryPeriod = () => this.getOrDefault(RECOVER_AFTER, 5000);
+  reportInterval = () => this.getOrDefault(REPORT_INTERVAL, 50);
+  reportType = () => this.getSelect(REPORT_TYPE)?.index() ?? ReportType.NONE;
 
-  recoveryPeriod(): number {
-    return this.getOrDefault(RECOVER_AFTER, 5000);
-  }
-
-  reportInterval(): number {
-    return this.getOrDefault(REPORT_INTERVAL, 50);
-  }
-
-  reportType(): ReportType {
-    return this.getSelect(REPORT_TYPE)?.index() ?? ReportType.NONE;
-  }
-
-  connectionMonitoring(): ConnectionMonitoring {
-    return this.getSelect(CONNECTION_MONITORING)?.index() ?? ConnectionMonitoring.None;
-  }
+  jogRate1 = () => this.intSetting(JOG_RATE_1).getValue();
+  jogRate2 = () => this.intSetting(JOG_RATE_2).getValue();
+  jogRate3 = () => this.intSetting(JOG_RATE_3).getValue();
 }
 
 function createSettings(js: any) {
@@ -122,6 +114,11 @@ function createSettings(js: any) {
       float_(PROBE_FEED, js[PROBE_FEED], 0, 10000),
       float_(PROBE_MAX_TRAVEL, js[PROBE_MAX_TRAVEL], 0, 10000),
       float_(PROBE_RETRACT, js[PROBE_RETRACT], 0, 10000),
+    ]),
+    new SettingGroup("/jog_rates", SettingAttr.VIRTUAL, [
+      float_(JOG_RATE_1, js[JOG_RATE_1], 0, 100),
+      float_(JOG_RATE_2, js[JOG_RATE_2], 0, 100),
+      float_(JOG_RATE_3, js[JOG_RATE_3], 0, 100),
     ])
   ]);
 }
@@ -138,6 +135,9 @@ function applyDefaults(js: any) {
   applyDefault(PROBE_FEED, 100, js)
   applyDefault(PROBE_MAX_TRAVEL, 1000, js)
   applyDefault(PROBE_RETRACT, 10, js)
+  applyDefault(JOG_RATE_1, 10, js)
+  applyDefault(JOG_RATE_2, 50, js)
+  applyDefault(JOG_RATE_3, 75, js)
   return js
 }
 

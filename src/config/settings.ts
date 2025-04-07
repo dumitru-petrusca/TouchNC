@@ -3,6 +3,7 @@ import {YAML} from './yaml';
 import {NO_PIN_CONFIG, parsePinConfig, Pin, PinCap, PinConfig} from './esp32';
 import {Set2} from '../common/set';
 import {isDigit} from 'json5/lib/util';
+import {Icon} from '../ui/icons';
 
 export enum SettingAttr {
   DEFAULT = 0,
@@ -234,11 +235,13 @@ export class SelectOption {
   id: number = -1
   value: string = ""
   text: string = ""
+  icon?: Icon
 
-  constructor(id: number, value: string, text: string) {
+  constructor(id: number, value: string, text: string, icon?: Icon) {
     this.id = id;
     this.value = value;
     this.text = text
+    this.icon = icon
   }
 }
 
@@ -332,6 +335,7 @@ export abstract class Settings {
   }
 
   get = <T>(path: string): Setting<T, any> | undefined => this.settings?.getSetting<T>(path.toLowerCase());
+  intSetting = (path: string) => this.get(path) as IntegerSetting;
   floatSetting = (path: string) => this.get(path) as FloatSetting;
   pinSetting = (path: string) => this.get(path) as PinSetting;
   getOrDefault = <T>(name: string, def: T): T => this.get<T>(name)?.getValue() ?? def;

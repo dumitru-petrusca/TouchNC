@@ -50,7 +50,7 @@ export class Probe {
       this.probeType = preferences.getSelect(PROBE_TYPE);
       const isProbeMode = () => this.probeType!.getValue() == "probe";
       this.offsetBtn = coordButton(preferences.floatSetting(PROBE_OFFSET), Icon.height);
-      this.feedRateBtn = coordButton(preferences.floatSetting(PROBE_FEED), Icon.running).setEnabled(isProbeMode);
+      this.feedRateBtn = coordButton(preferences.floatSetting(PROBE_FEED), Icon.sprint).setEnabled(isProbeMode);
       this.maxTravelBtn = coordButton(preferences.floatSetting(PROBE_MAX_TRAVEL), Icon.arrowRange).setEnabled(isProbeMode);
       this.retractBtn = coordButton(preferences.floatSetting(PROBE_RETRACT), Icon.alightTop).setEnabled(isProbeMode);
       this.probeStart = button("probeStart", btnIcon(Icon.alightBottom), "", this.startProbeProcess.bind(this));

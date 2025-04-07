@@ -1,25 +1,28 @@
 import {CANCEL_JOG_CMD, sendCommand, sendCommandAndGetStatus} from '../http/http';
 import {btnIcon, button} from '../ui/button';
-import {isMmMode, mmToDisplay} from './modal';
+import {isMmMode, mmToCurrent, mmToDisplay} from './modal';
 import {Content, panel} from '../ui/ui';
 import {css, cssClass} from '../ui/commonStyles';
 import {Icon} from '../ui/icons';
 import {SelectOption, SelectSetting} from '../config/settings';
 import {SettingButtonGroup} from '../ui/toggleButton';
+import {preferences} from '../config/preferences';
+import {machineSettings} from '../config/machinesettings';
+import {JogDebouncer} from './jogDebouncer';
 
 const STEP = "step";
+const debounceDelayMs = 100;
 
 export class JogPanel {
   setting: SelectSetting;
   feedGroup: SettingButtonGroup
-  jogging: boolean = false;
 
   constructor() {
     this.setting = new SelectSetting("speeds", STEP, [
       new SelectOption(0, STEP, STEP),
-      new SelectOption(1, "10", "10"),
-      new SelectOption(2, "100", "100"),
-      new SelectOption(3, "1000", "1000")
+      new SelectOption(1, "" + preferences.jogRate1(), "", Icon.walk),
+      new SelectOption(2, "" + preferences.jogRate2(), "", Icon.run),
+      new SelectOption(3, "" + preferences.jogRate3(), "", Icon.sprint)
     ]);
     this.feedGroup = new SettingButtonGroup(this.setting);
   }
@@ -28,17 +31,17 @@ export class JogPanel {
     let feedButtons = this.feedGroup.build();
     return panel('', jogPanelClass, [
       feedButtons[0],
-      this.jogButton('y+', btnIcon(Icon.up), `Y+`, 100),
+      this.jogButton('y+', btnIcon(Icon.up), `y`, +1, 100),
       feedButtons[1],
-      this.jogButton('z+', btnIcon(Icon.up), `Z+`, 100),
-      this.jogButton('x+', btnIcon(Icon.left), `X+`, 100),
+      this.jogButton('z+', btnIcon(Icon.up), `z`, +1, 100),
+      this.jogButton('x+', btnIcon(Icon.left), `x`, +1, 100),
       panel("X/Y", undefined, "X / Y"),
-      this.jogButton('x-', btnIcon(Icon.right), `X-`, 100),
+      this.jogButton('x-', btnIcon(Icon.right), `x`, -1, 100),
       panel("Z", undefined, "Z"),
       feedButtons[2],
-      this.jogButton('y-', btnIcon(Icon.down), `Y-`, 100),
+      this.jogButton('y-', btnIcon(Icon.down), `y`, -1, 100),
       feedButtons[3],
-      this.jogButton('z-', btnIcon(Icon.down), `Z-`, 100),
+      this.jogButton('z-', btnIcon(Icon.down), `z`, -1, 100),
     ]);
   }
 
@@ -46,39 +49,40 @@ export class JogPanel {
     let axisMinus = `${axis}-`;
     let axisPlus = `${axis}+`;
     return panel('', jogRowClass, [
-      this.jogButton('jog1', '<', axisMinus, 2),
-      this.jogButton('jog2', '<<', axisMinus, 100),
-      this.jogButton('jog3', '<<<', axisMinus, 1000),
-      this.jogButton('jog4', '>>>', axisPlus, 1000),
-      this.jogButton('jog5', '>>', axisPlus, 100),
-      this.jogButton('jog6', '>', axisPlus, 2),
+      this.jogButton('jog1', '<', axisMinus, -1, 2),
+      this.jogButton('jog2', '<<', axisMinus, -1, 100),
+      this.jogButton('jog3', '<<<', axisMinus, -1, 1000),
+      this.jogButton('jog4', '>>>', axisPlus, +1, 1000),
+      this.jogButton('jog5', '>>', axisPlus, +1, 100),
+      this.jogButton('jog6', '>', axisPlus, +1, 2),
     ]);
   }
 
-  jogButton = (id: string, content: Content, axis: string, feedRate: number) => {
+  jogButton = (id: string, content: Content, axis: string, dir: number, feedRate: number) => {
     let btn = button(id, content, `Move ${axis}`, undefined, axis);
-    btn.addEventListener('touchstart', _ => this.handleDown(axis, feedRate, btn));
-    btn.addEventListener('touchend', _ => this.cancelJog(btn));
-    // btn.addEventListener('pointerout', _ => this.cancelJog(btn));
+    new JogDebouncer(debounceDelayMs,
+        () => this.startJog(axis, dir, feedRate, btn),
+        () => this.cancelJog(btn)
+    ).registerListener(btn)
     return btn
   }
 
-  handleDown(axis: string, _feedRate: number, btn: HTMLButtonElement) {
+  startJog(axis: string, dir: number, _feedRate: number, btn: HTMLButtonElement) {
+    let sign = dir < 0 ? "-" : "+"
     btn.style.backgroundColor = "#d0f0d0"
     if (this.setting.getValue() == STEP) {
       let step = isMmMode() ? "0.01" : "0.001"
       let feed = mmToDisplay(100);
-      sendCommandAndGetStatus(`$J=G91 F${feed} ${axis}${step}`);
+      sendCommandAndGetStatus(`$J=G91 F${feed} ${axis}${sign}${step}`);
     } else {
-      let feed = Number(this.setting.getValue());
-      this.jogging = true
-      console.log("Start Jog")
-      sendCommandAndGetStatus(`$J=G91 F${feed.toFixed(2)} ${axis}1000`);
+      let feedPercent = Number(this.setting.getValue()) / 100.0;
+      let maxFeed = machineSettings.floatSetting(`/axes/${axis}/max_rate_mm_per_min`).getValue();
+      let feed = mmToCurrent(maxFeed * feedPercent)
+      sendCommandAndGetStatus(`$J=G91 F${feed.toFixed(2)} ${axis}${sign}1000`);
     }
   }
 
   cancelJog(btn: HTMLButtonElement) {
-    this.jogging = false
     btn.style.backgroundColor = "lightblue"
     console.log("Cancel Jog")
     sendCommand(CANCEL_JOG_CMD);

@@ -1,6 +1,6 @@
 import {Consumer, Producer, randomString} from '../common/common';
 import {BooleanSetting, SelectOption, SelectSetting} from '../config/settings';
-import {button} from './button';
+import {btnIcon, button} from './button';
 
 export class ToggleButton {
   private readonly id: string
@@ -72,7 +72,8 @@ export class SettingButtonGroup {
   }
 
   private makeButton(option: SelectOption) {
-    return button(option.value, option.text, `Feed ${option.text}`, _ => {
+    let content = option.icon ? btnIcon(option.icon) : option.text;
+    return button(option.value, content, `Feed ${option.text}`, _ => {
       this.setting.setValue(option.value)
       this.update();
       this.consumer?.(option.value)
