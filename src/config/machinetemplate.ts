@@ -335,7 +335,7 @@ export let machineTemplate = {
     PWM: {
       pwm_hz: int(5000, 1, 20000000),
       direction_pin: pin(PinCap.Output),
-      output_pin: pin(PinCap.Output),
+      output_pin: pin(PinCap.Output | PinCap.PWM),
       enable_pin: pin(PinCap.Output),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
@@ -351,7 +351,7 @@ export let machineTemplate = {
     BESC: {
       pwm_hz: int(5000, 1, 20000000),
       direction_pin: pin(PinCap.Input),
-      output_pin: pin(PinCap.Output),
+      output_pin: pin(PinCap.Output | PinCap.PWM),
       enable_pin: pin(PinCap.Input),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
@@ -368,7 +368,7 @@ export let machineTemplate = {
 
     Laser: {
       pwm_hz: int(5000, 1000, 100000),
-      output_pin: pin(PinCap.Output),
+      output_pin: pin(PinCap.Output | PinCap.PWM),
       enable_pin: pin(PinCap.Input),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
@@ -386,7 +386,7 @@ export let machineTemplate = {
       reverse_pin: pin(PinCap.Input),
       pwm_hz: int(5000, 1, 20000000),
       direction_pin: pin(PinCap.Input),
-      output_pin: pin(PinCap.Output),
+      output_pin: pin(PinCap.Output | PinCap.PWM),
       enable_pin: pin(PinCap.Input),
       disable_with_s0: bool(false),
       s0_with_disable: bool(true),
