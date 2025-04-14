@@ -17,6 +17,8 @@ import gulpSass from 'gulp-sass';
 import * as sass from 'sass';
 import {build} from 'electron-builder';
 import {spawn} from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 function parseArgs() {
   let args = {};
@@ -173,8 +175,13 @@ function buildElectron() {
 }
 
 gulp.task('run-electron', (done) => {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const isWindows = process.platform === 'win32';
+  const electronPath = path.join(__dirname, 'node_modules', '.bin', isWindows ? 'electron.cmd' : 'electron');
   let url = parseArgs().url;
-  const electronProcess = spawn('electron', ['.'], { 
+  console.log("Server URL: "+url)
+  const electronProcess = spawn(electronPath, ['.'], { 
     stdio: 'inherit',
     env: { ...process.env, NODE_ENV: 'development', SERVER_URL: url }
   });
