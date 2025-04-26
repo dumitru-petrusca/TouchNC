@@ -5,13 +5,12 @@ import {closeModal} from './dialog/modaldlg';
 import {tabSelectChannel} from './events/eventbus';
 import {addTab, createMainMenu, selectTab, Tab} from './ui/tabs';
 import {machineSettings} from './config/machinesettings';
-import {preferencesUI} from './config/preferencesui';
 import {preferences, TAB_MANUAL, TAB_PREFERENCES, TAB_PROGRAM, TAB_SETTINGS, TAB_TOOLS, TAB_WIFI} from './config/preferences';
 import {MillUI} from './ui/mill';
 import {LatheUI} from './ui/lathe';
 import {Icon} from './ui/icons';
 import {wifiUI} from './config/wifi';
-import {machineSettingsUI} from './config/machinesettingsui';
+import {SettingsUI} from './config/settingsui';
 
 let app: HTMLElement
 
@@ -54,6 +53,9 @@ const buildUI = (container: HTMLElement) => {
     if (toolsTab != null) {
       addTab(new Tab(TAB_TOOLS, Icon.tools, 'Tool Table', toolsTab, requestTools));
     }
+
+    let preferencesUI = new SettingsUI(preferences, "preferences");
+    let machineSettingsUI = new SettingsUI(machineSettings, "machineSettings")
 
     addTab(new Tab(TAB_SETTINGS, Icon.cog, 'Settings', machineSettingsUI.create(), () => machineSettingsUI.loadAndDisplay()));
     addTab(new Tab(TAB_WIFI, Icon.folder, 'WiFi', wifiUI.create(), () => wifiUI.loadAndDisplay()));

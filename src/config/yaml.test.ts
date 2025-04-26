@@ -1,7 +1,7 @@
-import {toYAML, YAML} from './yaml';
+import {YAML} from './yaml';
 
 test('field without value', () => {
-  let yml = new YAML(`
+  let yml = new YAML().parse(`
 name: "Demo"
 meta: 
 board: "ESP32v4"
@@ -10,7 +10,7 @@ board: "ESP32v4"
 });
 
 test('field without value 2', () => {
-  let yml = new YAML(`
+  let yml = new YAML().parse(`
 name: "Demo"
 meta: 
 
@@ -20,7 +20,7 @@ board: "ESP32v4"
 });
 
 test('complex case', () => {
-  let yml = new YAML(`
+  let yml = new YAML().parse(`
 obj1:
 
   obj2: 
@@ -28,35 +28,73 @@ obj1:
     field2: { } 
   field1: 
 `)
-  expect(JSON.stringify(yml.yml, null, 2)).toBe(`{
-  "obj1": {
-    "obj2": {
-      "field1": "",
-      "field2": {}
-    },
-    "field1": ""
-  }
-}`)
+  expect(yml.serialize()).toBe(`
+obj1:
+
+  obj2:
+    field1:
+
+    field2: { }
+  field1:
+`)
 });
 
-test('toYAML', () => {
-  let yml = new YAML(configYaml);
-  let ymlStr = toYAML("", yml.yml, "")
-  expect(ymlStr).toBe(configYaml.replace("kinematics:\n\n", "kinematics:\n"));
+test('loadAndSerialize', () => {
+  let yml = new YAML().parse(configYaml);
+  let ymlStr = yml.serialize()
+  expect(ymlStr).toBe(configYaml);
+});
+
+test('comments are ignored', () => {
+  let yml = new YAML().parse(`
+name: Demo
+board: ESP32v4
+
+#coolant:
+#  flood_pin: i2so.7
+#  mist_pin: i2so.8
+#  delay_ms: 0
+`)
+  let ymlStr = yml.serialize()
+  expect(ymlStr).toBe(`name: Demo
+board: ESP32v4
+`);
+});
+
+test('disabled are preserved', () => {
+  let yml = new YAML().parse(`
+name: Demo
+board: ESP32v4
+
+##coolant:
+##  flood_pin: i2so.7
+##  mist_pin: i2so.8
+##  delay_ms: 0
+`)
+  let ymlStr = yml.serialize()
+  expect(ymlStr).toBe(`name: Demo
+board: ESP32v4
+
+##coolant:
+##  flood_pin: i2so.7
+##  mist_pin: i2so.8
+##  delay_ms: 0
+`);
 });
 
 test('getYamlValue', () => {
-  let yml = new YAML(configYaml)
+  let yml = new YAML().parse(configYaml)
   expect(yml.get("/axes/x/motor0/stepstick/step_pin")).toBe("i2so.0");
   expect(yml.get("/axes/x/motor0/stepstick/step_pin2")).toBe(undefined);
   expect(yml.get("/axes/a/motor0/stepstick/step_pin")).toBe(undefined);
 });
 
 test('iterate', () => {
-  let yml = new YAML(configYaml)
+  let yml = new YAML().parse(configYaml)
   let s: string[] = []
-  yml.forEach((path, value) => {
+  yml.traverse((path, value) => {
     s.push(`${path}=${value}`)
+  }, (path, enabled) => {
   })
   expect(s).toStrictEqual([
     "/name=Demo",
@@ -70,6 +108,27 @@ test('iterate', () => {
     "/enable_parking_override_control=false",
     "/use_line_numbers=false",
     "/planner_blocks=16",
+    "/i2c0/sda_pin=gpio.22",
+    "/i2c0/scl_pin=gpio.21",
+    "/i2c0/frequency=100000",
+    "/spi/miso_pin=gpio.19",
+    "/spi/mosi_pin=gpio.23",
+    "/spi/sck_pin=gpio.18",
+    "/i2so/bck_pin=gpio.27",
+    "/i2so/data_pin=gpio.13",
+    "/i2so/ws_pin=gpio.14",
+    "/sdcard/cs_pin=gpio.5",
+    "/sdcard/card_detect_pin=NO_PIN",
+    "/sdcard/frequency_hz=8000000",
+    "/oled/report_interval_ms=500",
+    "/oled/i2c_num=0",
+    "/oled/i2c_address=60",
+    "/oled/width=128",
+    "/oled/height=64",
+    "/oled/flip=true",
+    "/oled/mirror=false",
+    "/oled/type=SH1106",
+    "/oled/radio_delay_ms=1000",
     "/start/must_home=false",
     "/start/deactivate_parking=false",
     "/start/check_limits=true",
@@ -92,7 +151,6 @@ test('iterate', () => {
     "/stepping/dir_delay_us=1",
     "/stepping/disable_delay_us=0",
     "/stepping/segments=12",
-    "/kinematics/Cartesian=",
     "/axes/shared_stepper_disable_pin=NO_PIN",
     "/axes/shared_stepper_reset_pin=NO_PIN",
     "/axes/homing_runs=2",
@@ -158,27 +216,6 @@ test('iterate', () => {
     "/axes/z/motor0/hard_limits=false",
     "/axes/z/motor0/pulloff_mm=1",
     "/synchro/index_pin=gpio.26",
-    "/i2c0/sda_pin=gpio.22",
-    "/i2c0/scl_pin=gpio.21",
-    "/i2c0/frequency=100000",
-    "/spi/miso_pin=gpio.19",
-    "/spi/mosi_pin=gpio.23",
-    "/spi/sck_pin=gpio.18",
-    "/i2so/bck_pin=gpio.27",
-    "/i2so/data_pin=gpio.13",
-    "/i2so/ws_pin=gpio.14",
-    "/sdcard/cs_pin=gpio.5",
-    "/sdcard/card_detect_pin=NO_PIN",
-    "/sdcard/frequency_hz=8000000",
-    "/oled/report_interval_ms=500",
-    "/oled/i2c_num=0",
-    "/oled/i2c_address=60",
-    "/oled/width=128",
-    "/oled/height=64",
-    "/oled/flip=true",
-    "/oled/mirror=false",
-    "/oled/type=SH1106",
-    "/oled/radio_delay_ms=1000",
     "/PWM/pwm_hz=5000",
     "/PWM/direction_pin=i2so.9",
     "/PWM/output_pin=gpio.15",
@@ -214,6 +251,37 @@ enable_parking_override_control: false
 use_line_numbers: false
 planner_blocks: 16
 
+i2c0:
+  sda_pin: gpio.22
+  scl_pin: gpio.21
+  frequency: 100000
+
+spi:
+  miso_pin: gpio.19
+  mosi_pin: gpio.23
+  sck_pin: gpio.18
+
+i2so:
+  bck_pin: gpio.27
+  data_pin: gpio.13
+  ws_pin: gpio.14
+
+sdcard:
+  cs_pin: gpio.5
+  card_detect_pin: NO_PIN
+  frequency_hz: 8000000
+
+oled:
+  report_interval_ms: 500
+  i2c_num: 0
+  i2c_address: 60
+  width: 128
+  height: 64
+  flip: true
+  mirror: false
+  type: SH1106
+  radio_delay_ms: 1000
+
 start:
   must_home: false
   deactivate_parking: false
@@ -248,7 +316,7 @@ stepping:
 
 kinematics:
 
-  Cartesian:
+  Cartesian: { }
 
 axes:
   shared_stepper_disable_pin: NO_PIN
@@ -338,37 +406,6 @@ axes:
 
 synchro:
   index_pin: gpio.26
-
-i2c0:
-  sda_pin: gpio.22
-  scl_pin: gpio.21
-  frequency: 100000
-
-spi:
-  miso_pin: gpio.19
-  mosi_pin: gpio.23
-  sck_pin: gpio.18
-
-i2so:
-  bck_pin: gpio.27
-  data_pin: gpio.13
-  ws_pin: gpio.14
-
-sdcard:
-  cs_pin: gpio.5
-  card_detect_pin: NO_PIN
-  frequency_hz: 8000000
-
-oled:
-  report_interval_ms: 500
-  i2c_num: 0
-  i2c_address: 60
-  width: 128
-  height: 64
-  flip: true
-  mirror: false
-  type: SH1106
-  radio_delay_ms: 1000
 
 PWM:
   pwm_hz: 5000

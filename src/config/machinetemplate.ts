@@ -1,4 +1,4 @@
-import {bool, float, group, int, pin, position, select, SettingAttr, string} from './settings';
+import {alpha, bool, float, group, int, pin, position, select, SettingAttr, string} from './settings';
 import {PinCap} from './esp32';
 
 let motor = {
@@ -58,8 +58,8 @@ let axis = {
 }
 
 let i2c = {
-  sda_pin: pin(PinCap.Input | PinCap.Output),
-  scl_pin: pin(PinCap.Output),
+  sda_pin: pin(PinCap.GPIO | PinCap.Input | PinCap.Output),
+  scl_pin: pin(PinCap.GPIO | PinCap.Output),
   frequency: int(100000, 0, 20000000)
 }
 
@@ -76,9 +76,9 @@ let vfd = {
 }
 
 let uart = {
-  rxd_pin: pin(PinCap.Input),
-  rts_pin: pin(PinCap.Output),
-  txd_pin: pin(PinCap.Output),
+  rxd_pin: pin(PinCap.GPIO | PinCap.Input),
+  txd_pin: pin(PinCap.GPIO | PinCap.Output),
+  rts_pin: pin(PinCap.GPIO | PinCap.Output),
   baud: int(115200, 2400, 10000000),
   mode: select("8N1", ["8N1", "8E1", "8O1", "8N2", "7N1", "7E1", "7O1"]),
 }
@@ -104,6 +104,7 @@ let onOffSpindle = {
 };
 
 export let machineTemplate = {
+
   general: {
     _attributes: SettingAttr.VIRTUAL,
     name: string("None", 0, 32),
@@ -123,6 +124,64 @@ export let machineTemplate = {
     planner_blocks: int(16, 10, 120),
   },
 
+  // Hardware
+
+  i2c0: i2c,
+  i2c1: i2c,
+
+  uart1: uart,
+  uart2: uart,
+  uart3: uart,
+
+  uart_channel1: uart_channel,
+  uart_channel2: uart_channel,
+
+  spi: {
+    miso_pin: pin(PinCap.GPIO | PinCap.Output),
+    mosi_pin: pin(PinCap.GPIO | PinCap.Input),
+    sck_pin: pin(PinCap.GPIO | PinCap.Output),
+  },
+
+  vspi: {
+    miso_pin: pin(PinCap.GPIO | PinCap.Output),
+    mosi_pin: pin(PinCap.GPIO | PinCap.Input),
+    sck_pin: pin(PinCap.GPIO | PinCap.Output),
+  },
+
+  w5500: {
+    cs_pin: pin(PinCap.GPIO | PinCap.Output),
+    interrupt_pin: pin(PinCap.GPIO | PinCap.Input),
+    ip: alpha("192.168.2.2"),
+    gateway: alpha("192.168.2.1"),
+    netmask: alpha("255.255.255.0")
+  },
+
+  i2so: {
+    bck_pin: pin(PinCap.GPIO | PinCap.Output),
+    data_pin: pin(PinCap.GPIO | PinCap.Output),
+    ws_pin: pin(PinCap.GPIO | PinCap.Output),
+  },
+
+  sdcard: {
+    cs_pin: pin(PinCap.GPIO | PinCap.Output),
+    card_detect_pin: pin(PinCap.GPIO | PinCap.Input),
+    frequency_hz: int(8000000, 400000, 20000000),
+  },
+
+  oled: {
+    report_interval_ms: int(500, 100, 5000),
+    i2c_num: int(0, 0, 1),
+    i2c_address: int(0x3c, 0, 1e6),
+    width: int(64, 0, 1e6),
+    height: int(48, 0, 1e6),
+    flip: bool(true),
+    mirror: bool(false),
+    type: select("SH1106", ["SH1106"]),
+    radio_delay_ms: int(0, 0, 1e6)
+  },
+
+  // Machine settings
+
   start: {
     must_home: bool(true),
     deactivate_parking: bool(false),
@@ -131,7 +190,7 @@ export let machineTemplate = {
 
   parking: {
     enable: bool(false),
-    axis: int(2, 0, 5),
+    axis: select("Z", ["X", "Y", "Z"]),
     target_mpos_mm: float(-5, -1e6, 1e6),
     rate_mm_per_min: float(800, 0, 1e6),
     pullout_distance_mm: float(5, 0, 3e38),
@@ -272,49 +331,7 @@ export let machineTemplate = {
   // Lathe
 
   synchro: {
-    index_pin: pin(PinCap.Input),
-  },
-
-  // Hardware
-
-  i2c0: i2c,
-  i2c1: i2c,
-
-  uart1: uart,
-  uart2: uart,
-  uart3: uart,
-
-  uart_channel1: uart_channel,
-  uart_channel2: uart_channel,
-
-  spi: {
-    miso_pin: pin(PinCap.Output),
-    mosi_pin: pin(PinCap.Input),
-    sck_pin: pin(PinCap.Output),
-  },
-
-  i2so: {
-    bck_pin: pin(PinCap.Output),
-    data_pin: pin(PinCap.Output),
-    ws_pin: pin(PinCap.Output),
-  },
-
-  sdcard: {
-    cs_pin: pin(PinCap.Output),
-    card_detect_pin: pin(PinCap.Input),
-    frequency_hz: int(8000000, 400000, 20000000),
-  },
-
-  oled: {
-    report_interval_ms: int(500, 100, 5000),
-    i2c_num: int(0, 0, 1),
-    i2c_address: int(0x3c, 0, 1e6),
-    width: int(64, 0, 1e6),
-    height: int(48, 0, 1e6),
-    flip: bool(true),
-    mirror: bool(false),
-    type: select("SH1106", ["SH1106"]),
-    radio_delay_ms: int(0, 0, 1e6)
+    index_pin: pin(PinCap.GPIO | PinCap.Input),
   },
 
   spindle: {

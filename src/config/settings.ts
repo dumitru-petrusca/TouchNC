@@ -20,6 +20,7 @@ export abstract class Setting<T, B extends Setting<T, B>> {
   readonly defaultValue: T
   protected oldValue: T
   protected value: T
+  private configured = false;
 
   protected constructor(name: string, defaultValue: T) {
     this.setName(name)
@@ -50,9 +51,13 @@ export abstract class Setting<T, B extends Setting<T, B>> {
     return this as any
   }
 
-  serialize(obj: Record<string, any>) {
+  setConfigured() {
+    this.configured = true
+  }
+
+  save(yml: YAML) {
     if (this.isReal()) {
-      serialize(obj, this.path, this.stringValue())
+      yml.setValue(this.path, this.stringValue())
     }
   }
 
@@ -61,23 +66,12 @@ export abstract class Setting<T, B extends Setting<T, B>> {
 
   getValue = (): T => this.value!;
   undo = () => this.value = this.oldValue;
-  isConfigured = () => this.getValue() != this.defaultValue;
+  //TODO-dp
+  isConfigured = () => this.configured || this.getValue() != this.defaultValue;
   isReal = () => true;
 
   stringValue(): string {
     return this.value as string
-  }
-}
-
-function serialize(obj: Record<string, any>, path: string, value: any = undefined) {
-  let fields = path.substring(1).split("/");
-  let o = obj
-  for (let i = 0; i < fields.length - 1; i++) {
-    let f = fields[i]
-    o = o[f] == undefined ? (o[f] = {}) : o[f];
-  }
-  if (value != undefined) {
-    o[fields[fields.length - 1]] = value
   }
 }
 
@@ -213,9 +207,9 @@ export class GroupSetting extends SelectSetting {
     return super.setValue(value);
   }
 
-  serialize(obj: Record<string, any>) {
-    super.serialize(obj);
-    this.getSelectedGroup()?.serialize(obj, true);
+  save(yml: YAML) {
+    super.save(yml);
+    this.getSelectedGroup()?.save(yml, true);
   }
 
   private getParent(): SettingGroup {
@@ -247,6 +241,7 @@ export class SelectOption {
 
 export const string = (value: string, min: number, max: number) => string_("", value, min, max)
 export const string_ = (name: string, value: string, min: number, max: number) => new StringSetting(name, value, min, max).setValue(value);
+export const alpha = (value: string) => new AlphanumericSetting("", value).setValue(value);
 export const alpha_ = (name: string, value: string) => new AlphanumericSetting(name, value).setValue(value);
 export const int_ = (name: string, value: number, min: number, max: number) => new IntegerSetting(name, value, min, max).setValue(value);
 export const int = (value: number, min: number, max: number) => new IntegerSetting("", value, min, max).setValue(value);
@@ -350,7 +345,9 @@ export class SettingGroup {
   settings: Setting<any, any>[]
   groups: SettingGroup[]
   parent?: SettingGroup;
+  // TODO-dp - figure this out
   configured: boolean = false;
+  enabled: boolean = true;
 
   constructor(path: string, attributes: SettingAttr,
               settings: Setting<any, any>[] = [], groups: SettingGroup[] = []) {
@@ -377,7 +374,7 @@ export class SettingGroup {
   }
 
   getGroup(path: string): SettingGroup | undefined {
-    if (this.path.toLowerCase() == path) {
+    if (this.path.toLowerCase() == path.toLowerCase()) {
       return this
     }
     for (const child of this.groups) {
@@ -402,18 +399,15 @@ export class SettingGroup {
     return undefined
   }
 
-  serialize(obj: any, force = false) {
-    if (this.path == "/kinematics/Cartesian") {//TODO-dp
-      let i = 0;
-    }
-    if (force) {
-      serialize(obj, this.path + "/")
-    }
+  save(yml: YAML, force = false) {
     if (force || this.isConfigured()) {
-      this.settings.forEach(s => s.serialize(obj))
+      if (!this.isVirtual()) {
+        yml.setGroup(this.path, this.enabled)
+      }
+      this.settings.forEach(s => s.save(yml))
     }
     if (!this.isOneOf()) {
-      this.groups.forEach(g => g.serialize(obj))
+      this.groups.forEach(g => g.save(yml))
     }
   }
 

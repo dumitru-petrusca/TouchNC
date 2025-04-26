@@ -1,6 +1,6 @@
 import {sendHttpRequest, writeFile} from '../http/http';
 import {AlphanumericSetting, BooleanSetting, cloneSetting, FloatSetting, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingAttr, SettingGroup, Settings, StringSetting} from './settings';
-import {toYAML, YAML} from './yaml';
+import {YAML} from './yaml';
 import {messages} from '../messages/messages';
 import {machineTemplate} from './machinetemplate';
 import {Pin} from './esp32';
@@ -9,6 +9,12 @@ import {Set2} from '../common/set';
 let configFileName = "config.yaml"
 
 export class MachineSettings extends Settings {
+  private strict: boolean;
+
+  constructor(strict: boolean = false) {
+    super();
+    this.strict = strict;
+  }
 
   loadSettings(): Promise<SettingGroup> {
     return sendHttpRequest(configFileName)
@@ -23,31 +29,50 @@ export class MachineSettings extends Settings {
   parseSettings(yamlStr: string): SettingGroup {
     let group = new SettingGroup("", SettingAttr.VIRTUAL);
     group.groups.push(...(instantiate(machineTemplate, "", group)))
-    let yml = new YAML(yamlStr);
-    yml.forEach((path, value) => {
-      path = path.toLowerCase();
-      let s = group.getSetting(path);
-      if (s instanceof IntegerSetting) {
-        s.setValue(parseInt(value))
-      } else if (s instanceof FloatSetting) {
-        s.setValue(parseFloat(value))
-      } else if (s instanceof BooleanSetting) {
-        s.setValue(value == "true")
-      } else if (s instanceof StringSetting) {
-        s.setValue(value)
-      } else if (s instanceof PinSetting) {
-        s.setValue(value)
-      } else if (s instanceof AlphanumericSetting) {
-        s.setValue(value)
-      } else if (s instanceof GroupSetting) {
-        s.setValue(value)
-      } else if (s instanceof SelectSetting) {
-        s.setValue(value)
-      } else if (s == undefined) {
-        console.error("Cannot find setting or group " + path)
-        // throw Error("Cannot find setting or group " + path)
-      }
-    })
+    let yml = new YAML().parse(yamlStr);
+    yml.traverse((path, value) => {
+          path = path.toLowerCase();
+          let s = group.getSetting(path);
+          if (s == undefined) {
+            if (this.strict) {
+              throw new Error("Cannot find setting " + path)
+            } else {
+              console.error("Cannot find setting " + path)
+              return
+            }
+          }
+          s.setConfigured()
+          if (s instanceof IntegerSetting) {
+            s.setValue(parseInt(value))
+          } else if (s instanceof FloatSetting) {
+            s.setValue(parseFloat(value))
+          } else if (s instanceof BooleanSetting) {
+            s.setValue(value == "true")
+          } else if (s instanceof StringSetting) {
+            s.setValue(value)
+          } else if (s instanceof PinSetting) {
+            s.setValue(value)
+          } else if (s instanceof AlphanumericSetting) {
+            s.setValue(value)
+          } else if (s instanceof GroupSetting) {
+            s.setValue(value)
+          } else if (s instanceof SelectSetting) {
+            s.setValue(value)
+          }
+        },
+        (path, enabled) => {
+          let g = group.getGroup(path);
+          if (g == undefined) {
+            if (this.strict) {
+              throw new Error("Cannot find group " + path)
+            } else {
+              console.error("Cannot find group " + path)
+            }
+          } else {
+            g.enabled = enabled
+          }
+        }
+    )
     group.finalize(yml)
     return group
   }
@@ -60,9 +85,9 @@ export class MachineSettings extends Settings {
   }
 
   serializeSettings() {
-    let obj = {}
-    this.settings!.serialize(obj)
-    return toYAML("", obj, "");
+    let yml = new YAML()
+    this.settings!.save(yml)
+    return yml.serialize();
   }
 
   saveSettings(): Promise<any> {
@@ -73,7 +98,7 @@ export class MachineSettings extends Settings {
 
   getDisplayGroups() {
     let groups = this.settings?.groups ?? [];
-    return [...groups].sort((a, b) => layout.indexOf(a.path) - layout.indexOf(b.path))
+    return [...groups].sort((a, b) => groupLayout.indexOf(a.path) - groupLayout.indexOf(b.path))
   }
 
   getUsedPins(): Set2<Pin> {
@@ -102,10 +127,14 @@ function instantiate(obj: any, path: string, parent: SettingGroup): SettingGroup
   return groups
 }
 
-let layout = [
-  '/general', '/axes', '/kinematics',
-  '/start', '/coolant', '/probe',
-  '/stepping', '/various', '/parking',
+let groupLayout = [
+  '/general', '/stepping', '/various',
+
+  '/i2so', '/i2c0', '/i2c1',
+  '/uart1', '/uart2', '/uart3',
+  '/spi', '/vspi', '/uart_channel1',
+  '/sdcard', "/w5500", '/uart_channel2',
+
   '/axes/x', '/axes/y', '/axes/z',
   '/axes/x/motor0', '/axes/y/motor0', '/axes/z/motor0',
   '/axes/x/motor0/driver', '/axes/y/motor0/driver', '/axes/z/motor0/driver',
@@ -120,13 +149,12 @@ let layout = [
   '/axes/a/motor1/driver', '/axes/b/motor1/driver', '/axes/c/motor1/driver',
   '/axes/a/homing', '/axes/b/homing', '/axes/c/homing',
   '/axes/a/mpg', '/axes/b/mpg', '/axes/c/mpg',
+
+  '/axes', '/kinematics', '/parking',
+  '/start', '/coolant', '/probe',
   '/status_outputs', '/macros', '/synchro',
-  '/control', '/user_outputs', '/user_inputs',
-  '/i2so', '/i2c0', '/i2c1',
-  '/uart1', '/uart2', '/uart3',
-  '/uart_channel1', '/uart_channel2', '/spi',
-  '/sdcard', '/oled', '/spindle',
-  '/atc'
+  '/control', '/user_inputs', '/user_outputs',
+  '/spindle', '/atc', '/oled',
 ]
 
 export let machineSettings = new MachineSettings()

@@ -1,52 +1,59 @@
-import {MachineSettings, machineSettings} from './machinesettings';
+import { MachineSettings} from './machinesettings';
 import {configYaml} from './yaml.test';
 import {getElement, panel} from '../ui/ui';
 import {SettingsUI} from './settingsui';
-import {machineSettingsUI} from './machinesettingsui';
 
 test('spindle type', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.get("/_type");
   expect(s?.getValue()).toBe("PWM")
 });
 
 test('flood pin', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.pinSetting("/coolant/flood_pin");
   expect(s?.stringValue()).toBe("i2so.7")
 });
 
 test('PWM atc', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.get("/PWM/atc");
   expect(s?.getValue()).toBe("atc_manual")
 });
 
 test('PWM direction pin', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.pinSetting("/PWM/direction_pin");
   expect(s?.stringValue()).toBe("i2so.9")
 });
 
 test('pin with direction', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.pinSetting("/axes/x/motor0/limit_neg_pin");
   expect(s?.stringValue()).toBe("gpio.34:low")
 });
 
 test('kinematics', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.get("/kinematics/_type");
   expect(s?.getValue()).toBe("Cartesian")
 });
 
 test('save settings', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   let s = machineSettings.serializeSettings();
   expect(s).toBe(configYaml);
 });
 
 test('change ATC to tool table', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   machineSettings.get("/PWM/atc")!.setValue("atc_tool_table");
   // machineSettings.get("/atc_manual/safe_z_mpos_mm")?.setValue(60);
@@ -63,6 +70,37 @@ report_inches: false
 enable_parking_override_control: false
 use_line_numbers: false
 planner_blocks: 16
+
+i2c0:
+  sda_pin: gpio.22
+  scl_pin: gpio.21
+  frequency: 100000
+
+spi:
+  miso_pin: gpio.19
+  mosi_pin: gpio.23
+  sck_pin: gpio.18
+
+i2so:
+  bck_pin: gpio.27
+  data_pin: gpio.13
+  ws_pin: gpio.14
+
+sdcard:
+  cs_pin: gpio.5
+  card_detect_pin: NO_PIN
+  frequency_hz: 8000000
+
+oled:
+  report_interval_ms: 500
+  i2c_num: 0
+  i2c_address: 60
+  width: 128
+  height: 64
+  flip: true
+  mirror: false
+  type: SH1106
+  radio_delay_ms: 1000
 
 start:
   must_home: false
@@ -98,7 +136,7 @@ stepping:
 
 kinematics:
 
-  Cartesian:
+  Cartesian: { }
 
 axes:
   shared_stepper_disable_pin: NO_PIN
@@ -189,37 +227,6 @@ axes:
 synchro:
   index_pin: gpio.26
 
-i2c0:
-  sda_pin: gpio.22
-  scl_pin: gpio.21
-  frequency: 100000
-
-spi:
-  miso_pin: gpio.19
-  mosi_pin: gpio.23
-  sck_pin: gpio.18
-
-i2so:
-  bck_pin: gpio.27
-  data_pin: gpio.13
-  ws_pin: gpio.14
-
-sdcard:
-  cs_pin: gpio.5
-  card_detect_pin: NO_PIN
-  frequency_hz: 8000000
-
-oled:
-  report_interval_ms: 500
-  i2c_num: 0
-  i2c_address: 60
-  width: 128
-  height: 64
-  flip: true
-  mirror: false
-  type: SH1106
-  radio_delay_ms: 1000
-
 PWM:
   pwm_hz: 5000
   direction_pin: i2so.9
@@ -235,11 +242,12 @@ PWM:
   m6_macro:
   atc: atc_tool_table
 
-atc_tool_table:
+atc_tool_table: { }
 `);
 });
 
 test('switch spindle type', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   machineSettings.get("/_type")?.setValue("PWM");
   machineSettings.get("/PWM/direction_pin")?.setValue("i2so.10");
@@ -259,6 +267,37 @@ enable_parking_override_control: false
 use_line_numbers: false
 planner_blocks: 16
 
+i2c0:
+  sda_pin: gpio.22
+  scl_pin: gpio.21
+  frequency: 100000
+
+spi:
+  miso_pin: gpio.19
+  mosi_pin: gpio.23
+  sck_pin: gpio.18
+
+i2so:
+  bck_pin: gpio.27
+  data_pin: gpio.13
+  ws_pin: gpio.14
+
+sdcard:
+  cs_pin: gpio.5
+  card_detect_pin: NO_PIN
+  frequency_hz: 8000000
+
+oled:
+  report_interval_ms: 500
+  i2c_num: 0
+  i2c_address: 60
+  width: 128
+  height: 64
+  flip: true
+  mirror: false
+  type: SH1106
+  radio_delay_ms: 1000
+
 start:
   must_home: false
   deactivate_parking: false
@@ -293,7 +332,7 @@ stepping:
 
 kinematics:
 
-  Cartesian:
+  Cartesian: { }
 
 axes:
   shared_stepper_disable_pin: NO_PIN
@@ -383,37 +422,6 @@ axes:
 
 synchro:
   index_pin: gpio.26
-
-i2c0:
-  sda_pin: gpio.22
-  scl_pin: gpio.21
-  frequency: 100000
-
-spi:
-  miso_pin: gpio.19
-  mosi_pin: gpio.23
-  sck_pin: gpio.18
-
-i2so:
-  bck_pin: gpio.27
-  data_pin: gpio.13
-  ws_pin: gpio.14
-
-sdcard:
-  cs_pin: gpio.5
-  card_detect_pin: NO_PIN
-  frequency_hz: 8000000
-
-oled:
-  report_interval_ms: 500
-  i2c_num: 0
-  i2c_address: 60
-  width: 128
-  height: 64
-  flip: true
-  mirror: false
-  type: SH1106
-  radio_delay_ms: 1000
 
 H100:
   uart_num: 2
@@ -437,6 +445,7 @@ atc_manual:
 });
 
 test('change x axis driver', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYaml)
   machineSettings.get("/axes/x/motor0/_type")?.setValue("standard_stepper");
   let s = machineSettings.serializeSettings();
@@ -452,6 +461,37 @@ report_inches: false
 enable_parking_override_control: false
 use_line_numbers: false
 planner_blocks: 16
+
+i2c0:
+  sda_pin: gpio.22
+  scl_pin: gpio.21
+  frequency: 100000
+
+spi:
+  miso_pin: gpio.19
+  mosi_pin: gpio.23
+  sck_pin: gpio.18
+
+i2so:
+  bck_pin: gpio.27
+  data_pin: gpio.13
+  ws_pin: gpio.14
+
+sdcard:
+  cs_pin: gpio.5
+  card_detect_pin: NO_PIN
+  frequency_hz: 8000000
+
+oled:
+  report_interval_ms: 500
+  i2c_num: 0
+  i2c_address: 60
+  width: 128
+  height: 64
+  flip: true
+  mirror: false
+  type: SH1106
+  radio_delay_ms: 1000
 
 start:
   must_home: false
@@ -487,7 +527,7 @@ stepping:
 
 kinematics:
 
-  Cartesian:
+  Cartesian: { }
 
 axes:
   shared_stepper_disable_pin: NO_PIN
@@ -574,6 +614,50 @@ axes:
 synchro:
   index_pin: gpio.26
 
+PWM:
+  pwm_hz: 5000
+  direction_pin: i2so.9
+  output_pin: gpio.15
+  enable_pin: NO_PIN
+  disable_with_s0: false
+  s0_with_disable: true
+  spinup_ms: 0
+  spindown_ms: 0
+  tool_num: 0
+  speed_map: 0=0% 750=25% 1500=50% 3000=100%
+  off_on_alarm: false
+  m6_macro:
+  atc: atc_manual
+
+atc_manual:
+  safe_z_mpos_mm: 50
+  probe_seek_rate_mm_per_min: 200
+  probe_feed_rate_mm_per_min: 80
+  change_mpos_mm: 0, 0, 0
+  ets_mpos_mm: 100
+  ets_rapid_z_mpos_mm: 0
+`);
+});
+
+test('change coordinate system', () => {
+  let machineSettings = new MachineSettings(true)
+  machineSettings.settings = machineSettings.parseSettings(configYaml)
+  let kinematics = machineSettings.get("/kinematics/_type");
+  kinematics?.setValue("parallel_delta");
+  let s = machineSettings.serializeSettings();
+  expect(s).toBe(
+      `name: Demo
+board: ESP32v4
+meta:
+machine: MILL
+arc_tolerance_mm: 0.002
+junction_deviation_mm: 0.01
+verbose_errors: true
+report_inches: false
+enable_parking_override_control: false
+use_line_numbers: false
+planner_blocks: 16
+
 i2c0:
   sda_pin: gpio.22
   scl_pin: gpio.21
@@ -604,49 +688,6 @@ oled:
   mirror: false
   type: SH1106
   radio_delay_ms: 1000
-
-PWM:
-  pwm_hz: 5000
-  direction_pin: i2so.9
-  output_pin: gpio.15
-  enable_pin: NO_PIN
-  disable_with_s0: false
-  s0_with_disable: true
-  spinup_ms: 0
-  spindown_ms: 0
-  tool_num: 0
-  speed_map: 0=0% 750=25% 1500=50% 3000=100%
-  off_on_alarm: false
-  m6_macro:
-  atc: atc_manual
-
-atc_manual:
-  safe_z_mpos_mm: 50
-  probe_seek_rate_mm_per_min: 200
-  probe_feed_rate_mm_per_min: 80
-  change_mpos_mm: 0, 0, 0
-  ets_mpos_mm: 100
-  ets_rapid_z_mpos_mm: 0
-`);
-});
-
-test('change coordinate system', () => {
-  machineSettings.settings = machineSettings.parseSettings(configYaml)
-  let kinematics = machineSettings.get("/kinematics/_type");
-  kinematics?.setValue("parallel_delta");
-  let s = machineSettings.serializeSettings();
-  expect(s).toBe(
-      `name: Demo
-board: ESP32v4
-meta:
-machine: MILL
-arc_tolerance_mm: 0.002
-junction_deviation_mm: 0.01
-verbose_errors: true
-report_inches: false
-enable_parking_override_control: false
-use_line_numbers: false
-planner_blocks: 16
 
 start:
   must_home: false
@@ -782,37 +823,6 @@ axes:
 synchro:
   index_pin: gpio.26
 
-i2c0:
-  sda_pin: gpio.22
-  scl_pin: gpio.21
-  frequency: 100000
-
-spi:
-  miso_pin: gpio.19
-  mosi_pin: gpio.23
-  sck_pin: gpio.18
-
-i2so:
-  bck_pin: gpio.27
-  data_pin: gpio.13
-  ws_pin: gpio.14
-
-sdcard:
-  cs_pin: gpio.5
-  card_detect_pin: NO_PIN
-  frequency_hz: 8000000
-
-oled:
-  report_interval_ms: 500
-  i2c_num: 0
-  i2c_address: 60
-  width: 128
-  height: 64
-  flip: true
-  mirror: false
-  type: SH1106
-  radio_delay_ms: 1000
-
 PWM:
   pwm_hz: 5000
   direction_pin: i2so.9
@@ -839,8 +849,9 @@ atc_manual:
 });
 
 test('UI', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.parseSettings(configYaml)
-  machineSettingsUI.createPanes()
+  new SettingsUI(machineSettings, "machineSettings").createPanes()
 });
 
 test('spindle type UI', () => {
@@ -851,11 +862,12 @@ test('spindle type UI', () => {
 });
 
 test('load with varying case', () => {
+  let machineSettings = new MachineSettings(true)
   machineSettings.settings = machineSettings.parseSettings(configYamlCased)
 });
 
 function setupUI() {
-  let ms = new MachineSettings()
+  let ms = new MachineSettings(true)
   ms.settings = ms.parseSettings(configYaml)
   let msUI = new SettingsUI(ms, "machineSettings")
   let elements = msUI.createPanes();
@@ -944,6 +956,8 @@ pwm:
   off_on_alarm: false
   M6_macro:
   atc: atc_tool_table
+  
+atc_tool_table: {}
 
 # I2SO Outputs (step/dir)
 i2so:
