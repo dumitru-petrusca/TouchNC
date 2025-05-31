@@ -24,7 +24,6 @@ export class LatheUI implements MachineUI {
     return panel('tablettab', latheTabClass, [
       latheNavPanel(),
       axesDRO(),
-      new JogPanel().axisPanel('X'),
       latheControls(),
       mdi(),
       messagesPanel(),
@@ -46,14 +45,14 @@ export function latheControls() {
   let pitchBtn = coordButton(new FloatSetting("pitch", 0, 0, 1e6));
 
   return panel('lathe_rpm', latheRowClass, [
-    button('', "\u25C0", 'Cut Left', doCutMove(minBtn.getValue(), pitchBtn.getValue())),
+    button('', "\u25C0", 'Cut Left', _ => sendCommandAndGetStatus(`F${pitchBtn.getValue()} G32 X${minBtn.getValue()}`)),
     spacer(1),
-    button('', "\u25B6", "Cut Right", doCutMove(maxBtn.getValue(), pitchBtn.getValue())),
+    button('', "\u25B6", "Cut Right", _ => sendCommandAndGetStatus(`F${pitchBtn.getValue()} G32 X${maxBtn.getValue()}`)),
     spacer(1),
 
-    button('', "\u25C0\u25C0", 'Rapid Left', doRapidMove(minBtn.getValue())),
+    button('', "\u25C0\u25C0", 'Rapid Left', _ => sendCommandAndGetStatus(`G0 X${minBtn.getValue()}`)),
     spacer(1),
-    button('', "\u25B6\u25B6", "Rapid Right", doRapidMove(maxBtn.getValue())),
+    button('', "\u25B6\u25B6", "Rapid Right", _ => sendCommandAndGetStatus(`G0 X${maxBtn.getValue()}`)),
     spacer(1),
 
     minBtn.build(),
@@ -87,14 +86,6 @@ export function latheNavPanel() {
     // label('runtime', 'info', "12:23"),
     button('fullscreen', btnIcon(Icon.fullscreen), 'Toggle Fullscreen', toggleFullscreen),
   ])
-}
-
-function doCutMove(x: number, feed: number): EventHandler {
-  return _ => sendCommandAndGetStatus(`F${feed} G32 X${x}`)
-}
-
-function doRapidMove(x: number | undefined): EventHandler {
-  return _ => sendCommandAndGetStatus(`G0 X${x}`)
 }
 
 const latheRowClass = cssClass("latheRow", css`

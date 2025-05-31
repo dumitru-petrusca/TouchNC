@@ -49,84 +49,37 @@ export class ConnectDialog {
   }
 }
 
-//FW version:0.9.200 # FW target:smoothieware # FW HW:Direct SD # primary sd:/ext/ # secondary sd:/sd/ # authentication: yes
+// FW version: FluidNC v3.9.6 (my-changes-2-b56d776d-dirty) # FW target:grbl-embedded  #
+// FW HW:Direct SD  # primary sd:/sd # secondary sd:none  # authentication:no # webcommunication: Sync: 81 # meta:a=b,c=d # axis:3
 function parseFirmwareData(response: string) {
-  const tlist = response.split("#");
-  if (tlist.length < 3) {
-    return false;
-  }
-  //FW version
-  let sublist = tlist[0].split(":");
-  if (sublist.length != 2) {
-    return false;
-  }
-  firmware.version = sublist[1].toLowerCase().trim();
-  //FW target
-  sublist = tlist[1].split(":");
-  if (sublist.length != 2) {
-    return false;
-  }
-  firmware.target = sublist[1].toLowerCase().trim();
-  //FW HW
-  sublist = tlist[2].split(":");
-  if (sublist.length != 2) {
-    return false;
-  }
-  const sddirect = sublist[1].toLowerCase().trim();
-  firmware.directSd = sddirect == "direct sd";
-  //primary sd
-  sublist = tlist[3].split(":");
-  if (sublist.length != 2) {
-    return false;
-  }
-  firmware.primarySd = sublist[1].toLowerCase().trim();
-
-  //secondary sd
-  sublist = tlist[4].split(":");
-  if (sublist.length != 2) {
-    return false;
-  }
-  firmware.secondarySd = sublist[1].toLowerCase().trim();
-
-  //authentication
-  sublist = tlist[5].split(":");
-  if (sublist.length != 2) {
-    return false;
-  }
-  firmware.authentication = sublist[0].trim() == "authentication" && sublist[1].trim() == "yes";
-  //async communications
-  if (tlist.length > 6) {
-    sublist = tlist[6].split(":");
-    if (sublist[0].trim() == "webcommunication" && sublist[1].trim() == "Async") {
-      firmware.async = true;
-    } else {
-      firmware.async = false;
-      firmware.port = parseInt(sublist[2].trim());
-      firmware.ip = sublist.length > 3 ? sublist[3].trim() : document.location.hostname;
+  for (const sections of response.split("#").map(s => s.trim())) {
+    let [name, value, value2, value3] = sections.split(":").map(s => s.trim());
+    if (name == "FW version") {
+      firmware.version = value
+    } else if (name == "FW target") {
+      firmware.target = value
+    } else if (name == "FW HW") {
+      firmware.directSd = value.toLowerCase() == "direct sd";
+    } else if (name == "primary sd") {
+      firmware.primarySd = value.toLowerCase();
+    } else if (name == "secondary sd") {
+      firmware.secondarySd = value.toLowerCase();
+    } else if (name == "authentication") {
+      firmware.authentication = value == "yes";
+    } else if (name == "webcommunication") {
+      firmware.async = value == "Async"
+      if (!firmware.async) {
+        firmware.port = parseInt(value2);
+        firmware.ip = value3 != "" ? value3 : document.location.hostname;
+      }
+    } else if (name == "axis") {
+      firmware.axes = parseInt(value)
+    } else if (name == "meta") {
+      parseFirmwareData(value)
+    } else if (name == "machine") { // meta
+      firmware.machine = value
     }
   }
-  if (tlist.length > 7) {
-    sublist = tlist[7].split(":");
-    if (sublist[0].trim() == "hostname") {
-      // esp_hostname = sublist[1].trim();
-      //TODO-dp what do we do with this?
-    }
-  }
-
-  if (tlist.length > 8) {
-    sublist = tlist[8].split(":");
-    if (sublist[0].trim() == "machine") {
-      firmware.machine = sublist[1].trim()
-    }
-  }
-
-  if (tlist.length > 9) {
-    sublist = tlist[9].split(":");
-    if (sublist[0].trim() == "axis") {
-      firmware.axes = parseInt(sublist[1].trim())
-    }
-  }
-
   return true;
 }
 

@@ -45,19 +45,6 @@ export class JogPanel {
     ]);
   }
 
-  axisPanel(axis: string) {
-    let axisMinus = `${axis}-`;
-    let axisPlus = `${axis}+`;
-    return panel('', jogRowClass, [
-      this.jogButton('jog1', '<', axisMinus, -1, 2),
-      this.jogButton('jog2', '<<', axisMinus, -1, 100),
-      this.jogButton('jog3', '<<<', axisMinus, -1, 1000),
-      this.jogButton('jog4', '>>>', axisPlus, +1, 1000),
-      this.jogButton('jog5', '>>', axisPlus, +1, 100),
-      this.jogButton('jog6', '>', axisPlus, +1, 2),
-    ]);
-  }
-
   jogButton = (id: string, content: Content, axis: string, dir: number, feedRate: number) => {
     let btn = button(id, content, `Move ${axis}`, undefined, axis);
     new JogDebouncer(debounceDelayMs,
