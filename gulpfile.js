@@ -174,13 +174,16 @@ function buildElectron() {
   });
 }
 
+// gulp run-electron --url 10.0.0.121
+// gulp run-electron --url 10.0.0.121
+
 gulp.task('run-electron', (done) => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const isWindows = process.platform === 'win32';
   const electronPath = path.join(__dirname, 'node_modules', '.bin', isWindows ? 'electron.cmd' : 'electron');
   let url = parseArgs().url;
-  console.log("Server URL: "+url)
+  console.log("Server URL: "+url);
   const electronProcess = spawn(electronPath, ['.'], { 
     stdio: 'inherit',
     env: { ...process.env, NODE_ENV: 'development', SERVER_URL: url }
