@@ -74,7 +74,7 @@ export const btnClass = cssClass("btn", css`
   border: none;
   padding: 0;
   width: 100%;
-  height: 40px;
+  height: 50px;
   vertical-align: middle;
   user-select: none;           /* Disable text selection (standard) */
   touch-action: manipulation;

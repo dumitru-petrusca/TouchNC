@@ -22,6 +22,7 @@ Run the following commands:
 npm install
 npm install --global gulp-cli
 gulp package --lang en
+gulp run --url <url>
 ```
 The output file is index.html.gz in the top level directory.
 

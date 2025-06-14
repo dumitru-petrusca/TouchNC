@@ -5,22 +5,23 @@ import {modalClass} from './dialogStyles';
 import {css, cssClass} from '../ui/commonStyles';
 import {AlertDialog} from './alertdlg';
 import {sendHttpRequest} from '../http/http';
+import {MILL} from '../machine/machine';
 
-export type Firmware = typeof firmware
-
-export let firmware = {
-  target: "",
-  version: "",
-  directSd: false,
-  primarySd: "/ext/",
-  secondarySd: "/sd/",
-  async: false,
-  authentication: false,
-  ip: "",
-  port: 0,
-  axes: -1,
-  machine: ""
+export class Firmware {
+  target = ""
+  version = ""
+  directSd = false
+  primarySd = "/ext/"
+  secondarySd = "/sd/"
+  async = false
+  authentication = false
+  ip = ""
+  port = 0
+  axes = -1
+  machine = ""
 }
+
+export let firmware = new Firmware()
 
 export class ConnectDialog {
   onSuccess?: Consumer<Firmware>
@@ -39,8 +40,10 @@ export class ConnectDialog {
   }
 
   connectSuccess(response: string) {
-    if (parseFirmwareData(response)) {
-      console.log("Firmware:" + response);
+    firmware = parseFirmwareData(response)
+    if (firmware) {
+      console.log("Firmware:   " + response);
+      console.log("Machine:   " + firmware.machine);
       this.onSuccess?.(firmware)
     } else {
       console.log(response);
@@ -51,36 +54,39 @@ export class ConnectDialog {
 
 // FW version: FluidNC v3.9.6 (my-changes-2-b56d776d-dirty) # FW target:grbl-embedded  #
 // FW HW:Direct SD  # primary sd:/sd # secondary sd:none  # authentication:no # webcommunication: Sync: 81 # meta:a=b,c=d # axis:3
-function parseFirmwareData(response: string) {
-  for (const sections of response.split("#").map(s => s.trim())) {
-    let [name, value, value2, value3] = sections.split(":").map(s => s.trim());
+export function parseFirmwareData(response: string, pairDelimiter = "#", keyValDelimiter = ":", fw = new Firmware()): Firmware {
+  for (const sections of response.split(pairDelimiter).map(s => s.trim())) {
+    let [name, value, value2, value3] = sections.split(keyValDelimiter).map(s => s.trim());
     if (name == "FW version") {
-      firmware.version = value
+      fw.version = value
     } else if (name == "FW target") {
-      firmware.target = value
+      fw.target = value
     } else if (name == "FW HW") {
-      firmware.directSd = value.toLowerCase() == "direct sd";
+      fw.directSd = value.toLowerCase() == "direct sd";
     } else if (name == "primary sd") {
-      firmware.primarySd = value.toLowerCase();
+      fw.primarySd = value.toLowerCase();
     } else if (name == "secondary sd") {
-      firmware.secondarySd = value.toLowerCase();
+      fw.secondarySd = value.toLowerCase();
     } else if (name == "authentication") {
-      firmware.authentication = value == "yes";
+      fw.authentication = value == "yes";
     } else if (name == "webcommunication") {
-      firmware.async = value == "Async"
-      if (!firmware.async) {
-        firmware.port = parseInt(value2);
-        firmware.ip = value3 != "" ? value3 : document.location.hostname;
+      fw.async = value == "Async"
+      if (!fw.async) {
+        fw.port = parseInt(value2);
+        fw.ip = value3 != "" ? value3 : document.location.hostname;
       }
     } else if (name == "axis") {
-      firmware.axes = parseInt(value)
+      fw.axes = parseInt(value)
     } else if (name == "meta") {
-      parseFirmwareData(value)
+      parseFirmwareData(value, ",", "=", fw)
     } else if (name == "machine") { // meta
-      firmware.machine = value
+      fw.machine = value
     }
   }
-  return true;
+  if (fw.machine == "") {
+    fw.machine = MILL
+  }
+  return fw;
 }
 
 export function disableUI() {

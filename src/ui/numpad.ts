@@ -41,7 +41,7 @@ export class Numpad {
           btn("5", numberClass, this.digit.bind(this)),
           btn("6", numberClass, this.digit.bind(this)),
           btn("&#10502;", controlClass, this.delete.bind(this)),
-          btn("Goto", gotoClass, this.gotoValue.bind(this)),
+          btn("Go", gotoClass, this.gotoValue.bind(this)),
 
           btn("1", numberClass, this.digit.bind(this)),
           btn("2", numberClass, this.digit.bind(this)),
@@ -64,8 +64,9 @@ export class Numpad {
   digitv(n: number) {
     const current = this.value.value;
     if (current.length < this.maxDigits) {
-      if (current == "0") {
-        this.value.value = "" + n;
+      let sign = this.value.value.startsWith("-") ? "-" : ""
+      if (current == "0" || current == "-0") {
+        this.value.value = sign + n;
       } else {
         this.value.value += n;
       }
@@ -80,7 +81,11 @@ export class Numpad {
   }
 
   toggleSign() {
-    this.value.value = "" + (-Number(this.value.value));
+    if (!this.value.value.startsWith("-")) {
+      this.value.value = "-" + this.value.value;
+    } else {
+      this.value.value = this.value.value.substring(1);
+    }
   }
 
   dot() {
@@ -211,29 +216,35 @@ const valueClass = cssClass("value", css`
   text-align: right;
   font-size: 42px;
   background: lightcyan;
+  height: 80px;
 `)
 
 const numberClass = cssClass("number", css`
   text-align: center;
   border: 1px solid #c1c1c1;
   background: white;
+  height: 80px;
 `)
 
 const controlClass = cssClass("control", css`
   background: #ffecd7;
+  height: 80px;
 `)
 
 const gotoClass = cssClass("goto", css`
   grid-column: span 2;
   background: lightcoral;
+  height: 80px;
 `)
 
 const setClass = cssClass("set", css`
   grid-column: span 2;
   background: lightgreen;
+  height: 80px;
 `)
 
 const cancelClass = cssClass("cancel", css`
   grid-column: span 2;
   background: lightgray;
+  height: 80px;
 `)

@@ -1,0 +1,4 @@
+
+gulp run --url http://10.0.0.122  - demo
+gulp run --url http://10.0.0.121  - lathe
+gulp run --url http://192.168.2.2 - mill

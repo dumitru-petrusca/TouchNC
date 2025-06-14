@@ -1,5 +1,5 @@
 import gulp from 'gulp';
-import {exec} from 'child_process';
+import {exec, spawn} from 'child_process';
 import concat from 'gulp-concat';
 import uglify from 'gulp-uglify';
 import cleanCSS from 'gulp-clean-css';
@@ -16,9 +16,8 @@ import commonjs from '@rollup/plugin-commonjs';
 import gulpSass from 'gulp-sass';
 import * as sass from 'sass';
 import {build} from 'electron-builder';
-import {spawn} from 'child_process';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 
 function parseArgs() {
   let args = {};
@@ -67,39 +66,6 @@ function lang() {
       .pipe(removeCode({zh_cn_lang_disabled: lang !== 'zh_cn'}))
       .pipe(gulp.dest('./dist/src/'));
 }
-
-// function js() {
-//   return rollup({
-//     input: ['dist/src/http/socket.js'],
-//     plugins: [
-//       typescript(),
-//       nodeResolve(), // Important for resolving Node.js modules
-//       resolve(),
-//       commonjs(),   // Important for converting CommonJS modules to ES modules
-//     ],
-//     external: [  // List of external dependencies (module IDs)
-//       'codemirror',
-//       '@codemirror/lang-yaml',
-//       '@codemirror/theme-one-dark',
-//       '@codemirror/view',
-//       '@codemirror/state',
-//       '@codemirror/commands',
-//     ],
-//   }).then(bundle => bundle.write({
-//     file: 'dist/src/app.js',
-//     format: 'iife', // Use 'es' if you prefer ES modules
-//     name: "App",
-//     sourcemap: true,
-//     globals: { // Map external module IDs to global variables
-//       'codemirror': 'CodeMirror',
-//       '@codemirror/lang-yaml': 'CodeMirrorYaml', //give a unique global name
-//       '@codemirror/theme-one-dark': 'CodeMirrorOneDark', //give a unique global name
-//       '@codemirror/view': 'CodeMirrorView', //give a unique global name
-//       '@codemirror/state': 'CodeMirrorState', //give a unique global name
-//       '@codemirror/commands': 'CodeMirrorCommands',//give a unique global name
-//     },
-//   }));
-// }
 
 function min() {
   return merge(
@@ -174,19 +140,17 @@ function buildElectron() {
   });
 }
 
-// gulp run-electron --url 10.0.0.121
-// gulp run-electron --url 10.0.0.121
-
 gulp.task('run-electron', (done) => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const isWindows = process.platform === 'win32';
-  const electronPath = path.join(__dirname, 'node_modules', '.bin', isWindows ? 'electron.cmd' : 'electron');
+  const electronPath = path.join(__dirname, 'node_modules', '.bin',
+      isWindows ? 'electron.cmd' : 'electron');
   let url = parseArgs().url;
-  console.log("Server URL: "+url);
-  const electronProcess = spawn(electronPath, ['.'], { 
+  console.log("Server URL: " + url);
+  const electronProcess = spawn(electronPath, ['.'], {
     stdio: 'inherit',
-    env: { ...process.env, NODE_ENV: 'development', SERVER_URL: url }
+    env: {...process.env, NODE_ENV: 'development', SERVER_URL: url}
   });
   electronProcess.on('close', () => done()); // Exit Gulp task when Electron exits
 });
