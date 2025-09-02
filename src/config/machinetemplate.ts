@@ -110,7 +110,6 @@ export let machineTemplate = {
     name: string("None", 0, 32),
     board: string("None", 0, 32),
     meta: string("", 0, 32),
-    machine: select("MILL", ["MILL", "LATHE"])
   },
 
   various: {
