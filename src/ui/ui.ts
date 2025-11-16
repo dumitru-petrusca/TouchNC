@@ -29,10 +29,14 @@ export function element(type: string, id: string, css?: CssClass, content?: Cont
     e.onchange = onChange
   }
   e.onfocus = () => {
-    isInputFocused = true;
+    if (type == "input" && (e as HTMLInputElement).type == "text") {
+      isInputFocused = true;
+    }
   }
   e.onblur = () => {
-    isInputFocused = false;
+    if (type == "input" && (e as HTMLInputElement).type == "text") {
+      isInputFocused = false;
+    }
   }
   appendContent(e, content)
   return e

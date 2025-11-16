@@ -1,4 +1,14 @@
-import {Coordinate2, currentState, wposToXYZ, xHomeDir, xHomePos, xMaxTravel, yHomeDir, yHomePos, yMaxTravel} from '../machine/machine';
+import {
+  Coordinate2,
+  currentState,
+  wposToXYZ,
+  xHomeDir,
+  xHomePos,
+  xMaxTravel,
+  yHomeDir,
+  yHomePos,
+  yMaxTravel
+} from '../machine/machine';
 import {ifPresent, isInputFocused} from '../ui/ui';
 import {Toolpath} from './toolpath';
 import {Modal2} from './types';
@@ -483,8 +493,8 @@ class ToolPathDisplay {
 
 const projection = (wpos: Coordinate): Coordinate2 => {
   return new Coordinate2(
-      wpos.x * xx + wpos.y * xy + wpos.z * xz,
-      wpos.x * yx + wpos.y * yy + wpos.z * yz
+    wpos.x * xx + wpos.y * xy + wpos.z * xz,
+    wpos.x * yx + wpos.y * yy + wpos.z * yz
   )
 };
 

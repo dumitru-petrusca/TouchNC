@@ -16,15 +16,15 @@
 - Written in TypeScript using modern technology.
 - Very small footprint (~40kB).
 
-## Building
-Run the following commands:
-```
-npm install
-npm install --global gulp-cli
-gulp package --lang en
-gulp run --url <url>
-```
-The output file is index.html.gz in the top level directory.
+## Setup
+1. Install NPM (https://nodejs.org)
+2. npm install -g gulp-cli (may need sudo)
+3. npm install --save-dev gulp
+
+# Running
+ * Demo  - gulp run --url http://10.0.0.122
+ * Lathe - gulp run --url http://10.0.0.120
+ * Mill  - gulp run --url http://192.168.2.2
 
 ## Installation
 Build as described above and copy index.html.gz to the ESP32 SPIFFS.
