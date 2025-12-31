@@ -1,6 +1,17 @@
-import {float_, int_, select_, SelectOption, SelectSetting, Setting, SettingAttr, SettingGroup, Settings} from './settings';
+import {
+  float_,
+  int_,
+  select_,
+  SelectOption,
+  SelectSetting,
+  Setting,
+  SettingAttr,
+  SettingGroup,
+  Settings
+} from './settings';
 import {sendHttpRequest, writeFile} from '../http/http';
 import {messages} from '../messages/messages';
+import {KEYBOARD_JOGGING_ONLY} from "../machine/jogPanel";
 
 const preferencesFileName = "touchnc.json";
 
@@ -29,6 +40,8 @@ export const PROBE_RETRACT = "Retract"
 export const JOG_RATE_1 = "Rate 1 (%)"
 export const JOG_RATE_2 = "Rate 2 (%)"
 export const JOG_RATE_3 = "Rate 3 (%)"
+export const JOG_RATE_4 = "Rate 4 (%)"
+export const JOG_RATE_5 = "Rate 5 (%)"
 
 export enum FeedbackMode {
   None,
@@ -57,13 +70,13 @@ class Preferences extends Settings {
 
   loadSettings(): Promise<SettingGroup> {
     return sendHttpRequest(preferencesFileName)
-        .then(JSON.parse)
-        .catch(reason => {
-          console.log("Cannot load preferences; using defaults instead: " + reason)
-          messages.warning("Cannot load preferences; using defaults instead.")
-          return {};
-        })
-        .then(js => Promise.resolve(createSettings(js)));
+      .then(JSON.parse)
+      .catch(reason => {
+        console.log("Cannot load preferences; using defaults instead: " + reason)
+        messages.warning("Cannot load preferences; using defaults instead.")
+        return {};
+      })
+      .then(js => Promise.resolve(createSettings(js)));
   }
 
   saveSetting(s: Setting<any, any>): Promise<any> {
@@ -91,6 +104,24 @@ class Preferences extends Settings {
   jogRate = (i: number) => this.intSetting(`Rate ${i} (%)`).getValue();
 }
 
+function createJoggingSettings(js: any): SettingGroup {
+  if (KEYBOARD_JOGGING_ONLY) {
+    return new SettingGroup("/jog_rates", SettingAttr.VIRTUAL, [
+      float_(JOG_RATE_1, js[JOG_RATE_1], 0, 100),
+      float_(JOG_RATE_2, js[JOG_RATE_2], 0, 100),
+      float_(JOG_RATE_3, js[JOG_RATE_3], 0, 100),
+      float_(JOG_RATE_4, js[JOG_RATE_4], 0, 100),
+      float_(JOG_RATE_5, js[JOG_RATE_5], 0, 100),
+    ])
+  } else {
+    return new SettingGroup("/jog_rates", SettingAttr.VIRTUAL, [
+      float_(JOG_RATE_1, js[JOG_RATE_1], 0, 100),
+      float_(JOG_RATE_2, js[JOG_RATE_2], 0, 100),
+      float_(JOG_RATE_3, js[JOG_RATE_3], 0, 100),
+    ])
+  }
+}
+
 function createSettings(js: any) {
   js = applyDefaults(js)
   return new SettingGroup("/", SettingAttr.DEFAULT, [], [
@@ -113,11 +144,7 @@ function createSettings(js: any) {
       float_(PROBE_MAX_TRAVEL, js[PROBE_MAX_TRAVEL], 0, 10000),
       float_(PROBE_RETRACT, js[PROBE_RETRACT], 0, 10000),
     ]),
-    new SettingGroup("/jog_rates", SettingAttr.VIRTUAL, [
-      float_(JOG_RATE_1, js[JOG_RATE_1], 0, 100),
-      float_(JOG_RATE_2, js[JOG_RATE_2], 0, 100),
-      float_(JOG_RATE_3, js[JOG_RATE_3], 0, 100),
-    ])
+    createJoggingSettings(js)
   ]);
 }
 
@@ -133,9 +160,17 @@ function applyDefaults(js: any) {
   applyDefault(PROBE_FEED, 100, js)
   applyDefault(PROBE_MAX_TRAVEL, 1000, js)
   applyDefault(PROBE_RETRACT, 10, js)
-  applyDefault(JOG_RATE_1, 10, js)
-  applyDefault(JOG_RATE_2, 50, js)
-  applyDefault(JOG_RATE_3, 75, js)
+  if (KEYBOARD_JOGGING_ONLY) {
+    applyDefault(JOG_RATE_1, 10, js)
+    applyDefault(JOG_RATE_2, 25, js)
+    applyDefault(JOG_RATE_3, 50, js)
+    applyDefault(JOG_RATE_4, 75, js)
+    applyDefault(JOG_RATE_5, 100, js)
+  } else {
+    applyDefault(JOG_RATE_1, 10, js)
+    applyDefault(JOG_RATE_2, 50, js)
+    applyDefault(JOG_RATE_3, 75, js)
+  }
   return js
 }
 

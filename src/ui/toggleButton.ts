@@ -1,6 +1,8 @@
 import {Consumer, Producer, randomString} from '../common/common';
 import {BooleanSetting, SelectOption, SelectSetting} from '../config/settings';
 import {btnIcon, button} from './button';
+import {tabSelectChannel} from "../events/eventbus";
+import {currentState} from "../machine/machine";
 
 export class ToggleButton {
   private readonly id: string
@@ -49,6 +51,10 @@ export class ToggleButton {
   }
 }
 
+export function toggleButton(setting: BooleanSetting, consumer: Consumer<boolean>): ToggleButton {
+  return new ToggleButton(setting, consumer);
+}
+
 export class SettingButtonGroup {
   private setting: SelectSetting;
   private buttons?: HTMLButtonElement[];
@@ -57,11 +63,17 @@ export class SettingButtonGroup {
   constructor(setting: SelectSetting, consumer?: Consumer<string>) {
     this.setting = setting;
     this.consumer = consumer;
+    if (localStorage.getItem(setting.path) == null) {
+      localStorage.setItem(setting.path, setting.getValue())
+    }
+    tabSelectChannel.register(_ => this.update(), "toggle", 0)
   }
 
   private update() {
     this.buttons?.forEach(b => b.style.backgroundColor = "lightblue")
-    let i = this.setting.index();
+    let value = localStorage.getItem(this.setting.path)!
+    this.setting.setValue(value)
+    let i = this.setting.indexOf(value)
     this.buttons![i].style.backgroundColor = "#d0f0d0"
   }
 
@@ -74,13 +86,9 @@ export class SettingButtonGroup {
   private makeButton(option: SelectOption) {
     let content = option.icon ? btnIcon(option.icon) : option.text;
     return button(option.value, content, `Feed ${option.text}`, _ => {
-      this.setting.setValue(option.value)
+      localStorage.setItem(this.setting.path, option.value);
       this.update();
       this.consumer?.(option.value)
     });
   }
-}
-
-export function toggleButton(setting: BooleanSetting, consumer: Consumer<boolean>): ToggleButton {
-  return new ToggleButton(setting, consumer);
 }

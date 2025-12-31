@@ -25,7 +25,7 @@ export function setButton(id: string, isEnabled: boolean, iconName: Icon, onClic
   ifPresent(id, button => {
     (button as HTMLButtonElement).disabled = !isEnabled;
     button.replaceChildren(btnIcon(iconName, isEnabled ? "black" : "darkgray"))
-    if (onClick!=undefined) {
+    if (onClick != undefined) {
       button.onclick = onClick
     }
   })
@@ -62,12 +62,12 @@ function getParentButtonOrError(e: Event): HTMLButtonElement {
   return valueOrError(getParentButton(e), () => `Cannot find parent button of ${(e.target as HTMLElement).id}`);
 }
 
-export function btnIcon(icon: Icon, color: string = "black") {
+export function btnIcon(icon: Icon, color: string = "black"): SVGSVGElement {
   return svgIcon(icon, "1.3em", "1.3em", "black", btnIconClass)
 }
 
 const btnIconClass = cssClass("btnIcon", css`
-  vertical-align: text-top;
-  user-select: none;           /* Disable text selection (standard) */
-  touch-action: manipulation;
+    vertical-align: text-top;
+    user-select: none; /* Disable text selection (standard) */
+    touch-action: manipulation;
 `)

@@ -10,7 +10,13 @@ import {FSDialog} from '../fs/fsdialog';
 import {FSType} from '../fs/fs';
 import {currentState, homeAll, restart} from '../machine/machine';
 import {btnIcon, button} from './button';
-import {toggleCoolantState, toggleCoordinateSystem, toggleDistanceMode, toggleSpindleState, toggleUnits} from '../machine/modal';
+import {
+  toggleCoolantState,
+  toggleCoordinateSystem,
+  toggleDistanceMode,
+  toggleSpindleState,
+  toggleUnits
+} from '../machine/modal';
 import {toolPathPanel} from './program';
 import {createToolTable} from '../machine/tools';
 import {Icon} from './icons';
@@ -18,14 +24,7 @@ import {sendCommandAndGetStatus, UNLOCK_CMD} from '../http/http';
 import {probe} from '../machine/probe';
 import {column, row} from './panel';
 import {AlertDialog} from '../dialog/alertdlg';
-
-export interface MachineUI {
-  manualTab(): HTMLElement | null;
-
-  programTab(): HTMLElement | null;
-
-  toolsTab(): HTMLElement | null;
-}
+import {MachineUI} from "./machine";
 
 export class MillUI implements MachineUI {
 
@@ -65,7 +64,7 @@ export class MillUI implements MachineUI {
   }
 }
 
-function millNavPanel() {
+function millNavPanel(): HTMLElement {
   return panel('', navRowClass, [
     createMenu('dropdown', "Menu", "left", [
       new MenuItem("Status", () => new StatusDialog()),

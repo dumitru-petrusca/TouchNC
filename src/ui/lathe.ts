@@ -9,7 +9,6 @@ import {createMenu, MenuItem} from './menu';
 import {FSDialog} from '../fs/fsdialog';
 import {FSType} from '../fs/fs';
 import {StatusDialog} from '../dialog/statusdlg';
-import {MachineUI} from './mill';
 import {axesDRO} from './dro';
 import {messagesPanel} from '../messages/messagesui';
 import {Icon} from './icons';
@@ -18,6 +17,7 @@ import {FloatSetting} from '../config/settings';
 import {coordButton} from './coordinateButton';
 import {JogPanel} from '../machine/jogPanel';
 import {AlertDialog} from '../dialog/alertdlg';
+import {MachineUI} from "./machine";
 
 export class LatheUI implements MachineUI {
   manualTab(): HTMLElement | null {

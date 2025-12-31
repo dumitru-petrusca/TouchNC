@@ -133,7 +133,7 @@ export class SelectSetting extends Setting<string, SelectSetting> {
   }
 
   index = (): number => this.indexOf(this.getValue());
-  indexOf = (text: string) => this.options.find(o => o.value == text)?.id ?? -1;
+  indexOf = (value: string) => this.options.find(o => o.value == value)?.id ?? -1;
   findOption = (value: number) => this.options.find(o => o.id == value);
 }
 

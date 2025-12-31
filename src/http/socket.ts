@@ -122,7 +122,7 @@ function startSocket() {
     }
   };
   socket.onmessage = function (e) {
-    console.log("Report");
+    // console.log("Report");
     lastReportTime = (new Date()).getTime();
     if (e.data instanceof ArrayBuffer) {
       getMessage(e.data)?.split('\n').forEach(processControllerMessage);
