@@ -48,10 +48,9 @@ let axis = {
   mpg: {
     a_pin: pin(PinCap.Input),
     b_pin: pin(PinCap.Input),
+    pulses_per_rev: int(1, 0, 1000000),
+    gain: float(1, 0.01, 1000),
     reverse: bool(false),
-    pulses_per_rev: int(1000, 0, 20000),
-    max_rpm: int(250, 0, 1000),
-    max_rate_factor: float(0.75, 0.01, 1),
   },
   motor0: motor,
   motor1: motor

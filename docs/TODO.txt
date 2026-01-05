@@ -1,5 +1,5 @@
 Nice to Have:
 =============
-- Figure out where the percentage is displayed on the LCD screen and add it to the UI
+- Should be able to clear a setting group to remove it from the config.yaml.
 - Would be nice to indicate how long the program will take to run
 
