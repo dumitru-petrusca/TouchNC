@@ -122,15 +122,23 @@ function startSocket() {
   socket.onclose = function (e) {
     if (e.target == socket) {
       console.log(`WebSocket closed.`);
-      connectionStatus = ConnectionStatus.DISCONNECTED;
-      lastDisconnectTime = Date.now();
+      if (connectionStatus == ConnectionStatus.CONNECTED) {
+        disconnect();
+      } else {
+        connectionStatus = ConnectionStatus.DISCONNECTED;
+        lastDisconnectTime = Date.now();
+      }
     }
   };
   socket.onerror = function (e) {
     console.log(`WebSocket error`, e);
     if (e.target == socket) {
-      connectionStatus = ConnectionStatus.DISCONNECTED;
-      lastDisconnectTime = Date.now();
+      if (connectionStatus == ConnectionStatus.CONNECTED) {
+        disconnect();
+      } else {
+        connectionStatus = ConnectionStatus.DISCONNECTED;
+        lastDisconnectTime = Date.now();
+      }
     }
   };
   socket.onmessage = function (e) {
