@@ -1,9 +1,9 @@
-import {capitalize, charAt, dropLast, last} from '../common/common';
-import {YAML} from './yaml';
-import {NO_PIN_CONFIG, parsePinConfig, Pin, PinCap, PinConfig} from './esp32';
-import {Set2} from '../common/set';
-import {isDigit} from 'json5/lib/util';
-import {Icon} from '../ui/icons';
+import { capitalize, charAt, dropLast, last } from '../common/common';
+import { YAML } from './yaml';
+import { NO_PIN_CONFIG, parsePinConfig, Pin, PinCap, PinConfig } from './esp32';
+import { Set2 } from '../common/set';
+import { isDigit } from 'json5/lib/util';
+import { Icon } from '../ui/icons';
 
 export enum SettingAttr {
   DEFAULT = 0,
@@ -66,12 +66,27 @@ export abstract class Setting<T, B extends Setting<T, B>> {
 
   getValue = (): T => this.value!;
   undo = () => this.value = this.oldValue;
-  //TODO-dp
-  isConfigured = () => this.configured || this.getValue() != this.defaultValue;
+  isConfigured = () => this.configured || this.isModified();
+  isModified = () => !this.valuesEqual(this.getValue(), this.defaultValue);
+
+  public valuesEqual(v1: T, v2: T): boolean {
+    if (v1 === v2) return true;
+    if (v1 == null || v2 == null) return v1 === v2;
+    if (typeof v1 === 'object') {
+      return JSON.stringify(v1) === JSON.stringify(v2);
+    }
+    return v1 == v2;
+  }
+
   isReal = () => true;
 
   stringValue(): string {
     return this.value as string
+  }
+
+  resetToDefault() {
+    this.value = this.defaultValue;
+    this.configured = false;
   }
 }
 
@@ -155,8 +170,8 @@ export class PinSetting extends Setting<PinConfig, PinSetting> {
   validate(value: string) {
     let s = value.split(":").map(s => s.trim());
     return (s.length == 1 && this.pinOk(s[0])) ||
-        (s.length == 2 && this.pinOk(s[0]) && (this.isUpDown(s[1]) || this.isLowHigh(s[1]))) ||
-        (s.length == 3 && this.pinOk(s[0]) && this.isUpDown(s[1]) && this.isLowHigh(s[2]))
+      (s.length == 2 && this.pinOk(s[0]) && (this.isUpDown(s[1]) || this.isLowHigh(s[1]))) ||
+      (s.length == 3 && this.pinOk(s[0]) && this.isUpDown(s[1]) && this.isLowHigh(s[2]))
   }
 
   pinOk = (pin: string) => this.value.hasCaps(this.caps);
@@ -174,16 +189,16 @@ export class GroupSetting extends SelectSetting {
   attr: SettingAttr;
 
   constructor(name: string, groupName: string, attr: SettingAttr) {
-    super(name, "", []);
+    super(name, "NONE", []);
     this.groupPath = groupName;
     this.attr = attr;
-    this.setValue("")
+    this.setValue("NONE")
   }
 
   finalize() {
     this.group = this.groupPath == "this" ?
-        this.getParent() :
-        this.getParent().getRoot().getGroup(this.groupPath)
+      this.getParent() :
+      this.getParent().getRoot().getGroup(this.groupPath)
     if (this.group == undefined) {
       throw `Cannot find groups with name: ${this.groupPath}`
     }
@@ -294,7 +309,7 @@ export abstract class Settings {
       return Promise.resolve(this.settings)
     }
     return this.loadSettings()
-        .then(settings => this.settings = settings)
+      .then(settings => this.settings = settings)
   }
 
   parseSetting(s: any): Setting<any, any> {
@@ -350,7 +365,7 @@ export class SettingGroup {
   enabled: boolean = true;
 
   constructor(path: string, attributes: SettingAttr,
-              settings: Setting<any, any>[] = [], groups: SettingGroup[] = []) {
+    settings: Setting<any, any>[] = [], groups: SettingGroup[] = []) {
     this.path = path
     this.name = path.substring(path.lastIndexOf("/") + 1)
     this.attributes = attributes;
@@ -458,10 +473,26 @@ export class SettingGroup {
   }
 
   getRoot = (r: SettingGroup = this): SettingGroup => r.parent == undefined ? r : this.getRoot(r.parent);
-  isConfigured = () => this.configured || this.settings.find(s => s.isConfigured()) != undefined;
+  isConfigured = (): boolean =>
+    this.configured ||
+    this.enabled !== true ||
+    this.settings.some(s => s.isConfigured()) ||
+    this.groups.some(g => g.isConfigured());
+
+  isModified = (): boolean =>
+    this.enabled !== true ||
+    this.settings.some(s => s.isModified()) ||
+    this.groups.some(g => g.isModified());
+
   isOneOf = () => (this.attributes & SettingAttr.ONE_OF) != 0
   isVirtual = () => (this.attributes & SettingAttr.VIRTUAL) != 0
   isHidden = () => (this.attributes & SettingAttr.HIDDEN) != 0
+
+  resetToDefault() {
+    this.configured = false;
+    this.settings.forEach(s => s.resetToDefault());
+    this.groups.forEach(g => g.resetToDefault());
+  }
 }
 
 let acronyms = new Map([
@@ -484,26 +515,26 @@ let acronyms = new Map([
 
 export function groupName(path: string) {
   let name = path
-      .replace("/axes/", "")
-      .replaceAll('/', ' ')
-      .replaceAll('_', ' ')
-      .split(" ")
-      .flatMap(splitNumber)
-      .map(name => acronyms.get(name) ?? name)
-      .map(capitalize)
-      .join(" ");
+    .replace("/axes/", "")
+    .replaceAll('/', ' ')
+    .replaceAll('_', ' ')
+    .split(" ")
+    .flatMap(splitNumber)
+    .map(name => acronyms.get(name) ?? name)
+    .map(capitalize)
+    .join(" ");
   return renames.get(name) ?? name
 }
 
 export function settingName(name: string) {
   name = name
-      .substring(name.lastIndexOf("/") + 1)
-      .replaceAll('_', ' ')
-      .replaceAll(' per ', '/')
-      .split(" ")
-      .map(name => acronyms.get(name) ?? name)
-      .map(capitalize)
-      .join(" ");
+    .substring(name.lastIndexOf("/") + 1)
+    .replaceAll('_', ' ')
+    .replaceAll(' per ', '/')
+    .split(" ")
+    .map(name => acronyms.get(name) ?? name)
+    .map(capitalize)
+    .join(" ");
   return renames.get(name) ?? name
 }
 

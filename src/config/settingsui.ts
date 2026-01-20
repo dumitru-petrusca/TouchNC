@@ -1,16 +1,16 @@
-import {numpadButton, NumpadType} from '../ui/numpad';
-import {AlertDialog} from '../dialog/alertdlg';
-import {translate} from '../translate';
-import {btnClass, css, cssClass, CssClass, navRowClass} from '../ui/commonStyles';
-import {Consumer} from '../common/common';
-import {AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting} from './settings';
-import {checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen} from '../ui/ui';
-import {btnIcon, button} from '../ui/button';
-import {Icon} from '../ui/icons';
-import {ConfirmDialog} from '../dialog/confirmdlg';
-import {restartChannel} from '../events/eventbus';
-import {sendHttpRequest} from '../http/http';
-import {pinButton} from './pindialog';
+import { numpadButton, NumpadType } from '../ui/numpad';
+import { AlertDialog } from '../dialog/alertdlg';
+import { translate } from '../translate';
+import { btnClass, css, cssClass, CssClass, navRowClass } from '../ui/commonStyles';
+import { Consumer } from '../common/common';
+import { AlphanumericSetting, BooleanSetting, FloatSetting, groupName, GroupSetting, IntegerSetting, PinSetting, SelectSetting, Setting, SettingGroup, Settings, StringSetting } from './settings';
+import { checkbox, element, getElement, ifPresent, label, panel, setEnabled, textInput, toggleFullscreen } from '../ui/ui';
+import { btnIcon, button } from '../ui/button';
+import { Icon } from '../ui/icons';
+import { ConfirmDialog } from '../dialog/confirmdlg';
+import { restartChannel } from '../events/eventbus';
+import { sendHttpRequest } from '../http/http';
+import { pinButton } from './pindialog';
 
 export class EnableRule {
   settingPattern: string
@@ -35,19 +35,19 @@ export class SettingsUI {
 
   loadAndDisplay() {
     this.settings.load()
-        .then(() => this.display())
+      .then(() => this.display())
   }
 
   settingsNavPanel() {
     return panel('', navRowClass, [
       button('save', btnIcon(Icon.file), 'Save Settings',
-          _ => this.settings.saveSettings()
-              .then(_ => new ConfirmDialog(translate("Settings saved. Restart FluidNC?"), () => {
-                    restartChannel.sendEvent()
-                    sendHttpRequest("/command?plain=" + encodeURIComponent("[ESP444]RESTART"));
-                  })
-              )
-              .catch(reason => new AlertDialog(translate("Save Failed"), "Error " + reason))
+        _ => this.settings.saveSettings()
+          .then(_ => new ConfirmDialog(translate("Settings saved. Restart FluidNC?"), () => {
+            restartChannel.sendEvent()
+            sendHttpRequest("/command?plain=" + encodeURIComponent("[ESP444]RESTART"));
+          })
+          )
+          .catch(reason => new AlertDialog(translate("Save Failed"), "Error " + reason))
       ),
       button('fullscreen', btnIcon(Icon.fullscreen), 'Toggle Fullscreen', toggleFullscreen),
     ])
@@ -73,19 +73,36 @@ export class SettingsUI {
 
   createPanes() {
     return this.settings.getDisplayGroups()
-        ?.filter(g => !g.isHidden())
-        ?.map(g => this.createPane(g)) ?? [];
+      ?.filter(g => !g.isHidden())
+      ?.map(g => this.createPane(g)) ?? [];
   }
 
-  createPane(group: SettingGroup): HTMLDivElement {
+  createPane(group: SettingGroup): HTMLElement {
     let paneId = `${group.path}-pane`, listId = `${group.path}-list`;
-    let children = [label("", groupName(group.path), settingsPaneTitleClass)]
+    let header = panel("", settingsPaneHeaderClass, [
+      label("", groupName(group.path), settingsPaneTitleClass),
+      button(`${group.path}-reset`, btnIcon(Icon.x), "Reset to defaults", () => new ConfirmDialog(translate("Reset {{name}} settings?").replace("{{name}}", groupName(group.path)), () => this.resetGroup(group)))
+    ])
+    header.style.gridColumn = "1 / 3";
+
+    let children: HTMLElement[] = [header]
     group.expandSettings().forEach(s => {
       children.push(label(s.path + "_label", s.name, settingsLabelClass))
       children.push(this.createWidget(s, _ => getElement(paneId).replaceWith(this.createPane(group))))
     });
     let list = panel(listId, settingsListClass, children);
-    return panel(paneId, settingsPaneClass, list)
+    const e = panel(paneId, settingsPaneClass, list);
+    this.updatePaneStyle(e, group);
+    return e;
+  }
+
+  private resetGroup(group: SettingGroup) {
+    group.resetToDefault();
+    this.update();
+    this.updateVisibility();
+    this.updateGroupStyles();
+    // Re-create the pane to ensure widgets (especially dropdowns) are refreshed
+    ifPresent(`${group.path}-pane`, e => e.replaceWith(this.createPane(group)));
   }
 
   createWidget(s: Setting<any, any>, redrawCallback: Consumer<string>): HTMLElement {
@@ -152,12 +169,15 @@ export class SettingsUI {
 
   private saveSetting(setting: Setting<any, any>) {
     this.settings
-        .saveSetting(setting)
-        .then(() => this.updateVisibility())
-        .catch(reason => {
-          setting.undo()
-          new AlertDialog(translate("Set failed"), "Error " + reason)
-        })
+      .saveSetting(setting)
+      .then(() => {
+        this.updateVisibility()
+        this.updateGroupStyles()
+      })
+      .catch(reason => {
+        setting.undo()
+        new AlertDialog(translate("Set failed"), "Error " + reason)
+      })
   }
 
   updateVisibility(group: SettingGroup = this.settings.settings!) {
@@ -168,6 +188,27 @@ export class SettingsUI {
     }
     for (const g of group.groups) {
       this.updateVisibility(g)
+    }
+  }
+
+  updateGroupStyles() {
+    this.settings.getDisplayGroups()?.forEach(g => {
+      ifPresent(`${g.path}-pane`, e => this.updatePaneStyle(e, g));
+    });
+  }
+
+  updatePaneStyle(e: HTMLElement, group: SettingGroup) {
+    const isModified = group.isModified();
+    if (isModified) {
+      e.classList.add(configuredPaneClass.name);
+      e.classList.remove(defaultPaneClass.name);
+    } else {
+      e.classList.add(defaultPaneClass.name);
+      e.classList.remove(configuredPaneClass.name);
+    }
+    const resetBtn = e.querySelector(`[id="${group.path}-reset"]`) as HTMLElement;
+    if (resetBtn) {
+      resetBtn.style.visibility = isModified ? "visible" : "hidden";
     }
   }
 }
@@ -227,8 +268,20 @@ export const settingsPaneClass = cssClass("settingsPane", css`
 
 export const settingsPaneTitleClass = cssClass("settingsPaneTitle", css`
   text-align: Left;
+`)
+
+export const settingsPaneHeaderClass = cssClass("settingsPaneHeader", css`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: turquoise;
-  grid-column: 1 / 3;
+  padding-right: 5px;
+
+  & .btn {
+    width: 30px;
+    height: 30px;
+    background: transparent;
+  }
 `)
 
 export const settingsListClass = cssClass("settingsList", css`
@@ -257,4 +310,12 @@ const checkboxClass = cssClass("checkboxClass", css`
   padding: 0;
   width: 100%;
   height: 30px;
+`)
+
+const configuredPaneClass = cssClass("configuredPane", css`
+  background-color: #e8f5e9;
+`)
+
+const defaultPaneClass = cssClass("defaultPane", css`
+  background-color: #f5f5f5;
 `)
