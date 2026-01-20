@@ -1,14 +1,14 @@
-import {CANCEL_JOG_CMD, sendCommand, sendCommandAndGetStatus} from '../http/http';
-import {btnIcon, button, getButton} from '../ui/button';
-import {isMmMode, mmToCurrent, mmToDisplay} from './modal';
-import {Content, getElement, isInputFocused, panel} from '../ui/ui';
-import {css, cssClass} from '../ui/commonStyles';
-import {Icon} from '../ui/icons';
-import {SelectOption, SelectSetting} from '../config/settings';
-import {SettingButtonGroup} from '../ui/toggleButton';
-import {preferences} from '../config/preferences';
-import {machineSettings} from '../config/machinesettings';
-import {JogDebouncer} from './jogDebouncer';
+import { CANCEL_JOG_CMD, sendCommand, sendCommandAndGetStatus } from '../http/http';
+import { btnIcon, button, getButton } from '../ui/button';
+import { isMmMode, mmToCurrent, mmToDisplay } from './modal';
+import { Content, getElement, isInputFocused, panel } from '../ui/ui';
+import { css, cssClass } from '../ui/commonStyles';
+import { Icon } from '../ui/icons';
+import { SelectOption, SelectSetting } from '../config/settings';
+import { SettingButtonGroup } from '../ui/toggleButton';
+import { preferences } from '../config/preferences';
+import { machineSettings } from '../config/machinesettings';
+import { JogDebouncer } from './jogDebouncer';
 
 const STEP = "step";
 const debounceDelayMs = 100
@@ -51,6 +51,7 @@ const keyboardJogs = new Map<string, Jog>([
 export class JogPanel {
   setting: SelectSetting;
   feedGroup: SettingButtonGroup
+  keyDebouncers: Map<string, JogDebouncer> = new Map()
 
   constructor() {
     if (KEYBOARD_JOGGING_ONLY) {
@@ -71,8 +72,15 @@ export class JogPanel {
       ]);
     }
     this.feedGroup = new SettingButtonGroup(this.setting);
+    keyboardJogs.forEach((jog, key) => {
+      this.keyDebouncers.set(key, new JogDebouncer(debounceDelayMs,
+        () => this.startJog(jog),
+        () => this.cancelJog()
+      ));
+    })
     window.addEventListener("keydown", this.handleKeyDown.bind(this))
     window.addEventListener("keyup", this.handleKeyUp.bind(this))
+    window.addEventListener("blur", this.handleBlur.bind(this))
   }
 
   create() {
@@ -131,26 +139,32 @@ export class JogPanel {
     }
   }
 
-  cancelJog(btn: HTMLButtonElement) {
-    btn.style.backgroundColor = "lightblue"
+  cancelJog(btn?: HTMLButtonElement) {
+    if (btn) btn.style.backgroundColor = "lightblue"
     console.log("Cancel Jog")
     sendCommand(CANCEL_JOG_CMD);
   }
 
+  handleBlur = () => {
+    // Stop machine for safety
+    sendCommand(CANCEL_JOG_CMD);
+    // We could trying to reset debouncers, but simple safety stop is usually enough.
+    // If the window loses focus, the user needs to re-press keys anyway.
+  }
+
   handleKeyDown = (event: KeyboardEvent) => {
     if (event.repeat || isInputFocused) return;
-    const jog = keyboardJogs.get(event.key);
-    if (jog != undefined) {
-      this.startJog(jog)
+    const debouncer = this.keyDebouncers.get(event.key);
+    if (debouncer != undefined) {
+      debouncer.handleStart();
       event.preventDefault();
     }
   }
 
   handleKeyUp = (event: KeyboardEvent) => {
-    if (event.repeat || isInputFocused) return;
-    const jog = keyboardJogs.get(event.key);
-    if (jog != undefined) {
-      sendCommand(CANCEL_JOG_CMD);
+    const debouncer = this.keyDebouncers.get(event.key);
+    if (debouncer != undefined) {
+      debouncer.handleEnd();
       event.preventDefault();
     }
   }
