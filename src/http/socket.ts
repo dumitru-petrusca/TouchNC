@@ -1,16 +1,16 @@
-import {initUI} from '../main';
-import {processMachineState, processSettingRead, setMachineProperties} from '../machine/machine';
-import {processTool, processTools} from '../machine/tools';
-import {ConnectDialog, disableUI, enableUI, firmware} from '../dialog/connectdlg';
-import {CancelCurrentUpload, getPageId, processCommandCompletion, processCommandError, serverUrl, setPageId} from './http';
-import {probe} from '../machine/probe';
-import {registerClasses} from '../ui/commonStyles';
-import {processModal} from '../machine/modal';
-import {messages} from '../messages/messages';
-import {restartChannel, startupChannel} from '../events/eventbus';
-import {ConnectionMonitoring, preferences} from '../config/preferences';
-import {reporting} from './reporting';
-import {InputDialog} from '../dialog/inputdlg';
+import { initUI } from '../main';
+import { processMachineState, processSettingRead, setMachineProperties } from '../machine/machine';
+import { processTool, processTools } from '../machine/tools';
+import { ConnectDialog, disableUI, enableUI, firmware } from '../dialog/connectdlg';
+import { CancelCurrentUpload, getPageId, processCommandCompletion, processCommandError, serverUrl, setPageId } from './http';
+import { probe } from '../machine/probe';
+import { registerClasses } from '../ui/commonStyles';
+import { processModal } from '../machine/modal';
+import { messages } from '../messages/messages';
+import { restartChannel, startupChannel } from '../events/eventbus';
+import { ConnectionMonitoring, preferences } from '../config/preferences';
+import { reporting } from './reporting';
+import { InputDialog } from '../dialog/inputdlg';
 
 enum ConnectionStatus {
   CONNECTED,
@@ -24,8 +24,7 @@ const WATCHDOG_INTERVAL_MS = 100;
 let socket: WebSocket | null = null;
 let connectionStatus = ConnectionStatus.DISCONNECTED;
 let lastReportTime: number;
-let connectionMonitoring = ConnectionMonitoring.None
-let recoveryPeriodMs: number
+
 let prevMsg = ""
 
 let event_source: EventSource;
@@ -56,30 +55,39 @@ function connect() {
 }
 
 export function setupSocketWatchdog() {
-  recoveryPeriodMs = preferences.recoveryPeriod()
-  connectionMonitoring = preferences.connectionMonitoring()
   connectionStatus = ConnectionStatus.DISCONNECTED;
   setInterval(watchdog, WATCHDOG_INTERVAL_MS);
 }
 
+let lastDisconnectTime = 0;
+let connectStartTime = 0;
+
 function watchdog() {
   switch (connectionStatus) {
     case ConnectionStatus.CONNECTED:
-      if (connectionMonitoring == ConnectionMonitoring.Report &&
-          new Date().getTime() - lastReportTime > recoveryPeriodMs) {
+      if (preferences.connectionMonitoring() == ConnectionMonitoring.Report &&
+        new Date().getTime() - lastReportTime > preferences.recoveryPeriod()) {
         disconnect()
       }
       break;
     case ConnectionStatus.DISCONNECTED:
-      startSocket();
+      if (Date.now() - lastDisconnectTime > 2000) {
+        startSocket();
+      }
       break;
     case ConnectionStatus.CONNECTING:
+      if (Date.now() - connectStartTime > 5000) {
+        socket?.close();
+        connectionStatus = ConnectionStatus.DISCONNECTED;
+        lastDisconnectTime = Date.now();
+      }
       break;
   }
 }
 
 function startSocket() {
   connectionStatus = ConnectionStatus.CONNECTING;
+  connectStartTime = Date.now();
   try {
     if (firmware.async) {
       if (!!window.EventSource) {
@@ -97,6 +105,8 @@ function startSocket() {
     }
   } catch (exception) {
     console.error(exception);
+    connectionStatus = ConnectionStatus.DISCONNECTED;
+    lastDisconnectTime = Date.now();
     return
   }
   socket.binaryType = "arraybuffer";
@@ -113,12 +123,14 @@ function startSocket() {
     if (e.target == socket) {
       console.log(`WebSocket closed.`);
       connectionStatus = ConnectionStatus.DISCONNECTED;
+      lastDisconnectTime = Date.now();
     }
   };
   socket.onerror = function (e) {
     console.log(`WebSocket error`, e);
     if (e.target == socket) {
       connectionStatus = ConnectionStatus.DISCONNECTED;
+      lastDisconnectTime = Date.now();
     }
   };
   socket.onmessage = function (e) {
@@ -134,6 +146,7 @@ function startSocket() {
 
 export function disconnect() {
   connectionStatus = ConnectionStatus.DISCONNECTED;
+  lastDisconnectTime = Date.now();
   disableUI();
   socket?.close();
 }

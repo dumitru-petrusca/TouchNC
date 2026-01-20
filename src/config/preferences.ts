@@ -9,9 +9,9 @@ import {
   SettingGroup,
   Settings
 } from './settings';
-import {sendHttpRequest, writeFile} from '../http/http';
-import {messages} from '../messages/messages';
-import {KEYBOARD_JOGGING_ONLY} from "../machine/jogPanel";
+import { sendHttpRequest, writeFile } from '../http/http';
+import { messages } from '../messages/messages';
+import { KEYBOARD_JOGGING_ONLY } from "../machine/jogPanel";
 
 const preferencesFileName = "touchnc.json";
 
@@ -153,7 +153,7 @@ function applyDefaults(js: any) {
   applyDefault(CONNECTION_MONITORING, "Report", js)
   applyDefault(DEFAULT_TAB, TAB_MANUAL, js)
   applyDefault(REPORT_INTERVAL, 50, js)
-  applyDefault(RECOVER_AFTER, 5000, js)
+  applyDefault(RECOVER_AFTER, 2000, js)
   applyDefault(REPORT_TYPE, "Auto", js)
   applyDefault(PROBE_TYPE, "probe", js)
   applyDefault(PROBE_OFFSET, 0, js)
