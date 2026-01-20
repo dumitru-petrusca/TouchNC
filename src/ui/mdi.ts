@@ -3,10 +3,10 @@ import { button, getButton, getButtonValueAsString, getParentButton } from './bu
 import { Icon, svgIcon } from './icons';
 import { sendCommandAndGetStatus } from '../http/http';
 import { css, cssClass } from './commonStyles';
-import { row } from './panel';
+import { row, column } from './panel';
 
 export function mdi() {
-  return row('mdi')
+  return column('mdi')
     .add("1fr", mdiInput('mditext0'))
     .add("1fr", mdiInput('mditext1'))
     .add("1fr", mdiInput('mditext2'))

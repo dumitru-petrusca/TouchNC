@@ -1,15 +1,15 @@
-import {axesDRO} from './dro';
-import {mdi} from './mdi';
-import {messagesPanel} from '../messages/messagesui';
-import {createOverridesPanel} from '../machine/override';
-import {label, panel, toggleFullscreen} from './ui';
-import {navRowClass, tabletTabClass} from './commonStyles';
-import {createMenu, MenuItem} from './menu';
-import {StatusDialog} from '../dialog/statusdlg';
-import {FSDialog} from '../fs/fsdialog';
-import {FSType} from '../fs/fs';
-import {currentState, homeAll, restart} from '../machine/machine';
-import {btnIcon, button} from './button';
+import { axesDRO } from './dro';
+import { mdi } from './mdi';
+import { messagesPanel } from '../messages/messagesui';
+import { createOverridesPanel } from '../machine/override';
+import { label, panel, toggleFullscreen } from './ui';
+import { navRowClass, tabletTabClass } from './commonStyles';
+import { createMenu, MenuItem } from './menu';
+import { StatusDialog } from '../dialog/statusdlg';
+import { FSDialog } from '../fs/fsdialog';
+import { FSType } from '../fs/fs';
+import { currentState, homeAll, restart } from '../machine/machine';
+import { btnIcon, button } from './button';
 import {
   toggleCoolantState,
   toggleCoordinateSystem,
@@ -17,14 +17,16 @@ import {
   toggleSpindleState,
   toggleUnits
 } from '../machine/modal';
-import {toolPathPanel} from './program';
-import {createToolTable} from '../machine/tools';
-import {Icon} from './icons';
-import {sendCommandAndGetStatus, UNLOCK_CMD} from '../http/http';
-import {probe} from '../machine/probe';
-import {column, row} from './panel';
-import {AlertDialog} from '../dialog/alertdlg';
-import {MachineUI} from "./machine";
+import { toolPathPanel } from './program';
+import { createToolTable } from '../machine/tools';
+import { Icon } from './icons';
+import { sendCommandAndGetStatus, UNLOCK_CMD } from '../http/http';
+import { probe } from '../machine/probe';
+import { column, row } from './panel';
+import { AlertDialog } from '../dialog/alertdlg';
+import { MachineUI } from "./machine";
+
+import { conversationalPanel } from './conversational';
 
 export class MillUI implements MachineUI {
 
@@ -32,8 +34,11 @@ export class MillUI implements MachineUI {
     return panel('tablettab', tabletTabClass, [
       millNavPanel(),
       axesDRO(),
-      mdi(),
-      messagesPanel(),
+      panel('mdi-conv-row', undefined, ""), // Spacer for the 3rd 'auto' row
+      row()
+        .add("2fr", conversationalPanel())
+        .add("1fr", column().add("auto", mdi()).add("1fr", messagesPanel()))
+        .build(),
     ])
   }
 
@@ -52,14 +57,14 @@ export class MillUI implements MachineUI {
       axesDRO(),
       mdi(),
       row()
-          .overflow("auto")
-          .maxWidth("100%")
-          .add("2fr", createToolTable())
-          .add("3fr", column()
-              .add("auto", probe.probeRow())
-              .add("1fr", messagesPanel())
-          )
-          .build()
+        .overflow("auto")
+        .maxWidth("100%")
+        .add("2fr", createToolTable())
+        .add("3fr", column()
+          .add("auto", probe.probeRow())
+          .add("1fr", messagesPanel())
+        )
+        .build()
     ])
   }
 }
@@ -92,8 +97,8 @@ function millNavPanel(): HTMLElement {
 
 function statusPanel(): HTMLElement {
   return row('status')
-      .overflow("auto").maxWidth("100%").maxHeight("100%")
-      .add("1fr", messagesPanel())
-      .add("2fr", toolPathPanel())
-      .build()
+    .overflow("auto").maxWidth("100%").maxHeight("100%")
+    .add("1fr", messagesPanel())
+    .add("2fr", toolPathPanel())
+    .build()
 }
